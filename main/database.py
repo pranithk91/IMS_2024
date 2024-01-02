@@ -1,8 +1,8 @@
 import sqlite3
 import pandas as pd
 #import pandas as pd
-import gspread as gs
-from google.oauth2 import service_account
+#import gspread as gs
+#from google.oauth2 import service_account
 #from gspread_pandas import Spread, Client
 
 """SCOPES = [
@@ -38,12 +38,12 @@ for x in cell:
 
 print("Found something at", cellList)"""
 
-print('a')
-def loadFromCsv():
+#print('a')
+def loadFromCsv(filename):
     conn = sqlite3.connect('medicine_database.db')
     cursor = conn.cursor()
-    df=pd.read_csv('Python_GUI\ctk\master_medicine.csv')
-    df.to_sql('medicines', conn, if_exists='replace', index=False)
+    df=pd.read_csv('main/{}.csv'.format(filename))
+    df.to_sql('pharmacy', conn, if_exists='replace', index=False)
     conn.commit()
     conn.close()
     
@@ -56,6 +56,22 @@ def loadDatabase():
     conn.close()
 
     return med_df    
+
+def loadPharmacy():
+    conn = sqlite3.connect('medicine_database.db')
+    query = "SELECT * FROM medicines"
+    pharmDf = pd.read_sql_query(query, conn)
+    conn.close()
+
+    return pharmDf 
+
+def updatePharmacy(query):
+    conn = sqlite3.connect('medicine_database.db')
+    #query = "SELECT * FROM medicines"
+    pharmDf = pd.read_sql_query(query, conn)
+    conn.close()
+
+#loadFromCsv('Pharmacy')
 
 """medicineDf = loadDatabase()
 currentMedQty = medicineDf[medicineDf["Name"] == "Acnelak"]["Quantity"]

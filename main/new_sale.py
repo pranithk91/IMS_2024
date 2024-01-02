@@ -26,7 +26,7 @@ class MainViewFrame(tk.Frame):
             self.billTotalLabel.configure(text = "Bill Total: 0")
             
         # New Sale Section
-        # adding the line again
+        
         
         self.titleLabel = CTkLabel(master=self, text="New Bill", font=("Arial Black", 25), text_color="#2A8C55")
         self.titleLabel.pack(anchor="w", pady=(29, 0), padx=27)
@@ -260,7 +260,7 @@ class MedicineApp(tk.Frame):
 
 
     def create_button(self, text, image_filename, pady=(16, 0), command = None):
-        img_data = Image.open(f"main\{image_filename}")
+        img_data = Image.open(f"main/{image_filename}")
         img = CTkImage(dark_image=img_data, light_image=img_data)
         return CTkButton(master=self, image=img, text=text, fg_color="transparent", font=("Arial Bold", 14),
                          hover_color="#207244", anchor="w",command = command).pack(anchor="center", ipady=5, pady=pady )
@@ -272,8 +272,8 @@ class MedicineApp(tk.Frame):
 
     @property
     def logoImg(self):
-        return CTkImage(dark_image=Image.open("main\logo.png"),
-                        light_image=Image.open("main\logo.png"), size=(77.68, 85.42))
+        return CTkImage(dark_image=Image.open("main/logo.png"),
+                        light_image=Image.open("main/logo.png"), size=(77.68, 85.42))
 
 
 class App(tk.Tk):
