@@ -85,6 +85,8 @@ class MainViewFrame(tk.Frame):
                                                       autocomplete=True)
     
         # Fill the entry with selected drop down value    
+        # adding this line
+        
         def fillSelectedValue(value):
             
             currentEntry = len(self.itemNameEntry.get())
