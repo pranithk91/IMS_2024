@@ -113,7 +113,7 @@ class MainViewFrame(tk.Frame):
             
             numRows=self.billTable.rows
   
-            self.billTable.add_row(index=numRows, values=[currentMedName, currentMedType, currentMedQty, currentMedPrice, currentSaleQty, totalSalePrice])
+            self.billTable.add_row(index=numRows, values=[currentMedName, currentMedType, currentMedPrice, currentSaleQty, totalSalePrice])
             self.itemNameEntry.delete(0,len(currentMedName))
             self.qtySaleEntry.delete(0,len(currentSaleQty))
             #print("number of rows:",self.billTable.rows)
@@ -201,7 +201,7 @@ class MainViewFrame(tk.Frame):
         self.newSaleButton.pack(side="top",  anchor = "ne")
 
         self.billTable = CTkTable(master=billTableFrame, 
-                                  values=[["Name", "Type", "Stock", "MRP", "Quantity", "Total Price"]], 
+                                  values=[["Name", "Type", "MRP", "Quantity", "Total Price"]], 
                                   colors=["#E6E6E6", "#EEEEEE"], 
                                   header_color="#2A8C55", hover_color="#B4B4B4")
         self.billTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
