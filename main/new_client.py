@@ -1,11 +1,12 @@
 from customtkinter import *
 import tkinter as tk
 from PIL import Image
-from database import loadDatabase
+from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
 import pandas as pd
 from CTkTable import CTkTable
 from time import strftime
+import sqlite3
  
 
 medicineDf = loadDatabase()
@@ -19,12 +20,12 @@ class clientWindow:
         # Sidebar Frame
         self.sidebar_frame = SidebarFrame(master)
         self.sidebar_frame.pack_propagate(0)
-        self.sidebar_frame.pack(fill="y", anchor="w", side="left")
+        #self.sidebar_frame.pack(fill="y", anchor="w", side="left")
 
         # Main View Frame
         self.main_view = ClientMainViewFrame(master)
         self.main_view.pack_propagate(0)
-        self.main_view.pack(side="left")
+        #self.main_view.pack(side="left")
 
 class SidebarFrame(CTkFrame):
     def __init__(self, master=None):
@@ -44,15 +45,15 @@ class SidebarFrame(CTkFrame):
         self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
 
     def create_button(self, text, image_filename, pady=(16, 0)):
-        img_data = Image.open(f"Python_GUI\\ctk\\{image_filename}")
+        img_data = Image.open(f"main/{image_filename}")
         img = CTkImage(dark_image=img_data, light_image=img_data)
         return CTkButton(master=self, image=img, text=text, fg_color="transparent", font=("Arial Bold", 14),
                          hover_color="#207244", anchor="w").pack(anchor="center", ipady=5, pady=pady)
 
     @property
     def logoImg(self):
-        return CTkImage(dark_image=Image.open("Python_GUI\\ctk\\logo.png"),
-                        light_image=Image.open("Python_GUI\\ctk\\logo.png"), size=(77.68, 85.42))
+        return CTkImage(dark_image=Image.open("main/logo.png"),
+                        light_image=Image.open("main/logo.png"), size=(77.68, 85.42))
 
 class ClientMainViewFrame(tk.Frame):
     def __init__(self, master=NONE):
@@ -60,6 +61,7 @@ class ClientMainViewFrame(tk.Frame):
         self.pack_propagate(0)
         self.grid(column=1, row=0)
 
+        
 
         def addToTable():
             
@@ -68,8 +70,13 @@ class ClientMainViewFrame(tk.Frame):
             self.warningLabel.configure(text = "")
             currentClientName = self.clientNameEntry.get()
             currentClientPhone = self.clientPhoneEntry.get()
+            currentClientGender = self.clientGenderCbox.get()
             currentOPProc = self.clientOPCbox.get()
-
+            currentClientAge = self.clientAgeEntry.get()
+            currentAmount = self.clientAmountEntry.get()
+            
+            client_id = getClientid(currentClientName)
+ 
             numRows=self.opTable.rows                            
             print(currentClientName, currentClientPhone )  
 
@@ -80,9 +87,22 @@ class ClientMainViewFrame(tk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
 
             else:
-                self.opTable.add_row(index=numRows, values=[currentClientName, currentClientPhone, self.clientGenderCbox.get(), self.clientAgeEntry.get(), self.clientOPCbox.get(), self.clientAmountEntry.get()])
+                self.opTable.add_row(index=numRows, values=[currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
-            
+
+            conn = sqlite3.connect('medicine_database.db')
+            conn.execute("""
+                INSERT INTO Patients (UID, Name, Phone, Gender, Age, OpProc, Amount)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
+            conn.commit()     
+
+            self.clientNameEntry.delete(0,len(currentClientName))
+            self.clientPhoneEntry.delete(0,len(currentClientPhone)) 
+            self.clientGenderCbox.set("")
+            self.clientOPCbox.set("")
+            self.clientAgeEntry.delete(0,len(currentClientAge)) 
+            self.clientAmountEntry.delete(0,len(currentAmount))     
         
         # New Sale Section
         self.titleLabel = CTkLabel(master=self, text="New Bill", font=("Arial Black", 25), text_color="#2A8C55")

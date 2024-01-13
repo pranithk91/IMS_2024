@@ -1,6 +1,30 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QLineEdit, QLabel, QVBoxLayout, QWidget, QMessageBox
 import sys
 
+import tkinter as tk
+#import pyodbc
+import pandas as pd
+import datetime
+import sqlite3
+
+name = "Pranith"
+now = datetime.datetime.now()  
+year_str = str(now.year)[-2:]  
+month_str = str(now.month).zfill(2)
+name_prefix = name[:3].upper()
+first_letter = name[0] 
+conn = sqlite3.connect('medicine_database.db')
+currCursor = conn.execute("""
+    SELECT COUNT(*)
+    FROM Patients
+    WHERE UID LIKE ?
+""", (f"{year_str}{month_str}{first_letter}%",)).fetchone()
+print(currCursor)
+count = currCursor[0] + 1
+
+serial_num = str(count).zfill(2)
+print(serial_num)
+
 class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
