@@ -15,7 +15,7 @@ medSuggestionList = medicineDf['Name'].tolist()
 class clientWindow:
     def __init__(self, master):
         self.master = master
-        master.title("Medicine Quantity Checker")
+        master.title("Pranith Medical Store")
 
         # Sidebar Frame
         self.sidebar_frame = SidebarFrame(master)
@@ -38,8 +38,8 @@ class SidebarFrame(CTkFrame):
 
         # Buttons
         self.opButton = self.create_button("OP Register", "plus_icon.png")
-        #self.ordersButton = self.create_button("Orders", "package_icon.png")
-        self.ordersListButton = self.create_button("Orders", "list_icon.png")
+        self.ordersButton = self.create_button("Procedures", "package_icon.png")
+        self.ordersListButton = self.create_button("Pharmacy", "list_icon.png")
         self.returnsButton = self.create_button("Returns", "returns_icon.png")
         self.settingsButton = self.create_button("Settings", "settings_icon.png")
         self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
@@ -57,7 +57,7 @@ class SidebarFrame(CTkFrame):
 
 class ClientMainViewFrame(tk.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master, bg="#fff", width=680, height=650)
+        super().__init__(master, bg="#fff", width=800, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
 
@@ -75,7 +75,7 @@ class ClientMainViewFrame(tk.Frame):
             currentClientAge = self.clientAgeEntry.get()
             currentAmount = self.clientAmountEntry.get()
             
-            client_id = getClientid(currentClientName)
+            
  
             numRows=self.opTable.rows                            
             print(currentClientName, currentClientPhone )  
@@ -89,7 +89,7 @@ class ClientMainViewFrame(tk.Frame):
             else:
                 self.opTable.add_row(index=numRows, values=[strftime('%H:%M %p'), currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
-
+            client_id = getClientid(currentClientName)
             conn = sqlite3.connect('medicine_database.db')
             conn.execute("""
                 INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount)
@@ -118,15 +118,15 @@ class ClientMainViewFrame(tk.Frame):
         
             
         
-
-        
+        self.titleFrame = CTkFrame(master=self, fg_color="transparent")
+        self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         # New Sale Section
-        self.titleLabel = CTkLabel(master=self, text="New Bill", font=("Arial Black", 25), text_color="#2A8C55")
-        self.titleLabel.pack(anchor="w", pady=(29, 0), padx=27)
+        self.titleLabel = CTkLabel(master=self.titleFrame, text="Patient Registration", font=("Arial Black", 25), text_color="#2A8C55")
+        self.titleLabel.grid(row=0, column=0, sticky="w")
 
 
-        self.timeLabel = CTkLabel(master=self, font=("Arial Black", 17), text_color="#2A8C55" )
-        self.timeLabel.pack(anchor="e", pady=(0, 0), padx=27)
+        self.timeLabel = CTkLabel(master=self.titleFrame, font=("Arial Black", 17), text_color="#2A8C55" )
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,30))
         def get_time():
             string = strftime('%H:%M:%S %p')
             self.timeLabel.configure(text=string)
@@ -139,11 +139,11 @@ class ClientMainViewFrame(tk.Frame):
         self.clientNameLabel = CTkLabel(master=self.clientGrid, text="Patient Name", 
                                         font=("Arial Bold", 17), text_color="#52A476", 
                                         justify="left")
-        self.clientNameLabel.grid(row=0, column=0, sticky="w") 
+        self.clientNameLabel.grid(row=0, column=0, sticky="w",padx = (80,30)) 
         self.clientNameEntry = CTkEntry(master=self.clientGrid, 
                                         fg_color="#F0F0F0", border_width=0, 
                                         width=285, height=40)
-        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (0,30))
+        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (80,30))
         
         
         self.clientPhoneLabel = CTkLabel(master=self.clientGrid, 
@@ -161,12 +161,12 @@ class ClientMainViewFrame(tk.Frame):
         self.clientGenderLabel  = CTkLabel(master=self.clientdetGrid,
                                            text = "Gender",font=("Arial Bold", 17), 
                                       text_color="#52A476", justify="left" )
-        self.clientGenderLabel.grid(row=0, column=0, sticky="w")
+        self.clientGenderLabel.grid(row=0, column=0, sticky="w",padx = (80,30))
         self.clientGenderCbox = CTkComboBox(master=self.clientdetGrid, 
                                             values=("Male", "Female", "Other"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                             width=157, height=40, cursor='hand2')
-        self.clientGenderCbox.grid(row=1, column=0,sticky="w", padx = (0,30))
+        self.clientGenderCbox.grid(row=1, column=0,sticky="w", padx = (80,30))
                           
         self.clientAgeLabel  = CTkLabel(master=self.clientdetGrid,
                                            text = "Age",font=("Arial Bold", 17), 
@@ -191,25 +191,43 @@ class ClientMainViewFrame(tk.Frame):
         self.clientAmountLabel  = CTkLabel(master=self.clientdetGrid,
                                            text = "Amount",font=("Arial Bold", 17), 
                                       text_color="#52A476", justify="left" )
-        self.clientAmountLabel.grid(row=0, column=4, sticky="w")
+        self.clientAmountLabel.grid(row=0, column=3, sticky="w")
         self.clientAmountEntry = CTkEntry(master=self.clientdetGrid, 
                                          fg_color="#F0F0F0", 
                                          border_width=0, width=95, height=40)
-        self.clientAmountEntry.grid(row=1, column=4, sticky='w',padx = (0,30)) 
+        self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
 
 
         #Table section
-        self.opTableFrame = CTkScrollableFrame(master=self, fg_color="transparent")
-        self.opTableFrame.pack(expand=True, fill="both", padx=27, pady=20)
+        self.fetchDetGrid = CTkFrame(master=self, fg_color="transparent")
+        self.fetchDetGrid.pack(fill="both", padx=27, pady=(20, 0))
 
-        self.confirmDetailsButton = CTkButton(master=self.opTableFrame, text="Confirm Details",
+        
+
+        self.searchByCbox = CTkComboBox(master=self.fetchDetGrid, 
+                                            values=("Male", "Female", "Other"), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                            width=157, height=40, cursor='hand2')
+        self.searchByCbox.grid(row=2, column=1,sticky="w", pady=20, padx = (80,30))
+
+        self.fetchDetailsButton = CTkButton(master=self.fetchDetGrid, text="Fetch Details",
                                        font=("Arial Bold", 17), 
                                       hover_color="#207244", fg_color="#2A8C55", 
                                       text_color="#fff", 
                                       height=20,  
                                       command=addToTable)
-        self.confirmDetailsButton.pack(side="top",  anchor = "ne" ,pady=(0,10))
+        self.fetchDetailsButton.grid(row=2, column=2,sticky="w" ,pady=(20,0),padx = (0,30))
 
+        self.confirmDetailsButton = CTkButton(master=self.fetchDetGrid, text="Register",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
+                                      command=addToTable)
+        self.confirmDetailsButton.grid(row=2, column=3,sticky="w",pady=(20,0),padx = (100,30))
+
+        self.opTableFrame = CTkScrollableFrame(master=self, fg_color="transparent")
+        self.opTableFrame.pack(expand=True, fill="both", padx=27, pady=20)
        
         
 
