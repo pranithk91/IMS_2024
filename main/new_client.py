@@ -87,14 +87,14 @@ class ClientMainViewFrame(tk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
 
             else:
-                self.opTable.add_row(index=numRows, values=[currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
+                self.opTable.add_row(index=numRows, values=[strftime('%H:%M %p'), currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
 
             conn = sqlite3.connect('medicine_database.db')
             conn.execute("""
-                INSERT INTO Patients (UID, Name, Phone, Gender, Age, OpProc, Amount)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
+                INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
             conn.commit()     
 
             self.clientNameEntry.delete(0,len(currentClientName))
@@ -103,6 +103,22 @@ class ClientMainViewFrame(tk.Frame):
             self.clientOPCbox.set("")
             self.clientAgeEntry.delete(0,len(currentClientAge)) 
             self.clientAmountEntry.delete(0,len(currentAmount))     
+
+        def refreshTable():
+            query = """select 
+                    substring(TimeStamp,13,5) as [Time Stamp], UID, Name, Phone, Gender, Age, OpProc, Amount from Patients 
+                    where  substr(TimeStamp,7,4) || '-' || substr(TimeStamp,4,2) || '-' || substr(TimeStamp,1,2) = date()"""
+            conn = sqlite3.connect('medicine_database.db')
+            #numRows=self.opTable.rows
+            result = conn.execute(query).fetchall()
+            print(result)
+            for x in result:
+                self.opTable.add_row(index=1, values = list(x))
+
+        
+            
+        
+
         
         # New Sale Section
         self.titleLabel = CTkLabel(master=self, text="New Bill", font=("Arial Black", 25), text_color="#2A8C55")
@@ -193,6 +209,8 @@ class ClientMainViewFrame(tk.Frame):
                                       height=20,  
                                       command=addToTable)
         self.confirmDetailsButton.pack(side="top",  anchor = "ne" ,pady=(0,10))
+
+       
         
 
         self.warningLabel = CTkLabel(master=self.opTableFrame,
@@ -200,8 +218,16 @@ class ClientMainViewFrame(tk.Frame):
                                       text_color="#52A476" )
         self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,30))
 
+        self.refreshTableButton = CTkButton(master=self.opTableFrame, text="Refresh Table",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
+                                      command=refreshTable)
+        self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
+
         self.opTable = CTkTable(master=self.opTableFrame, 
-                                  values=[["Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
+                                  values=[["Time Stamp", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
                                   colors=["#E6E6E6", "#EEEEEE"], 
                                   header_color="#2A8C55", hover_color="#B4B4B4")
         self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
@@ -212,7 +238,7 @@ class ClientMainViewFrame(tk.Frame):
                                         text_color="#52A476", justify="right"
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right")
-
+        
 
 
 if __name__ == "__main__":
