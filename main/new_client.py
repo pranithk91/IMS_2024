@@ -1,5 +1,6 @@
 from customtkinter import *
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image
 from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
@@ -7,7 +8,8 @@ import pandas as pd
 from CTkTable import CTkTable
 from time import strftime
 import sqlite3
- 
+from tkcalendar import DateEntry
+import ttkbootstrap as tkb
 
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()
@@ -87,22 +89,25 @@ class ClientMainViewFrame(tk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
 
             else:
-                self.opTable.add_row(index=numRows, values=[strftime('%H:%M %p'), currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
+                client_id = getClientid(currentClientName)
+                self.opTable.add_row(index=numRows, values=[strftime('%H:%M %p'), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
-            client_id = getClientid(currentClientName)
-            conn = sqlite3.connect('medicine_database.db')
-            conn.execute("""
-                INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
-            conn.commit()     
+                
+                conn = sqlite3.connect('medicine_database.db')
+                conn.execute("""
+                    INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
+                conn.commit()     
 
-            self.clientNameEntry.delete(0,len(currentClientName))
-            self.clientPhoneEntry.delete(0,len(currentClientPhone)) 
-            self.clientGenderCbox.set("")
-            self.clientOPCbox.set("")
-            self.clientAgeEntry.delete(0,len(currentClientAge)) 
-            self.clientAmountEntry.delete(0,len(currentAmount))     
+                self.clientNameEntry.delete(0,len(currentClientName))
+                self.clientPhoneEntry.delete(0,len(currentClientPhone)) 
+                self.clientGenderCbox.set("")
+                self.clientOPCbox.set("")
+                self.clientAgeEntry.delete(0,len(currentClientAge)) 
+                self.clientAmountEntry.delete(0,len(currentAmount))     
+
+
 
         def refreshTable():
             query = """select 
@@ -111,7 +116,7 @@ class ClientMainViewFrame(tk.Frame):
             conn = sqlite3.connect('medicine_database.db')
             #numRows=self.opTable.rows
             result = conn.execute(query).fetchall()
-            print(result)
+            
             for x in result:
                 self.opTable.add_row(index=1, values = list(x))
 
@@ -121,7 +126,8 @@ class ClientMainViewFrame(tk.Frame):
         self.titleFrame = CTkFrame(master=self, fg_color="transparent")
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         # New Sale Section
-        self.titleLabel = CTkLabel(master=self.titleFrame, text="Patient Registration", font=("Arial Black", 25), text_color="#2A8C55")
+        self.titleLabel = CTkLabel(master=self.titleFrame, text="Patient Registration", 
+                                   font=("Arial Black", 25), text_color="#2A8C55")
         self.titleLabel.grid(row=0, column=0, sticky="w")
 
 
@@ -197,18 +203,28 @@ class ClientMainViewFrame(tk.Frame):
                                          border_width=0, width=95, height=40)
         self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
 
+        self.confirmDetailsButton = CTkButton(master=self, text="Register",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
+                                      command=addToTable)
+        self.confirmDetailsButton.pack(side = TOP, pady=(30,30))
 
-        #Table section
+        
+        #Fetch Details
         self.fetchDetGrid = CTkFrame(master=self, fg_color="transparent")
         self.fetchDetGrid.pack(fill="both", padx=27, pady=(20, 0))
 
-        
+        self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid)
+        self.dateFetchEntry.grid(row=0,column=0,padx=(80,30))
 
-        self.searchByCbox = CTkComboBox(master=self.fetchDetGrid, 
-                                            values=("Male", "Female", "Other"), state='readonly', 
+
+        self.searchByCbox = tkb.Combobox(master=self.fetchDetGrid, 
+                                            values=("UID", "Patient Name", "Phone", "Date" ), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
-                                            width=157, height=40, cursor='hand2')
-        self.searchByCbox.grid(row=2, column=1,sticky="w", pady=20, padx = (80,30))
+                                             cursor='hand2')
+        self.searchByCbox.grid(row=0, column=1,sticky="w", pady=20, padx = (0,30))
 
         self.fetchDetailsButton = CTkButton(master=self.fetchDetGrid, text="Fetch Details",
                                        font=("Arial Bold", 17), 
@@ -216,16 +232,12 @@ class ClientMainViewFrame(tk.Frame):
                                       text_color="#fff", 
                                       height=20,  
                                       command=addToTable)
-        self.fetchDetailsButton.grid(row=2, column=2,sticky="w" ,pady=(20,0),padx = (0,30))
+        self.fetchDetailsButton.grid(row=0, column=2,sticky="w" ,pady=(20,0),padx = (0,30))
 
-        self.confirmDetailsButton = CTkButton(master=self.fetchDetGrid, text="Register",
-                                       font=("Arial Bold", 17), 
-                                      hover_color="#207244", fg_color="#2A8C55", 
-                                      text_color="#fff", 
-                                      height=20,  
-                                      command=addToTable)
-        self.confirmDetailsButton.grid(row=2, column=3,sticky="w",pady=(20,0),padx = (100,30))
+        
 
+        
+        #Table section
         self.opTableFrame = CTkScrollableFrame(master=self, fg_color="transparent")
         self.opTableFrame.pack(expand=True, fill="both", padx=27, pady=20)
        
@@ -245,7 +257,7 @@ class ClientMainViewFrame(tk.Frame):
         self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
 
         self.opTable = CTkTable(master=self.opTableFrame, 
-                                  values=[["Time Stamp", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
+                                  values=[["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
                                   colors=["#E6E6E6", "#EEEEEE"], 
                                   header_color="#2A8C55", hover_color="#B4B4B4")
         self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
