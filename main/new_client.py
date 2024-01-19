@@ -84,7 +84,7 @@ class ClientMainViewFrame(tkb.Frame):
             
             
  
-            numRows=self.opTable.rows                            
+            #numRows=self.opTable.rows                            
             print(currentClientName, currentClientPhone )  
 
             if len(currentClientName)==0:
@@ -95,7 +95,7 @@ class ClientMainViewFrame(tkb.Frame):
 
             else:
                 client_id = getClientid(currentClientName)
-                self.opTable.add_row(index=numRows, values=[strftime('%H:%M %p'), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
+                self.opTable.insert("",END, values=[strftime('%H:%M %p'), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
                 
                 conn = sqlite3.connect('medicine_database.db')
@@ -123,7 +123,7 @@ class ClientMainViewFrame(tkb.Frame):
             result = conn.execute(query).fetchall()
             
             for x in result:
-                self.opTable.add_row(index=1, values = list(x))
+                self.opTable.insert("",END, values = list(x))
 
         
             
@@ -250,19 +250,32 @@ class ClientMainViewFrame(tkb.Frame):
         self.warningLabel = tkb.Label(master=self.opTableFrame,
                                            text = "",font=("Calibri", 15), 
                                      bootstyle="success" )
-        self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,30))
+        self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,10))
 
         self.refreshTableButton = tkb.Button(master=self.opTableFrame, text="Refresh Table",
                                        bootstyle="success", 
                                       command=refreshTable)
         self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
 
-        self.opTable = CTkTable(master=self.opTableFrame, 
+        self.opTable = tkb.Treeview(master=self.opTableFrame,bootstyle='success',
+                                    columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"],
+                                    show="headings")
+        self.opTable.heading("Time Stamp", text="Time Stamp", anchor=W)
+        self.opTable.heading("UID", text="UID", anchor=W)
+        self.opTable.heading("Patient Name", text="Patient Name", anchor=W)
+        self.opTable.heading("Phone No.", text="Phone No.", anchor=W)
+        self.opTable.heading("Gender", text="Gender", anchor=W)
+        self.opTable.heading("Age", text="Age", anchor=W)
+        self.opTable.heading("OP/Proc", text="OP/Proc", anchor=W)
+        self.opTable.heading("Amount", text="Amount", anchor=W)
+        
+        self.opTable.pack(expand=True)
+        """self.opTable = CTkTable(master=self.opTableFrame, 
                                   values=[["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
                                   colors=["#E6E6E6", "#EEEEEE"], 
                                   header_color="#2A8C55", hover_color="#B4B4B4")
-        self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
-        self.opTable.pack(expand=True)
+        self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")"""
+        #self.opTable.pack(expand=True)
 
         self.billTotalLabel = tkb.Label(master=self.opTableFrame, text="Bill Total: 0",
                                        bootstyle="success", justify="right"
