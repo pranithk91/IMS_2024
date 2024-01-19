@@ -1,7 +1,7 @@
 from customtkinter import *
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk
+from PIL import Image
 from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
 import pandas as pd
@@ -29,13 +29,13 @@ class clientWindow:
         self.main_view.pack_propagate(0)
         #self.main_view.pack(side="left")
 
-class SidebarFrame(tkb.Frame):
+class SidebarFrame(CTkFrame):
     def __init__(self, master=None):
-        super().__init__(master, width=176, height=650)
+        super().__init__(master, fg_color="#2A8C55", width=176, height=650, corner_radius=0)
         self.pack_propagate(0)
 
         # Logo
-        self.logoLabel = tkb.Label(master=self, text="", image=self.logoImg)
+        self.logoLabel = CTkLabel(master=self, text="", image=self.logoImg)
         self.logoLabel.pack(pady=(38, 0), anchor="center")
 
         # Buttons
@@ -46,25 +46,20 @@ class SidebarFrame(tkb.Frame):
         self.settingsButton = self.create_button("Settings", "settings_icon.png")
         self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
 
-
-
-
-
-        #image = im = Image.open("/path/to/your/image.ext")
     def create_button(self, text, image_filename, pady=(16, 0)):
         img_data = Image.open(f"main/{image_filename}")
-        img = ImageTk.PhotoImage(img_data)
-        return tkb.Button(master=self, image=img, text=text,bootstyle="success").pack(anchor="center", ipady=5, pady=pady)
+        img = CTkImage(dark_image=img_data, light_image=img_data)
+        return CTkButton(master=self, image=img, text=text, fg_color="transparent", font=("Arial Bold", 14),
+                         hover_color="#207244", anchor="w").pack(anchor="center", ipady=5, pady=pady)
 
     @property
     def logoImg(self):
-        logoImgData=Image.open("main/logo.png")
-        img = ImageTk.PhotoImage(logoImgData, size=(77.68, 85.42))
-        return img
+        return CTkImage(dark_image=Image.open("main/logo.png"),
+                        light_image=Image.open("main/logo.png"), size=(77.68, 85.42))
 
-class ClientMainViewFrame(tkb.Frame):
+class ClientMainViewFrame(tk.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,bootstyle="default", width=800, height=800)
+        super().__init__(master, bg="#fff", width=800, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
 
@@ -128,99 +123,97 @@ class ClientMainViewFrame(tkb.Frame):
         
             
         
-        self.titleFrame = tkb.Frame(master=self, bootstyle="default")
+        self.titleFrame = CTkFrame(master=self, fg_color="transparent")
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         # New Sale Section
-        self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
-                                   font=("Calibri", 25), bootstyle="success" )
+        self.titleLabel = CTkLabel(master=self.titleFrame, text="Patient Registration", 
+                                   font=("Arial Black", 25), text_color="#2A8C55")
         self.titleLabel.grid(row=0, column=0, sticky="w")
 
 
-        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17), bootstyle="success" )
-        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (300,0))
+        self.timeLabel = CTkLabel(master=self.titleFrame, font=("Arial Black", 17), text_color="#2A8C55" )
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,30))
         def get_time():
             string = strftime('%H:%M:%S %p')
             self.timeLabel.configure(text=string)
             self.timeLabel.after(1000, get_time)
         get_time()
         # Client Section
-        self.clientGrid = tkb.Frame(master=self, bootstyle="default")
+        self.clientGrid = CTkFrame(master=self, fg_color="transparent")
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
-        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
-                                        font=("Calibri", 15), bootstyle="success", 
+        self.clientNameLabel = CTkLabel(master=self.clientGrid, text="Patient Name", 
+                                        font=("Arial Bold", 17), text_color="#52A476", 
                                         justify="left")
-        self.clientNameLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
-        self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
-                                        bootstyle="success", 
-                                        width=50
-                                        )
-        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (30,30))
+        self.clientNameLabel.grid(row=0, column=0, sticky="w",padx = (80,30)) 
+        self.clientNameEntry = CTkEntry(master=self.clientGrid, 
+                                        fg_color="#F0F0F0", border_width=0, 
+                                        width=285, height=40)
+        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (80,30))
         
         
-        self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
-                                      text="Phone No:", font=("Calibri", 15), 
-                                      bootstyle="success", justify="left")
+        self.clientPhoneLabel = CTkLabel(master=self.clientGrid, 
+                                      text="Phone No:", font=("Arial Bold", 17), 
+                                      text_color="#52A476", justify="left")
         self.clientPhoneLabel.grid(row=0, column=1, sticky="w") 
-        self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
-                                         bootstyle="success", width=50
-                                         )
-        #self.clientPhoneEntry.configure(relief = tk.RIDGE)
+        self.clientPhoneEntry = CTkEntry(master=self.clientGrid, 
+                                         fg_color="#F0F0F0", 
+                                         border_width=0, width=285, height=40)
         self.clientPhoneEntry.grid(row=1, column=1, sticky='w')                          
 
 
-        self.clientdetGrid = tkb.Frame(master=self,bootstyle="default")
+        self.clientdetGrid = CTkFrame(master=self, fg_color="transparent")
         self.clientdetGrid.pack(fill="both", padx=27, pady=(20, 0))
-        self.clientGenderLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Gender",font=("Calibri", 15), 
-                                      bootstyle="success", justify="left" )
-        self.clientGenderLabel.grid(row=0, column=0, sticky="w",padx = (30,30))
-        self.clientGenderCbox = tkb.Combobox(master=self.clientdetGrid, 
+        self.clientGenderLabel  = CTkLabel(master=self.clientdetGrid,
+                                           text = "Gender",font=("Arial Bold", 17), 
+                                      text_color="#52A476", justify="left" )
+        self.clientGenderLabel.grid(row=0, column=0, sticky="w",padx = (80,30))
+        self.clientGenderCbox = CTkComboBox(master=self.clientdetGrid, 
                                             values=("Male", "Female", "Other"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
-                                            #width=157, 
-                                            cursor='hand2')
-        self.clientGenderCbox.grid(row=1, column=0,sticky="w", padx = (30,30))
+                                            width=157, height=40, cursor='hand2')
+        self.clientGenderCbox.grid(row=1, column=0,sticky="w", padx = (80,30))
                           
-        self.clientAgeLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Age",font=("Calibri", 15), 
-                                      bootstyle="success", justify="left" )
+        self.clientAgeLabel  = CTkLabel(master=self.clientdetGrid,
+                                           text = "Age",font=("Arial Bold", 17), 
+                                      text_color="#52A476", justify="left" )
         self.clientAgeLabel.grid(row=0, column=1, sticky="w")
-        self.clientAgeEntry = tkb.Entry(master=self.clientdetGrid, 
-                                         bootstyle="success", 
-                                         width=14)
+        self.clientAgeEntry = CTkEntry(master=self.clientdetGrid, 
+                                         fg_color="#F0F0F0", 
+                                         border_width=0, width=95, height=40)
         self.clientAgeEntry.grid(row=1, column=1, sticky='w',padx = (0,30)) 
 
-        self.clientOPLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "OP/Proc",font=("Calibri", 15), 
-                                      bootstyle="success", justify="left" )
+        self.clientOPLabel  = CTkLabel(master=self.clientdetGrid,
+                                           text = "OP/Proc",font=("Arial Bold", 17), 
+                                      text_color="#52A476", justify="left" )
         self.clientOPLabel.grid(row=0, column=2, sticky="w")
-        self.clientOPCbox = tkb.Combobox(master=self.clientdetGrid, 
+        self.clientOPCbox = CTkComboBox(master=self.clientdetGrid, 
                                             values=("OP", "Procedure"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
-                                            width=18, height=40, cursor='hand2')
+                                            width=157, height=40, cursor='hand2')
         self.clientOPCbox.grid(row=1, column=2,sticky="w", padx = (0,30))
 
 
-        self.clientAmountLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Amount",font=("Calibri", 15), 
-                                     bootstyle="success", justify="left" )
+        self.clientAmountLabel  = CTkLabel(master=self.clientdetGrid,
+                                           text = "Amount",font=("Arial Bold", 17), 
+                                      text_color="#52A476", justify="left" )
         self.clientAmountLabel.grid(row=0, column=3, sticky="w")
-        self.clientAmountEntry = tkb.Entry(master=self.clientdetGrid, 
-                                         bootstyle="success", 
-                                          width=15)
+        self.clientAmountEntry = CTkEntry(master=self.clientdetGrid, 
+                                         fg_color="#F0F0F0", 
+                                         border_width=0, width=95, height=40)
         self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
 
-        self.confirmDetailsButton = tkb.Button(master=self, text="Register",
-                                       #font=("Calibri", 15), 
-                                      bootstyle="success", 
-                                      #height=20,  
+        self.confirmDetailsButton = CTkButton(master=self, text="Register",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
                                       command=addToTable)
         self.confirmDetailsButton.pack(side = TOP, pady=(30,30))
 
         
         #Fetch Details
-        self.fetchDetGrid = tkb.Frame(master=self, bootstyle="default")
+        self.fetchDetGrid = CTkFrame(master=self, fg_color="transparent")
         self.fetchDetGrid.pack(fill="both", padx=27, pady=(20, 0))
 
         self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid)
@@ -233,10 +226,13 @@ class ClientMainViewFrame(tkb.Frame):
                                              cursor='hand2')
         self.searchByCbox.grid(row=0, column=1,sticky="w", pady=20, padx = (0,30))
 
-        self.fetchDetailsButton = tkb.Button(master=self.fetchDetGrid, text="Fetch Details",
-                                       bootstyle="success",
+        self.fetchDetailsButton = CTkButton(master=self.fetchDetGrid, text="Fetch Details",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
                                       command=addToTable)
-        self.fetchDetailsButton.grid(row=0, column=2,sticky="w" ,pady=(0,0),padx = (0,30))
+        self.fetchDetailsButton.grid(row=0, column=2,sticky="w" ,pady=(20,0),padx = (0,30))
 
         
 
@@ -247,13 +243,16 @@ class ClientMainViewFrame(tkb.Frame):
        
         
 
-        self.warningLabel = tkb.Label(master=self.opTableFrame,
-                                           text = "",font=("Calibri", 15), 
-                                     bootstyle="success" )
+        self.warningLabel = CTkLabel(master=self.opTableFrame,
+                                           text = "",font=("Arial Bold", 17), 
+                                      text_color="#52A476" )
         self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,30))
 
-        self.refreshTableButton = tkb.Button(master=self.opTableFrame, text="Refresh Table",
-                                       bootstyle="success", 
+        self.refreshTableButton = CTkButton(master=self.opTableFrame, text="Refresh Table",
+                                       font=("Arial Bold", 17), 
+                                      hover_color="#207244", fg_color="#2A8C55", 
+                                      text_color="#fff", 
+                                      height=20,  
                                       command=refreshTable)
         self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
 
@@ -264,8 +263,9 @@ class ClientMainViewFrame(tkb.Frame):
         self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
         self.opTable.pack(expand=True)
 
-        self.billTotalLabel = tkb.Label(master=self.opTableFrame, text="Bill Total: 0",
-                                       bootstyle="success", justify="right"
+        self.billTotalLabel = CTkLabel(master=self.opTableFrame, text="Bill Total: 0",
+                                       font=("Arial Bold", 17), 
+                                        text_color="#52A476", justify="right"
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right")
         
