@@ -1,6 +1,7 @@
 from customtkinter import *
 import tkinter as tk
 from tkinter import ttk
+from tkinter import *
 from PIL import Image, ImageTk
 from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
@@ -84,7 +85,7 @@ class ClientMainViewFrame(tkb.Frame):
             
             
  
-            #numRows=self.opTable.rows                            
+                                        
             print(currentClientName, currentClientPhone )  
 
             if len(currentClientName)==0:
@@ -242,13 +243,13 @@ class ClientMainViewFrame(tkb.Frame):
 
         
         #Table section
-        self.opTableFrame = CTkScrollableFrame(master=self, fg_color="transparent")
+        self.opTableFrame = tkb.Frame(master=self,  bootstyle="default")
         self.opTableFrame.pack(expand=True, fill="both", padx=27, pady=20)
-       
-        
+
+   
 
         self.warningLabel = tkb.Label(master=self.opTableFrame,
-                                           text = "",font=("Calibri", 15), 
+                                           text = "",font=("Calibri", 17), 
                                      bootstyle="success" )
         self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,10))
 
@@ -257,9 +258,14 @@ class ClientMainViewFrame(tkb.Frame):
                                       command=refreshTable)
         self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
 
-        self.opTable = tkb.Treeview(master=self.opTableFrame,bootstyle='success',
+        
+
+        self.opTable = tkb.Treeview(master=self.opTableFrame, bootstyle="success",
                                     columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"],
-                                    show="headings")
+                                    show="headings",
+                                    #yscrollcommand=self.treeSrollBar,
+                                    selectmode="extended"
+                                    )
         self.opTable.heading("Time Stamp", text="Time Stamp", anchor=W)
         self.opTable.heading("UID", text="UID", anchor=W)
         self.opTable.heading("Patient Name", text="Patient Name", anchor=W)
@@ -270,6 +276,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.opTable.heading("Amount", text="Amount", anchor=W)
         
         self.opTable.pack(expand=True)
+
         """self.opTable = CTkTable(master=self.opTableFrame, 
                                   values=[["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
                                   colors=["#E6E6E6", "#EEEEEE"], 

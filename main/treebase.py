@@ -4,7 +4,7 @@ from tkinter import ttk
 
 root = Tk()
 root.title('Codemy.com - TreeBase')
-root.iconbitmap('c:/gui/codemy.ico')
+#root.iconbitmap('c:/gui/codemy.ico')
 root.geometry("1000x500")
 
 # Add Some Style
