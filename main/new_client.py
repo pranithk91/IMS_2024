@@ -292,6 +292,6 @@ class ClientMainViewFrame(tkb.Frame):
 
 
 if __name__ == "__main__":
-    root = CTk()
+    root = tkb()
     obj = clientWindow(root)
     root.mainloop()

@@ -250,7 +250,7 @@ def clear_entries():
 
 
 # Select Record
-def select_record(e):
+def select_record():
 	# Clear entry boxes
 	fn_entry.delete(0, END)
 	ln_entry.delete(0, END)
@@ -279,6 +279,7 @@ def update_record():
 	# Grab the record number
 	selected = my_tree.focus()
 	# Update record
+	select_record()
 	my_tree.item(selected, text="", values=(fn_entry.get(), ln_entry.get(), id_entry.get(), address_entry.get(), city_entry.get(), state_entry.get(), zipcode_entry.get(),))
 
 	# Clear entry boxes
