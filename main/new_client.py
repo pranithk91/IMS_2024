@@ -224,7 +224,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.fetchDetGrid = tkb.Frame(master=self, bootstyle="default")
         self.fetchDetGrid.pack(fill="both", padx=27, pady=(20, 0))
 
-        self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid)
+        self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid, bootstyle="success")
         self.dateFetchEntry.grid(row=0,column=0,padx=(80,30))
 
 
