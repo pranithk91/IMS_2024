@@ -72,7 +72,7 @@ def update_record(my_tree,Details):
 	# Grab the record number
 	selected = my_tree.focus()
 	# Update record
-	select_record()
+	select_record(my_tree,Details)
 	my_tree.item(selected, text="", values=(Details[0].get(), Details[1].get(), Details[2].get(), Details[3].get(), Details[4].get(), Details[5].get(), Details[6].get()))
 
 	# Clear entry boxes
