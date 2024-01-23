@@ -118,12 +118,12 @@ class ClientMainViewFrame(tkb.Frame):
 
         def refreshTable():
             query = """select 
-                    substring(TimeStamp,13,5) as [Time Stamp], UID, Name, Phone, Gender, Age, OpProc, Amount from Patients 
+                    TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount from Patients 
                     where  substr(TimeStamp,7,4) || '-' || substr(TimeStamp,4,2) || '-' || substr(TimeStamp,1,2) = date()"""
             conn = sqlite3.connect('medicine_database.db')
             #numRows=self.opTable.rows
             result = conn.execute(query).fetchall()
-            
+            remove_all()
             for x in result:
                 self.opTable.insert("",END, values = list(x))
 
@@ -310,8 +310,18 @@ class ClientMainViewFrame(tkb.Frame):
                                     columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"],
                                     show="headings",
                                     #yscrollcommand=self.treeSrollBar,
-                                    selectmode="extended"
+                                    selectmode="extended",
+                                    
                                     )
+        self.opTable.column("Time Stamp", width=75)
+        self.opTable.column("UID", width=75)
+        self.opTable.column("Patient Name", width=75)
+        self.opTable.column("Phone No.", width=75)
+        self.opTable.column("Gender", width=75)
+        self.opTable.column("Age",width=75)
+        self.opTable.column("OP/Proc",width=75)
+        self.opTable.column("Amount", width=75)
+
         self.opTable.heading("Time Stamp", text="Time Stamp", anchor=W)
         self.opTable.heading("UID", text="UID", anchor=W)
         self.opTable.heading("Patient Name", text="Patient Name", anchor=W)
@@ -321,7 +331,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.opTable.heading("OP/Proc", text="OP/Proc", anchor=W)
         self.opTable.heading("Amount", text="Amount", anchor=W)
         
-        self.opTable.pack(expand=True)
+        self.opTable.pack(expand=True, fill='both')
 
         """self.opTable = CTkTable(master=self.opTableFrame, 
                                   values=[["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
@@ -340,8 +350,10 @@ class ClientMainViewFrame(tkb.Frame):
 
 
         # Add Buttons
-
-        def select_record(my_tree,Details):
+        def remove_all():
+            for record in self.opTable.get_children():
+                self.opTable.delete(record)        
+        def select_record(event):
             # Clear entry boxes
             self.clientNameEntry.delete(0,END)
             self.clientPhoneEntry.delete(0,END)
@@ -351,10 +363,11 @@ class ClientMainViewFrame(tkb.Frame):
             self.clientAmountEntry.delete(0,END)
 
             # Grab record Number
-            selected = my_tree.focus()
+            selected = self.opTable.focus()
             # Grab record values
-            values = my_tree.item(selected, 'values')
-
+            values = self.opTable.item(selected,'values')
+            values = list(values)
+            print(values)
             # outpus to entry boxes
             self.clientNameEntry.insert(0, values[2])
             self.clientPhoneEntry.insert(0, values[3])
@@ -362,15 +375,15 @@ class ClientMainViewFrame(tkb.Frame):
             self.clientAgeEntry.insert(0, values[5])
             self.clientOPCbox.set(values[6])
             self.clientAmountEntry.insert(0, values[7])
-            #self..insert(0, values[6])
+            #self..insert(0, values[6])"""
 
         #def update_record():
-
+        self.opTable.bind("<Button-1>", select_record)
 
         self.buttonFrame = tkb.Frame(master=self,  bootstyle="default")
         self.buttonFrame.pack(fill="x", expand="yes", padx=20)
 
-        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success")
+        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success", command=select_record)
         self.editRecordButton.grid(row=0, column=0, padx=10, pady=10)
 
         """update_button = Button(button_frame, text="Update Record", command=update_record)
