@@ -7,7 +7,7 @@ import pandas as pd
 from CTkTable import CTkTable
 from time import strftime
 from new_client import ClientMainViewFrame
-
+import ttkbootstrap as tkb
 
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()

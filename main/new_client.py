@@ -11,6 +11,7 @@ from time import strftime
 import sqlite3
 from tkcalendar import DateEntry
 import ttkbootstrap as tkb
+#from treeactions import *
 
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()
@@ -18,7 +19,7 @@ medSuggestionList = medicineDf['Name'].tolist()
 class clientWindow:
     def __init__(self, master):
         self.master = master
-        master.title("Pranith Medical Store")
+        master.title("IMS 2024")
 
         # Sidebar Frame
         self.sidebar_frame = SidebarFrame(master)
@@ -65,7 +66,7 @@ class SidebarFrame(tkb.Frame):
 
 class ClientMainViewFrame(tkb.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,bootstyle="default", width=800, height=800)
+        super().__init__(master,bootstyle="default", width=900, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
 
@@ -96,7 +97,7 @@ class ClientMainViewFrame(tkb.Frame):
 
             else:
                 client_id = getClientid(currentClientName)
-                self.opTable.insert("",END, values=[strftime('%H:%M %p'), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
+                self.opTable.insert("",END, values=[strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
 
                 
                 conn = sqlite3.connect('medicine_database.db')
@@ -148,59 +149,104 @@ class ClientMainViewFrame(tkb.Frame):
         self.clientGrid = tkb.Frame(master=self, bootstyle="default")
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
-        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
+        self.clientUIDLabel = tkb.Label(master=self.clientGrid, text="Patient UID", 
                                         font=("Calibri", 15), bootstyle="success", 
                                         justify="left")
-        self.clientNameLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
+        self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
+        self.clientUIDEntry = tkb.Entry(master=self.clientGrid, 
+                                        bootstyle="success", 
+                                        width=25,
+                                        state=DISABLED
+                                        )
+        
+        self.clientUIDEntry.grid(row=1, column=0, sticky='w', padx = (30,30))        
+        
+        def getUID(*args):
+
+            clientName = self.clientNameEntry.get()
+            clientUID = self.clientUIDEntry.get()
+            if len(clientName) == 3: 
+                if len(clientUID) == 0:
+                    client_id = getClientid(clientName)
+                    self.clientUIDEntry.configure(state=NORMAL)
+                    self.clientUIDEntry.insert(0,client_id)
+                    self.clientUIDEntry.configure(state=DISABLED)
+            else:
+                pass
+
+
+        
+        
+        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
+                                         
+                                        font=("Calibri", 15), bootstyle="success", 
+                                        justify="left")
+        self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
         self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
                                         bootstyle="success", 
-                                        width=50
+                                        width=25
                                         )
-        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (30,30))
-        
+        self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
+        self.clientNameEntry.bind("<KeyRelease>", getUID)
         
         self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
                                       text="Phone No:", font=("Calibri", 15), 
                                       bootstyle="success", justify="left")
-        self.clientPhoneLabel.grid(row=0, column=1, sticky="w") 
+        self.clientPhoneLabel.grid(row=0, column=2, sticky="w") 
         self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
-                                         bootstyle="success", width=50
+                                         bootstyle="success", width=25
                                          )
-        #self.clientPhoneEntry.configure(relief = tk.RIDGE)
-        self.clientPhoneEntry.grid(row=1, column=1, sticky='w')                          
+        
+        self.clientPhoneEntry.grid(row=1, column=2, sticky='w')    
+
+
+        self.clientGenderLabel  = tkb.Label(master=self.clientGrid,
+                                           text = "Gender",font=("Calibri", 15), 
+                                      bootstyle="success", justify="left" )
+        self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
+        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, 
+                                            values=("Male", "Female", "Other"), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        self.clientGenderCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
+
 
 
         self.clientdetGrid = tkb.Frame(master=self,bootstyle="default")
         self.clientdetGrid.pack(fill="both", padx=27, pady=(20, 0))
-        self.clientGenderLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Gender",font=("Calibri", 15), 
-                                      bootstyle="success", justify="left" )
-        self.clientGenderLabel.grid(row=0, column=0, sticky="w",padx = (30,30))
-        self.clientGenderCbox = tkb.Combobox(master=self.clientdetGrid, 
-                                            values=("Male", "Female", "Other"), state='readonly', 
-                                            justify=CENTER, font=("calibri", 12, "bold"), 
-                                            #width=157, 
-                                            cursor='hand2')
-        self.clientGenderCbox.grid(row=1, column=0,sticky="w", padx = (30,30))
+
+
+
                           
         self.clientAgeLabel  = tkb.Label(master=self.clientdetGrid,
                                            text = "Age",font=("Calibri", 15), 
                                       bootstyle="success", justify="left" )
-        self.clientAgeLabel.grid(row=0, column=1, sticky="w")
+        self.clientAgeLabel.grid(row=0, column=0, sticky="w",padx = (30,102))
         self.clientAgeEntry = tkb.Entry(master=self.clientdetGrid, 
                                          bootstyle="success", 
                                          width=14)
-        self.clientAgeEntry.grid(row=1, column=1, sticky='w',padx = (0,30)) 
+        self.clientAgeEntry.grid(row=1, column=0, sticky='w',padx = (30,102)) 
 
         self.clientOPLabel  = tkb.Label(master=self.clientdetGrid,
                                            text = "OP/Proc",font=("Calibri", 15), 
                                       bootstyle="success", justify="left" )
-        self.clientOPLabel.grid(row=0, column=2, sticky="w")
+        self.clientOPLabel.grid(row=0, column=1, sticky="w")
         self.clientOPCbox = tkb.Combobox(master=self.clientdetGrid, 
                                             values=("OP", "Procedure"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                             width=18, height=40, cursor='hand2')
-        self.clientOPCbox.grid(row=1, column=2,sticky="w", padx = (0,30))
+        self.clientOPCbox.grid(row=1, column=1,sticky="w", padx = (0,27))
+
+        
+        self.clientPayModeLabel  = tkb.Label(master=self.clientdetGrid,
+                                           text = "Payment Mode",font=("Calibri", 15), 
+                                            bootstyle="success", justify="left" )
+        self.clientPayModeLabel.grid(row=0, column=2, sticky="w")
+        self.clientPayModeCbox = tkb.Combobox(master=self.clientdetGrid, 
+                                            values=("Cash", "UPI", "Both"), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                            width=18, height=40, cursor='hand2')
+        self.clientPayModeCbox.grid(row=1, column=2,sticky="w", padx = (0,27))
 
 
         self.clientAmountLabel  = tkb.Label(master=self.clientdetGrid,
@@ -288,10 +334,70 @@ class ClientMainViewFrame(tkb.Frame):
                                        bootstyle="success", justify="right"
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right")
+
+        
         
 
 
+        # Add Buttons
+
+        def select_record(my_tree,Details):
+            # Clear entry boxes
+            self.clientNameEntry.delete(0,END)
+            self.clientPhoneEntry.delete(0,END)
+            self.clientGenderCbox.set("")
+            self.clientOPCbox.set("")
+            self.clientAgeEntry.delete(0,END)
+            self.clientAmountEntry.delete(0,END)
+
+            # Grab record Number
+            selected = my_tree.focus()
+            # Grab record values
+            values = my_tree.item(selected, 'values')
+
+            # outpus to entry boxes
+            self.clientNameEntry.insert(0, values[2])
+            self.clientPhoneEntry.insert(0, values[3])
+            self.clientGenderCbox.set(values[4])
+            self.clientAgeEntry.insert(0, values[5])
+            self.clientOPCbox.set(values[6])
+            self.clientAmountEntry.insert(0, values[7])
+            #self..insert(0, values[6])
+
+        #def update_record():
+
+
+        self.buttonFrame = tkb.Frame(master=self,  bootstyle="default")
+        self.buttonFrame.pack(fill="x", expand="yes", padx=20)
+
+        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success")
+        self.editRecordButton.grid(row=0, column=0, padx=10, pady=10)
+
+        """update_button = Button(button_frame, text="Update Record", command=update_record)
+        update_button.grid(row=0, column=0, padx=10, pady=10)
+
+
+
+        remove_all_button = Button(button_frame, text="Remove All Records", command=remove_all)
+        remove_all_button.grid(row=0, column=2, padx=10, pady=10)
+
+        remove_one_button = Button(button_frame, text="Remove One Selected", command=remove_one)
+        remove_one_button.grid(row=0, column=3, padx=10, pady=10)
+
+        remove_many_button = Button(button_frame, text="Remove Many Selected", command=remove_many)
+        remove_many_button.grid(row=0, column=4, padx=10, pady=10)
+
+        move_up_button = Button(button_frame, text="Move Up", command=up)
+        move_up_button.grid(row=0, column=5, padx=10, pady=10)
+
+        move_down_button = Button(button_frame, text="Move Down", command=down)
+        move_down_button.grid(row=0, column=6, padx=10, pady=10)
+
+        select_record_button = Button(button_frame, text="Clear Entry Boxes", command=clear_entries)
+        select_record_button.grid(row=0, column=7, padx=10, pady=10)   """   
+
+
 if __name__ == "__main__":
-    root = tkb()
+    root = tk.Tk()
     obj = clientWindow(root)
     root.mainloop()
