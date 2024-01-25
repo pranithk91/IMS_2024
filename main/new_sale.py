@@ -14,9 +14,9 @@ medSuggestionList = medicineDf['Name'].tolist()
 
 
 
-class MainViewFrame(tk.Frame):
+class MainViewFrame(tkb.Frame):
     def __init__(self, master=None):
-        super().__init__(master, bg="#fff", width=680, height=650)
+        super().__init__(master, width=680, height=650)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
         def clearBillTable():
@@ -24,7 +24,8 @@ class MainViewFrame(tk.Frame):
             numRows = self.billTable.rows
             self.billTable.delete_rows(range(1,numRows))
             self.billTotalLabel.configure(text = "Bill Total: 0")
-            
+        self.windowWidth = root.winfo_width()
+        print(self.windowWidth)            
         # New Sale Section
         
         

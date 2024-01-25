@@ -31,6 +31,9 @@ class clientWindow:
         self.main_view.pack_propagate(0)
         #self.main_view.pack(side="left")
 
+
+
+
 class SidebarFrame(tkb.Frame):
     def __init__(self, master=None):
         super().__init__(master, width=176, height=650)
@@ -69,7 +72,20 @@ class ClientMainViewFrame(tkb.Frame):
         super().__init__(master,bootstyle="default", width=900, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
+        self.windowWidth = root.winfo_width()
+        print(self.windowWidth)
 
+        def clearEntries():
+            # Clear entry boxes
+            self.clientUIDEntry.configure(state=NORMAL)
+            self.clientUIDEntry.delete(0,END)
+            self.clientUIDEntry.configure(state=DISABLED)
+            self.clientNameEntry.delete(0,END)
+            self.clientPhoneEntry.delete(0,END)
+            self.clientGenderCbox.set("")
+            self.clientOPCbox.set("")
+            self.clientAgeEntry.delete(0,END)
+            self.clientAmountEntry.delete(0,END)
         
 
         def addToTable():
@@ -123,7 +139,7 @@ class ClientMainViewFrame(tkb.Frame):
             conn = sqlite3.connect('medicine_database.db')
             #numRows=self.opTable.rows
             result = conn.execute(query).fetchall()
-            remove_all()
+            removeAll()
             for x in result:
                 self.opTable.insert("",END, values = list(x))
 
@@ -258,12 +274,26 @@ class ClientMainViewFrame(tkb.Frame):
                                           width=15)
         self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
 
-        self.confirmDetailsButton = tkb.Button(master=self, text="Register",
+        self.windowWidth = root.winfo_reqwidth()
+        print(self.windowWidth)
+        self.confirmButtonGrid = tkb.Frame(master=self,bootstyle="default", width=200)
+        
+        #self.confirmButtonGrid.pack(fill="both", padx=27, pady=(20, 0),x=self.windowWidth//2)
+
+        
+        self.confirmDetailsButton = tkb.Button(master=self.confirmButtonGrid, text="Register",
                                        #font=("Calibri", 15), 
                                       bootstyle="success", 
                                       #height=20,  
                                       command=addToTable)
-        self.confirmDetailsButton.pack(side = TOP, pady=(30,30))
+        self.confirmDetailsButton.grid(row=0, column=0, sticky="w",padx = (0,30))
+
+        self.clearEntriesButton = tkb.Button(master=self.confirmButtonGrid, text="Clear Entries",
+                                       #font=("Calibri", 15), 
+                                      bootstyle="success", 
+                                      #height=20,  
+                                      command=clearEntries)
+        self.clearEntriesButton.grid(row=0, column=1, sticky="w")
 
         
         #Fetch Details
@@ -345,22 +375,27 @@ class ClientMainViewFrame(tkb.Frame):
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right")
 
-        
+
+
         
 
 
         # Add Buttons
-        def remove_all():
+        def removeAll():
             for record in self.opTable.get_children():
                 self.opTable.delete(record)        
-        def select_record(event):
+        def selectRecord(event):
             # Clear entry boxes
+            self.clientUIDEntry.configure(state=NORMAL)
+            self.clientUIDEntry.delete(0,END)
+            self.clientUIDEntry.configure(state=DISABLED)
             self.clientNameEntry.delete(0,END)
             self.clientPhoneEntry.delete(0,END)
             self.clientGenderCbox.set("")
             self.clientOPCbox.set("")
             self.clientAgeEntry.delete(0,END)
             self.clientAmountEntry.delete(0,END)
+
 
             # Grab record Number
             selected = self.opTable.focus()
@@ -369,6 +404,9 @@ class ClientMainViewFrame(tkb.Frame):
             values = list(values)
             print(values)
             # outpus to entry boxes
+            self.clientUIDEntry.configure(state=NORMAL)
+            self.clientUIDEntry.insert(0,values[1])
+            self.clientUIDEntry.configure(state=DISABLED)
             self.clientNameEntry.insert(0, values[2])
             self.clientPhoneEntry.insert(0, values[3])
             self.clientGenderCbox.set(values[4])
@@ -378,12 +416,12 @@ class ClientMainViewFrame(tkb.Frame):
             #self..insert(0, values[6])"""
 
         #def update_record():
-        self.opTable.bind("<Button-1>", select_record)
+        self.opTable.bind("<Button-1>", selectRecord)
 
         self.buttonFrame = tkb.Frame(master=self,  bootstyle="default")
         self.buttonFrame.pack(fill="x", expand="yes", padx=20)
 
-        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success", command=select_record)
+        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success", command=selectRecord)
         self.editRecordButton.grid(row=0, column=0, padx=10, pady=10)
 
         """update_button = Button(button_frame, text="Update Record", command=update_record)
