@@ -8,6 +8,7 @@ from CTkTable import CTkTable
 from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as tkb
+from autocomplete import AutoComplete
 
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()
@@ -126,10 +127,17 @@ class MainViewFrame(tkb.Frame):
                                       bootstyle="success", width=25)
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
-        self.medicineDropDown = CTkScrollableDropdown(self.itemNameEntry, 
+        self.itemNameEntry.bind('<KeyPress>', AutoComplete.key_pressed)
+        self.itemNameEntry.bind('<BackSpace>', AutoComplete.backspace)
+        self.itemNameEntry.bind('<Tab>', AutoComplete.tab_completion)
+        self.itemNameEntry.bind('<Up>', AutoComplete.up_direction)
+        self.itemNameEntry.bind('<Down>', AutoComplete.down_direction)
+        
+
+        """self.medicineDropDown = CTkScrollableDropdown(self.itemNameEntry, 
                                                       values=medSuggestionList, 
                                                       command=lambda e: fillSelectedValue(e), 
-                                                      autocomplete=True)
+                                                      autocomplete=True)"""
     
         # Fill the entry with selected drop down value    
         # adding this line
@@ -186,6 +194,7 @@ class MainViewFrame(tkb.Frame):
 
         quantity_frame = tkb.Frame(master=self.searchGrid, bootstyle="default")
         quantity_frame.grid(row=1, column=1, padx=(10,0), pady=(0,0), sticky="w")
+
         def quantityIncrease():
             currentEntry = self.qtySaleEntry.get()
             #print("type is ", type(currentEntry))
@@ -216,7 +225,7 @@ class MainViewFrame(tkb.Frame):
         self.qtyDecreaseButton.pack(side="left", anchor="w")
         self.qtySaleEntry = tkb.Entry(master=quantity_frame, #placeholder_text=0,
                                        bootstyle="success", font=("Arial Black", 16),
-                                       width=20
+                                       width=10
                                         )
         self.qtySaleEntry.pack(side="left", anchor="w", padx=10)
         self.qtyIncreaseButton = tkb.Button(master=quantity_frame, text="+", width=5,  
