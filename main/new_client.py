@@ -99,7 +99,7 @@ class ClientMainViewFrame(tkb.Frame):
             currentOPProc = self.clientOPCbox.get()
             currentClientAge = self.clientAgeEntry.get()
             currentAmount = self.clientAmountEntry.get()
-            
+            currentPaymentMode = self.clientPayModeCbox.get()
             
  
                                         
@@ -113,28 +113,31 @@ class ClientMainViewFrame(tkb.Frame):
 
             else:
                 client_id = getClientid(currentClientName)
-                self.opTable.insert("",END, values=[strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount])
+                self.opTable.insert("",END, values=[strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
 
                 
                 conn = sqlite3.connect('medicine_database.db')
                 conn.execute("""
-                    INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentAmount))
+                    INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc,currentPaymentMode, currentAmount))
                 conn.commit()     
-
+                self.clientUIDEntry.configure(state=NORMAL)
+                self.clientUIDEntry.delete(0,END)
+                self.clientUIDEntry.configure(state=DISABLED)
                 self.clientNameEntry.delete(0,len(currentClientName))
                 self.clientPhoneEntry.delete(0,len(currentClientPhone)) 
                 self.clientGenderCbox.set("")
                 self.clientOPCbox.set("")
                 self.clientAgeEntry.delete(0,len(currentClientAge)) 
+                self.clientPayModeCbox.set("")
                 self.clientAmountEntry.delete(0,len(currentAmount))     
 
 
 
         def refreshTable():
             query = """select 
-                    TimeStamp, UID, Name, Phone, Gender, Age, OpProc, Amount from Patients 
+                    TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount from Patients 
                     where  substr(TimeStamp,7,4) || '-' || substr(TimeStamp,4,2) || '-' || substr(TimeStamp,1,2) = date()"""
             conn = sqlite3.connect('medicine_database.db')
             #numRows=self.opTable.rows
@@ -151,7 +154,7 @@ class ClientMainViewFrame(tkb.Frame):
         # New Sale Section
         self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
                                    font=("Calibri", 25), bootstyle="success" )
-        self.titleLabel.grid(row=0, column=0, sticky="w")
+        self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
 
         self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17), bootstyle="success" )
@@ -297,6 +300,14 @@ class ClientMainViewFrame(tkb.Frame):
                                       command=clearEntries)
         self.clearEntriesButton.grid(row=0, column=1, sticky="w")
 
+        self.warningLabel = tkb.Label(master=self,
+                                           text = "",font=("Calibri", 17), 
+                                     bootstyle="success" )
+        
+        
+        self.warningLabel.place(x=self.windowWidth//2, y = 300)
+        self.warningLabel.pack()
+        
         
         #Fetch Details
         self.fetchDetGrid = tkb.Frame(master=self, bootstyle="default")
@@ -340,10 +351,7 @@ class ClientMainViewFrame(tkb.Frame):
 
    
 
-        self.warningLabel = tkb.Label(master=self.opTableFrame,
-                                           text = "",font=("Calibri", 17), 
-                                     bootstyle="success" )
-        self.warningLabel.pack(side="top",  anchor = "c" ,pady=(0,10))
+
 
         self.refreshTableButton = tkb.Button(master=self.opTableFrame, text="Refresh Table",
                                        bootstyle="success", 
@@ -353,7 +361,7 @@ class ClientMainViewFrame(tkb.Frame):
         
 
         self.opTable = tkb.Treeview(master=self.opTableFrame, bootstyle="success",
-                                    columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"],
+                                    columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Payment Mode", "Amount"],
                                     show="headings",
                                     #yscrollcommand=self.treeSrollBar,
                                     selectmode="extended",
@@ -366,6 +374,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.opTable.column("Gender", width=75)
         self.opTable.column("Age",width=75)
         self.opTable.column("OP/Proc",width=75)
+        self.opTable.column("Payment Mode",width=75)
         self.opTable.column("Amount", width=75)
 
         self.opTable.heading("Time Stamp", text="Time Stamp", anchor=W)
@@ -375,6 +384,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.opTable.heading("Gender", text="Gender", anchor=W)
         self.opTable.heading("Age", text="Age", anchor=W)
         self.opTable.heading("OP/Proc", text="OP/Proc", anchor=W)
+        self.opTable.heading("Payment Mode", text="Payment Mode", anchor=W)
         self.opTable.heading("Amount", text="Amount", anchor=W)
         
         self.opTable.pack(expand=True, fill='both')
@@ -410,6 +420,7 @@ class ClientMainViewFrame(tkb.Frame):
             self.clientGenderCbox.set("")
             self.clientOPCbox.set("")
             self.clientAgeEntry.delete(0,END)
+            self.clientPayModeCbox.set("")
             self.clientAmountEntry.delete(0,END)
 
 
@@ -428,7 +439,8 @@ class ClientMainViewFrame(tkb.Frame):
             self.clientGenderCbox.set(values[4])
             self.clientAgeEntry.insert(0, values[5])
             self.clientOPCbox.set(values[6])
-            self.clientAmountEntry.insert(0, values[7])
+            self.clientPayModeCbox.set(values[7])
+            self.clientAmountEntry.insert(0,values[8])
             #self..insert(0, values[6])"""
 
         #def update_record():
