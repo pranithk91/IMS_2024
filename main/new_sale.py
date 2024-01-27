@@ -15,70 +15,116 @@ medSuggestionList = medicineDf['Name'].tolist()
 
 
 class MainViewFrame(tkb.Frame):
-    def __init__(self, master=None):
-        super().__init__(master, width=680, height=650)
+    def __init__(self, master=NONE):
+        super().__init__(master,bootstyle="default", width=900, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
+
+
         def clearBillTable():
             
             numRows = self.billTable.rows
             self.billTable.delete_rows(range(1,numRows))
             self.billTotalLabel.configure(text = "Bill Total: 0")
-        self.windowWidth = root.winfo_width()
-        print(self.windowWidth)            
-        # New Sale Section
-        
-        
-        self.titleLabel = CTkLabel(master=self, text="New Bill", font=("Arial Black", 25), text_color="#2A8C55")
-        self.titleLabel.pack(anchor="w", pady=(29, 0), padx=27)
 
-        self.timeLabel = CTkLabel(master=self, font=("Arial Black", 17), text_color="#2A8C55" )
-        self.timeLabel.pack(anchor="e", pady=(0, 0), padx=27)
+        
+        # Title Section    
+        
+        self.titleFrame = tkb.Frame(master=self, bootstyle="default")
+        self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
+        
+        self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
+                                   font=("Calibri", 25, "bold"), bootstyle="success" )
+        self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
+
+
+        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), bootstyle="success" )
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,0))
         def get_time():
-            string = strftime('%H:%M:%S %p')
+            string = strftime('%I:%M:%S %p')
             self.timeLabel.configure(text=string)
             self.timeLabel.after(1000, get_time)
         get_time()
 
-        # Client Section
-        self.clientGrid = CTkFrame(master=self, fg_color="transparent")
+        # Client Details Section
+        self.clientGrid = tkb.Frame(master=self, bootstyle="default")
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
-        self.clientNameLabel = CTkLabel(master=self.clientGrid, text="Patient Name", 
-                                        font=("Arial Bold", 17), text_color="#52A476", 
+        self.clientUIDLabel = tkb.Label(master=self.clientGrid, text="Patient UID", 
+                                        font=("Calibri", 15, "bold"), bootstyle="success", 
                                         justify="left")
-        self.clientNameLabel.grid(row=0, column=0, sticky="w") 
+        self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
+        self.clientUIDEntry = tkb.Entry(master=self.clientGrid, 
+                                        bootstyle="success", 
+                                        width=25,
+                                        state=DISABLED
+                                        )
         
-        self.clientNameEntry = CTkEntry(master=self.clientGrid, 
-                                        fg_color="#F0F0F0", border_width=0, 
-                                        width=285, height=40)
-        self.clientNameEntry.grid(row=1, column=0, sticky='w', padx = (0,30))
+        self.clientUIDEntry.grid(row=1, column=0, sticky='w', padx = (30,30))        
+        
+#        def getUID(*args):
+#
+#            clientName = self.clientNameEntry.get()
+#            clientUID = self.clientUIDEntry.get()
+#            if len(clientName) == 3: 
+#                if len(clientUID) == 0:
+#                    client_id = getClientid(clientName)
+#                    self.clientUIDEntry.configure(state=NORMAL)
+#                    self.clientUIDEntry.insert(0,client_id)
+#                    self.clientUIDEntry.configure(state=DISABLED)
+#            else:
+#                pass
+
+
         
         
-        self.clientPhoneLabel = CTkLabel(master=self.clientGrid, 
-                                      text="Phone No:", font=("Arial Bold", 17), 
-                                      text_color="#52A476", justify="left")
-        self.clientPhoneLabel.grid(row=0, column=1, sticky="w") 
+        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
+                                         
+                                        font=("Calibri", 15, "bold"), bootstyle="success", 
+                                        justify="left")
+        self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
+        self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
+                                        bootstyle="success", 
+                                        width=25
+                                        )
+        self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
+        #self.clientNameEntry.bind("<KeyRelease>", getUID)
         
-        self.clientPhoneEntry = CTkEntry(master=self.clientGrid, 
-                                         fg_color="#F0F0F0", 
-                                         border_width=0, width=285, height=40)
-        self.clientPhoneEntry.grid(row=1, column=1, sticky='w')                          
+        self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
+                                      text="Phone No:", font=("Calibri", 15, "bold"), 
+                                      bootstyle="success", justify="left")
+        self.clientPhoneLabel.grid(row=0, column=2, sticky="w") 
+        self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
+                                         bootstyle="success", width=25
+                                         )
+        
+        self.clientPhoneEntry.grid(row=1, column=2, sticky='w')    
+
+
+        self.clientGenderLabel  = tkb.Label(master=self.clientGrid,
+                                           text = "Gender",font=("Calibri", 15, "bold"), 
+                                      bootstyle="success", justify="left" )
+        self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
+        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, 
+                                            values=("Male", "Female", "Other"), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        self.clientGenderCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
+
 
         
         # Search Section
-        self.searchGrid = CTkFrame(master=self, fg_color="transparent")
+        self.searchGrid = tkb.Frame(master=self, bootstyle="default")
         self.searchGrid.pack(fill="both", padx=27, pady=(31, 0))
 
-        self.itemNameLabel = CTkLabel(master=self.searchGrid, 
-                                      text="Item Name", font=("Arial Bold", 17), 
-                                      text_color="#52A476", justify="left")
-        self.itemNameLabel.grid(row=0, column=0, sticky="w")
+        self.itemNameLabel = tkb.Label(master=self.searchGrid, 
+                                      text="Item Name", font=("Calibri", 15, "bold"), 
+                                      bootstyle="success")
+        self.itemNameLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
-        self.itemNameEntry = CTkEntry(master=self.searchGrid, 
-                                      fg_color="#F0F0F0", 
-                                      border_width=0, width=285, height=40)
-        self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (0,20))
+        self.itemNameEntry = tkb.Entry(master=self.searchGrid, 
+                                      bootstyle="success", width=25)
+        self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
         self.medicineDropDown = CTkScrollableDropdown(self.itemNameEntry, 
                                                       values=medSuggestionList, 
@@ -132,15 +178,13 @@ class MainViewFrame(tkb.Frame):
             numRows = self.billTable.rows
             self.billTable.delete_rows(range(1,numRows))
 
-        self.addToBillButton = CTkButton(master=self.searchGrid, text="Add to Bill", 
-                                      font=("Arial Bold", 17), 
-                                      hover_color="#207244", fg_color="#2A8C55", 
-                                      text_color="#fff", height=40, 
+        self.addToBillButton = tkb.Button(master=self.searchGrid, text="Add to Bill", 
+                                      bootstyle="success", 
                                       command=getMedDetails)
         self.addToBillButton.grid(row=1, column=2, sticky='e', padx=15)
 
 
-        quantity_frame = CTkFrame(master=self.searchGrid, fg_color="transparent")
+        quantity_frame = tkb.Frame(master=self.searchGrid, bootstyle="default")
         quantity_frame.grid(row=1, column=1, padx=(10,0), pady=(0,0), sticky="w")
         def quantityIncrease():
             currentEntry = self.qtySaleEntry.get()
@@ -165,128 +209,86 @@ class MainViewFrame(tkb.Frame):
                     
 
         
-        self.qtyDecreaseButton = CTkButton(master=quantity_frame, text="-", 
-                                            width=25, fg_color="#2A8C55", 
-                                            hover_color="#207244", font=("Arial Black", 16),
+        self.qtyDecreaseButton = tkb.Button(master=quantity_frame, text="-", 
+                                            width=5, bootstyle="success",
                                             command=quantityDecrease
                                             )
         self.qtyDecreaseButton.pack(side="left", anchor="w")
-        self.qtySaleEntry = CTkEntry(master=quantity_frame, #placeholder_text=0,
-                                       text_color="#2A8C55", font=("Arial Black", 16),
-                                       width=60
+        self.qtySaleEntry = tkb.Entry(master=quantity_frame, #placeholder_text=0,
+                                       bootstyle="success", font=("Arial Black", 16),
+                                       width=20
                                         )
         self.qtySaleEntry.pack(side="left", anchor="w", padx=10)
-        self.qtyIncreaseButton = CTkButton(master=quantity_frame, text="+", width=25,  
-                                           fg_color="#2A8C55",hover_color="#207244", 
-                                           font=("Arial Black", 16),
+        self.qtyIncreaseButton = tkb.Button(master=quantity_frame, text="+", width=5,  
+                                           bootstyle="success",
                                            command=quantityIncrease
                                            )
         self.qtyIncreaseButton.pack(side="left", anchor="w")
         
-        #self.detailsFrame = CTkFrame(master=self.searchGrid, fg_color="transparent")
-        self.qtyInStockLabel = CTkLabel(master=self.searchGrid, text = "Quantity in Stock: 0",
-                                        font=("Arial Bold", 17), 
-                                        text_color="#52A476", justify="left",
-                                        pady=30)
-        self.qtyInStockLabel.grid(row=3, column=0, sticky="w")
+        #self.detailsFrame = tkb.Frame(master=self.searchGrid, fg_color="transparent")
+        self.qtyInStockLabel = tkb.Label(master=self.searchGrid, text = "Quantity in Stock: 0",
+                                        font=("Calibri", 15, "bold"), 
+                                        bootstyle="success",
+                                        )
+        self.qtyInStockLabel.grid(row=3, column=0, sticky="w", pady=30)
 
-        billTableFrame = CTkScrollableFrame(master=self, fg_color="transparent")
-        billTableFrame.pack(expand=True, fill="both", padx=27, pady=21)
+        self.billTableFrame = tkb.Frame(master=self, bootstyle="default")
+        self.billTableFrame.pack(expand=True, fill="both", padx=27, pady=21)
 
-        self.newSaleButton = CTkButton(master=billTableFrame, text="Clear Table",
-                                       font=("Arial Bold", 17), 
-                                      hover_color="#207244", fg_color="#2A8C55", 
-                                      text_color="#fff", 
-                                      height=20,  
+        self.newSaleButton = tkb.Button(master=self.billTableFrame, text="Clear Table",
+                                      
+                                      bootstyle="success", 
+                                      
                                       command=clearBillTable)
         self.newSaleButton.pack(side="top",  anchor = "ne")
 
-        self.billTable = CTkTable(master=billTableFrame, 
-                                  values=[["Name", "Type", "MRP", "Quantity", "Total Price"]], 
-                                  colors=["#E6E6E6", "#EEEEEE"], 
-                                  header_color="#2A8C55", hover_color="#B4B4B4")
-        self.billTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
-        self.billTable.pack(expand=True)
+        self.billTable = tkb.Treeview(master=self.billTableFrame, 
+                                  columns=["Time Stamp", "Med Name", "Type", "MRP", "Quantity", "Total Price"],
+                                  show="headings",
+                                    #yscrollcommand=self.treeSrollBar,
+                                    selectmode="extended",
+                                  bootstyle="success")
+        #self.billTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
+        #self.billTable.pack(expand=True)
 
-        self.billTotalLabel = CTkLabel(master=billTableFrame, text="Bill Total: 0",
-                                       font=("Arial Bold", 17), 
-                                        text_color="#52A476", justify="right"
+        self.billTable.column("Time Stamp", width=75)
+        self.billTable.column("Med Name", width=75)
+        self.billTable.column("Type", width=75)
+        self.billTable.column("MRP", width=75)
+        self.billTable.column("Quantity", width=75)
+        self.billTable.column("Total Price",width=75)
+
+
+        self.billTable.heading("Time Stamp", text="Time Stamp", anchor=W)
+        self.billTable.heading("Med Name", text="Med Name", anchor=W)
+        self.billTable.heading("Type", text="Type", anchor=W)
+        self.billTable.heading("MRP", text="MRP", anchor=W)
+        self.billTable.heading("Quantity", text="Quantity", anchor=W)
+        self.billTable.heading("Total Price", text="Total Price", anchor=W)
+   
+        self.billTable.pack(expand=True, fill='both')
+
+        self.billTotalLabel = tkb.Label(master=self.billTableFrame, text="Bill Total: 0",
+                                       font=("Calibri", 15, "bold"), 
+                                        bootstyle="success"
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
         def confirmDetails():
                     pass
+        
 
-        self.billConfirmButton = CTkButton(master=billTableFrame, text="Confirm Details",
-                                       font=("Arial Bold", 17), 
-                                      hover_color="#207244", fg_color="#2A8C55", 
-                                      text_color="#fff", 
-                                      height=20,  
+
+        self.billConfirmButton = tkb.Button(master=self.billTableFrame, text="Confirm Details",
+                                      bootstyle="success",
                                       command=confirmDetails)
         
         self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,30), pady=(20,0))
 
 
-class MedicineApp(tk.Frame):
-    def __init__(self, master):
-        super().__init__(master, background="#2A8C55", width=176, height=650)
-        self.pack_propagate(0)
-        self.grid(column=0, row=0)
-        #self.pack(fill="y", anchor="w", side="left")
 
-        # Logo
-        self.logoLabel = CTkLabel(master=self, text="", image=self.logoImg)
-        self.logoLabel.pack(pady=(38, 0), anchor="center")
-
-        # Buttons
-        self.opButton = self.create_button("OP Register", "plus_icon.png", command=self.client_frame)
-        #self.ordersButton = self.create_button("Orders", "package_icon.png")
-        self.ordersListButton = self.create_button("Orders", "list_icon.png", command=self.main_frame)
-        self.returnsButton = self.create_button("Returns", "returns_icon.png")
-        self.settingsButton = self.create_button("Settings", "settings_icon.png") 
-        self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
-
-        #self.frames = {}
-        
-        self.main_view = MainViewFrame(master)
-        
-
-    def main_frame(self):
-
-        self.main_view   = MainViewFrame(self.master)
-        self.main_view.tkraise()
-
-    def client_frame(self):
-
-        self.main_view = ClientMainViewFrame(self.master)
-        self.main_view.tkraise()
-
-
-    def create_button(self, text, image_filename, pady=(16, 0), command = None):
-        img_data = Image.open(f"main/{image_filename}")
-        img = CTkImage(dark_image=img_data, light_image=img_data)
-        return CTkButton(master=self, image=img, text=text, fg_color="transparent", font=("Arial Bold", 14),
-                         hover_color="#207244", anchor="w",command = command).pack(anchor="center", ipady=5, pady=pady )
-
-    # Main View Frame
-    
-
-
-
-    @property
-    def logoImg(self):
-        return CTkImage(dark_image=Image.open("main/logo.png"),
-                        light_image=Image.open("main/logo.png"), size=(77.68, 85.42))
-
-
-class App(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title('Pranith Pharmacy')
-        self.geometry('856x650')
-        #self.resizable(False, False)
 
 if __name__ == "__main__":
-    app = App()
-    MedicineApp(app)
+    app = tk.Tk()
+    MainViewFrame(app)
     app.mainloop()

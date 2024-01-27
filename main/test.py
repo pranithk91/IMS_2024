@@ -1,29 +1,53 @@
-import tkinter as tk
-import ttkbootstrap as tkb
 
-def update_second_entry(*args):
-    # Get the value from the first entry widget
-    first_entry_value = entry1.get()
-    
-    # Update the second entry widget with the first three letters
-    entry2.config(state=tk.NORMAL)  # Enable the second entry widget
-    entry2.delete(0, tk.END)        # Clear existing content
-    entry2.insert(0, first_entry_value[:3])  # Insert the first three letters
-    entry2.config(state=tk.DISABLED)  # Disable the second entry widget
-
-# Create the main Tkinter window
-root = tk.Tk()
-root.title("Entry Widget Example")
-
-# Create the first entry widget
-entry1 = tkb.Entry(root)
-entry1.grid(row=0, column=0, padx=10, pady=10)
-entry1.insert(0, "Type here")
-entry1.bind("<KeyRelease>", update_second_entry)
-
-# Create the second entry widget (disabled initially)
-entry2 = tkb.Entry(root, state=tk.DISABLED)
-entry2.grid(row=1, column=0, padx=10, pady=10)
-
-# Run the Tkinter event loop
-root.mainloop()
+from tkinter import *
+   
+      
+# Function for checking the 
+# key pressed and updating 
+# the listbox 
+def checkkey(event): 
+       
+    value = event.widget.get() 
+    print(value) 
+      
+    # get data from l 
+    if value == '': 
+        data = l 
+    else: 
+        data = [] 
+        for item in l: 
+            if value.lower() in item.lower(): 
+                data.append(item)                 
+   
+    # update data in listbox 
+    update(data) 
+   
+   
+def update(data): 
+      
+    # clear previous data 
+    lb.delete(0, 'end') 
+   
+    # put new data 
+    for item in data: 
+        lb.insert('end', item) 
+  
+  
+# Driver code 
+l = ('C','C++','Java', 
+     'Python','Perl', 
+     'PHP','ASP','JS' ) 
+  
+root = Tk() 
+  
+#creating text box  
+e = Entry(root) 
+e.pack() 
+e.bind('<KeyRelease>', checkkey) 
+  
+#creating list box 
+lb = Listbox(root) 
+lb.pack() 
+update(l) 
+   
+root.mainloop() 

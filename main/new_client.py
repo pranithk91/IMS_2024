@@ -99,20 +99,20 @@ class ClientMainViewFrame(tkb.Frame):
                 self.opTable.insert("",END, values = list(x))
 
         
-            
+        # Title Section    
         
         self.titleFrame = tkb.Frame(master=self, bootstyle="default")
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
-        # New Sale Section
+        
         self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
-                                   font=("Calibri", 25), bootstyle="success" )
+                                   font=("Calibri", 25, "bold"), bootstyle="success" )
         self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
 
-        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17), bootstyle="success" )
-        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (300,0))
+        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), bootstyle="success" )
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,0))
         def get_time():
-            string = strftime('%H:%M:%S %p')
+            string = strftime('%I:%M:%S %p')
             self.timeLabel.configure(text=string)
             self.timeLabel.after(1000, get_time)
         get_time()
@@ -122,7 +122,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
         self.clientUIDLabel = tkb.Label(master=self.clientGrid, text="Patient UID", 
-                                        font=("Calibri", 15), bootstyle="success", 
+                                        font=("Calibri", 15, "bold"), bootstyle="success", 
                                         justify="left")
         self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
         self.clientUIDEntry = tkb.Entry(master=self.clientGrid, 
@@ -151,7 +151,7 @@ class ClientMainViewFrame(tkb.Frame):
         
         self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
                                          
-                                        font=("Calibri", 15), bootstyle="success", 
+                                        font=("Calibri", 15, "bold"), bootstyle="success", 
                                         justify="left")
         self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
         self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
@@ -162,7 +162,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.clientNameEntry.bind("<KeyRelease>", getUID)
         
         self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
-                                      text="Phone No:", font=("Calibri", 15), 
+                                      text="Phone No:", font=("Calibri", 15, "bold"), 
                                       bootstyle="success", justify="left")
         self.clientPhoneLabel.grid(row=0, column=2, sticky="w") 
         self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
@@ -173,7 +173,7 @@ class ClientMainViewFrame(tkb.Frame):
 
 
         self.clientGenderLabel  = tkb.Label(master=self.clientGrid,
-                                           text = "Gender",font=("Calibri", 15), 
+                                           text = "Gender",font=("Calibri", 15, "bold"), 
                                       bootstyle="success", justify="left" )
         self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
         self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, 
@@ -191,7 +191,7 @@ class ClientMainViewFrame(tkb.Frame):
 
                           
         self.clientAgeLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Age",font=("Calibri", 15), 
+                                           text = "Age",font=("Calibri", 15, "bold"), 
                                       bootstyle="success", justify="left" )
         self.clientAgeLabel.grid(row=0, column=0, sticky="w",padx = (30,102))
         self.clientAgeEntry = tkb.Entry(master=self.clientdetGrid, 
@@ -200,7 +200,7 @@ class ClientMainViewFrame(tkb.Frame):
         self.clientAgeEntry.grid(row=1, column=0, sticky='w',padx = (30,102)) 
 
         self.clientOPLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "OP/Proc",font=("Calibri", 15), 
+                                           text = "OP/Proc",font=("Calibri", 15, "bold"), 
                                       bootstyle="success", justify="left" )
         self.clientOPLabel.grid(row=0, column=1, sticky="w")
         self.clientOPCbox = tkb.Combobox(master=self.clientdetGrid, 
@@ -211,7 +211,7 @@ class ClientMainViewFrame(tkb.Frame):
 
         
         self.clientPayModeLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Payment Mode",font=("Calibri", 15), 
+                                           text = "Payment Mode",font=("Calibri", 15, "bold"), 
                                             bootstyle="success", justify="left" )
         self.clientPayModeLabel.grid(row=0, column=2, sticky="w")
         self.clientPayModeCbox = tkb.Combobox(master=self.clientdetGrid, 
@@ -222,7 +222,7 @@ class ClientMainViewFrame(tkb.Frame):
 
 
         self.clientAmountLabel  = tkb.Label(master=self.clientdetGrid,
-                                           text = "Amount",font=("Calibri", 15), 
+                                           text = "Amount",font=("Calibri", 15, "bold"), 
                                      bootstyle="success", justify="left" )
         self.clientAmountLabel.grid(row=0, column=3, sticky="w")
         self.clientAmountEntry = tkb.Entry(master=self.clientdetGrid, 
