@@ -72,8 +72,8 @@ class ClientMainViewFrame(tkb.Frame):
         super().__init__(master,bootstyle="default", width=900, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
-        self.windowWidth = root.winfo_width()
-        print(self.windowWidth)
+        #self.windowWidth = root.winfo_width()
+        #print(self.windowWidth)
 
         def clearEntries():
             # Clear entry boxes
@@ -273,12 +273,14 @@ class ClientMainViewFrame(tkb.Frame):
                                          bootstyle="success", 
                                           width=15)
         self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
-
-        self.windowWidth = root.winfo_reqwidth()
+        
+        self.update()
+        self.windowWidth = root.winfo_width()
         print(self.windowWidth)
         self.confirmButtonGrid = tkb.Frame(master=self,bootstyle="default", width=200)
         
-        #self.confirmButtonGrid.pack(fill="both", padx=27, pady=(20, 0),x=self.windowWidth//2)
+        self.confirmButtonGrid.place(x=self.windowWidth//2)
+        self.confirmButtonGrid.pack(pady=(30,30))
 
         
         self.confirmDetailsButton = tkb.Button(master=self.confirmButtonGrid, text="Register",
@@ -298,22 +300,36 @@ class ClientMainViewFrame(tkb.Frame):
         
         #Fetch Details
         self.fetchDetGrid = tkb.Frame(master=self, bootstyle="default")
-        self.fetchDetGrid.pack(fill="both", padx=27, pady=(20, 0))
+        self.fetchDetGrid.place(x=self.windowWidth//2)
+        self.fetchDetGrid.pack(pady=(20, 0))
+
+        def uidEntryBind(event):
+            if self.uidFetchEntry.get() == "Enter UID":
+                self.uidFetchEntry.delete(0, END)
+            else :
+                pass
+        self.uidFetchEntry = tkb.Entry(master=self.fetchDetGrid, 
+                                         bootstyle="success", 
+                                          width=15)
+        self.uidFetchEntry.grid(row=0,column=0)
+        self.uidFetchEntry.insert(0, "Enter UID")
+        self.uidFetchEntry.bind("<Button-1>",uidEntryBind)
+        self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30))         
 
         self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid, bootstyle="success")
-        self.dateFetchEntry.grid(row=0,column=0,padx=(80,30))
+        self.dateFetchEntry.grid(row=0,column=1,padx=(80,30))
 
 
         self.searchByCbox = tkb.Combobox(master=self.fetchDetGrid, 
                                             values=("UID", "Patient Name", "Phone", "Date" ), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                              cursor='hand2')
-        self.searchByCbox.grid(row=0, column=1,sticky="w", pady=20, padx = (0,30))
+        self.searchByCbox.grid(row=0, column=2,sticky="w", pady=20, padx = (0,30))
 
         self.fetchDetailsButton = tkb.Button(master=self.fetchDetGrid, text="Fetch Details",
                                        bootstyle="success",
                                       command=addToTable)
-        self.fetchDetailsButton.grid(row=0, column=2,sticky="w" ,pady=(0,0),padx = (0,30))
+        self.fetchDetailsButton.grid(row=0, column=3,sticky="w" ,pady=(0,0),padx = (0,30))
 
         
 
