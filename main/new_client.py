@@ -16,62 +16,14 @@ import ttkbootstrap as tkb
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()
 
-class clientWindow:
-    def __init__(self, master):
-        self.master = master
-        master.title("IMS 2024")
 
-        # Sidebar Frame
-        self.sidebar_frame = SidebarFrame(master)
-        self.sidebar_frame.pack_propagate(0)
-        #self.sidebar_frame.pack(fill="y", anchor="w", side="left")
-
-        # Main View Frame
-        self.main_view = ClientMainViewFrame(master)
-        self.main_view.pack_propagate(0)
-        #self.main_view.pack(side="left")
-
-
-
-
-class SidebarFrame(tkb.Frame):
-    def __init__(self, master=None):
-        super().__init__(master, width=176, height=650)
-        self.pack_propagate(0)
-
-        # Logo
-        self.logoLabel = tkb.Label(master=self, text="", image=self.logoImg)
-        self.logoLabel.pack(pady=(38, 0), anchor="center")
-
-        # Buttons
-        self.opButton = self.create_button("OP Register", "plus_icon.png")
-        self.ordersButton = self.create_button("Procedures", "package_icon.png")
-        self.ordersListButton = self.create_button("Pharmacy", "list_icon.png")
-        self.returnsButton = self.create_button("Returns", "returns_icon.png")
-        self.settingsButton = self.create_button("Settings", "settings_icon.png")
-        self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
-
-
-
-
-
-        #image = im = Image.open("/path/to/your/image.ext")
-    def create_button(self, text, image_filename, pady=(16, 0)):
-        img_data = Image.open(f"main/{image_filename}")
-        img = ImageTk.PhotoImage(img_data)
-        return tkb.Button(master=self, image=img, text=text,bootstyle="success").pack(anchor="center", ipady=5, pady=pady)
-
-    @property
-    def logoImg(self):
-        logoImgData=Image.open("main/logo.png")
-        img = ImageTk.PhotoImage(logoImgData, size=(77.68, 85.42))
-        return img
 
 class ClientMainViewFrame(tkb.Frame):
     def __init__(self, master=NONE):
         super().__init__(master,bootstyle="default", width=900, height=800)
         self.pack_propagate(0)
         self.grid(column=1, row=0)
+        
         #self.windowWidth = root.winfo_width()
         #print(self.windowWidth)
 
@@ -164,6 +116,7 @@ class ClientMainViewFrame(tkb.Frame):
             self.timeLabel.configure(text=string)
             self.timeLabel.after(1000, get_time)
         get_time()
+
         # Client Section
         self.clientGrid = tkb.Frame(master=self, bootstyle="default")
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
@@ -389,11 +342,6 @@ class ClientMainViewFrame(tkb.Frame):
         
         self.opTable.pack(expand=True, fill='both')
 
-        """self.opTable = CTkTable(master=self.opTableFrame, 
-                                  values=[["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Amount"]], 
-                                  colors=["#E6E6E6", "#EEEEEE"], 
-                                  header_color="#2A8C55", hover_color="#B4B4B4")
-        self.opTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")"""
         #self.opTable.pack(expand=True)
 
         self.billTotalLabel = tkb.Label(master=self.opTableFrame, text="Bill Total: 0",
@@ -478,5 +426,5 @@ class ClientMainViewFrame(tkb.Frame):
 
 if __name__ == "__main__":
     root = tk.Tk()
-    obj = clientWindow(root)
+    obj = ClientMainViewFrame(root)
     root.mainloop()
