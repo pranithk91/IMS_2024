@@ -1,12 +1,20 @@
-# -*- coding: utf-8 -*-
-
-# Copyright (c) Juliette Monsel 2019
-# For license see LICENSE
 import tkinter as tk
-from ttkwidgets.autocomplete import AutocompleteEntryListbox
+from tkinter import ttk
+import ttkbootstrap as tkb
+my_w = tk.Tk()
+my_w.geometry("300x150")  # Size of the window 
+my_w.title("www.plus2net.com")  # Adding a title
+months=['Jan','Feb','Mar','Apr','May','Jun'] # options
+cb1 = ttk.Combobox(my_w, values=months,width=7,style='success.TCombobox') # Combobox
+#ttk.Combobox(parent, style='info.TCombobox')
 
-window = tk.Tk()
-tk.Label(window, text="Entry + Listbox with autocompletion for the Tk instance's methods:").pack()
-entry = AutocompleteEntryListbox(window, width=20, completevalues=dir(window))
-entry.pack()
-window.mainloop()
+cb1.grid(row=1,column=1,padx=10,pady=20) # adding to grid
+#cb1.set('Apr') # default selected option
+
+def autofill(event):
+    currChar = cb1.get()
+    
+    updatedList = [x for x in months if x.startswith(currChar)]
+    cb1.configure(values=updatedList)
+cb1.bind("<KeyRelease>", autofill)
+my_w.mainloop()  # Keep the window open

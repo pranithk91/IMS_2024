@@ -1,5 +1,6 @@
 from customtkinter import *
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image
 from database import loadDatabase
 from CTkScrollableDropdown import *
@@ -12,7 +13,7 @@ from autocomplete import AutoComplete
 
 medicineDf = loadDatabase()
 medSuggestionList = medicineDf['Name'].tolist()
-
+print(medSuggestionList)
 
 
 class MainViewFrame(tkb.Frame):
@@ -123,15 +124,24 @@ class MainViewFrame(tkb.Frame):
                                       bootstyle="success")
         self.itemNameLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
-        self.itemNameEntry = tkb.Entry(master=self.searchGrid, 
-                                      bootstyle="success", width=25)
+        self.itemNameEntry = ttk.Combobox(master=self.searchGrid, values=medSuggestionList,
+                                          style='success.TCombobox')
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
-        self.itemNameEntry.bind('<KeyPress>', AutoComplete.key_pressed)
-        self.itemNameEntry.bind('<BackSpace>', AutoComplete.backspace)
-        self.itemNameEntry.bind('<Tab>', AutoComplete.tab_completion)
-        self.itemNameEntry.bind('<Up>', AutoComplete.up_direction)
-        self.itemNameEntry.bind('<Down>', AutoComplete.down_direction)
+        
+        def autofill(event):
+            currChar = self.itemNameEntry.get()
+            
+            updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
+            self.itemNameEntry.configure(values=updatedList)
+        self.itemNameEntry.bind("<KeyRelease>", autofill)
+
+
+        #self.itemNameEntry.bind('<KeyPress>', AutoComplete.key_pressed)
+        #self.itemNameEntry.bind('<BackSpace>', AutoComplete.backspace)
+        #self.itemNameEntry.bind('<Tab>', AutoComplete.tab_completion)
+        #self.itemNameEntry.bind('<Up>', AutoComplete.up_direction)
+        #self.itemNameEntry.bind('<Down>', AutoComplete.down_direction)
         
 
         """self.medicineDropDown = CTkScrollableDropdown(self.itemNameEntry, 
