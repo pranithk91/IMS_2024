@@ -70,10 +70,10 @@ def getClientid(name):
     
     return f"{year_str}{month_str}{name_prefix}{serial_num}"
 
-def loadDatabase():
+def loadDatabase(query):
     # Connect to SQLite database
     conn = sqlite3.connect('medicine_database.db')
-    query = "SELECT * FROM medicines"
+    #query = "SELECT * FROM medicines"
     med_df = pd.read_sql_query(query, conn)
     conn.close()
 
@@ -93,7 +93,7 @@ def updatePharmacy(query):
     pharmDf = pd.read_sql_query(query, conn)
     conn.close()
 
-#loadFromCsv('Pharmacy')
+
 
 """medicineDf = loadDatabase()
 currentMedQty = medicineDf[medicineDf["Name"] == "Acnelak"]["Quantity"]

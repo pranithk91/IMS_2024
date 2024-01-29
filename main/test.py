@@ -1,20 +1,21 @@
 import tkinter as tk
-from tkinter import ttk
-import ttkbootstrap as tkb
-my_w = tk.Tk()
-my_w.geometry("300x150")  # Size of the window 
-my_w.title("www.plus2net.com")  # Adding a title
-months=['Jan','Feb','Mar','Apr','May','Jun'] # options
-cb1 = ttk.Combobox(my_w, values=months,width=7,style='success.TCombobox') # Combobox
-#ttk.Combobox(parent, style='info.TCombobox')
+from tkinter import *
 
-cb1.grid(row=1,column=1,padx=10,pady=20) # adding to grid
-#cb1.set('Apr') # default selected option
+secs = ['Subject', 'Difficulty', 'Percent', 'Grade', 'Pass']
 
-def autofill(event):
-    currChar = cb1.get()
-    
-    updatedList = [x for x in months if x.startswith(currChar)]
-    cb1.configure(values=updatedList)
-cb1.bind("<KeyRelease>", autofill)
-my_w.mainloop()  # Keep the window open
+master = Tk()
+v = StringVar(master)
+v.set(secs[0])
+def on_option_change(event):
+    global lab2
+    #lab2.destroy()
+    lab2 = tk.Label(master, text=v.get())
+    lab2.grid(row=2, column=1)
+w = OptionMenu(master, v, *secs, command=on_option_change)
+w.grid(row=1, column=0)
+lab1 = tk.Label(master, text='Current value:')
+lab1.grid(row=2, column=0, sticky=E)
+lab2 = tk.Label(master, text=secs[0])
+lab2.grid(row=2, column=1, sticky=W)
+
+mainloop()

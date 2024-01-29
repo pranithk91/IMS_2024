@@ -13,7 +13,7 @@ from tkcalendar import DateEntry
 import ttkbootstrap as tkb
 #from treeactions import *
 
-medicineDf = loadDatabase()
+medicineDf = loadDatabase("SELECT * FROM medicines")
 medSuggestionList = medicineDf['Name'].tolist()
 
 

@@ -237,6 +237,8 @@ def remove_all():
 	for record in my_tree.get_children():
 		my_tree.delete(record)
 
+print(my_tree.get_children())
+
 # Clear entry boxes
 def clear_entries():
 	# Clear entry boxes
@@ -259,7 +261,7 @@ def select_record():
 	city_entry.delete(0, END)
 	state_entry.delete(0, END)
 	zipcode_entry.delete(0, END)
-
+	print(my_tree.get_children())
 	# Grab record Number
 	selected = my_tree.focus()
 	# Grab record values
@@ -297,7 +299,7 @@ def update_record():
 button_frame = LabelFrame(root, text="Commands")
 button_frame.pack(fill="x", expand="yes", padx=20)
 
-update_button = Button(button_frame, text="Update Record", command=update_record)
+update_button = Button(button_frame, text="Update Record", command=select_record)
 update_button.grid(row=0, column=0, padx=10, pady=10)
 
 add_button = Button(button_frame, text="Add Record")

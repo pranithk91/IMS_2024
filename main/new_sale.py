@@ -11,9 +11,9 @@ from new_client import ClientMainViewFrame
 import ttkbootstrap as tkb
 from autocomplete import AutoComplete
 
-medicineDf = loadDatabase()
+medicineDf = loadDatabase("SELECT * FROM medicines")
 medSuggestionList = medicineDf['Name'].tolist()
-print(medSuggestionList)
+#print(medSuggestionList)
 
 
 class MainViewFrame(tkb.Frame):
@@ -35,7 +35,7 @@ class MainViewFrame(tkb.Frame):
         self.titleFrame = tkb.Frame(master=self, bootstyle="default")
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         
-        self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
+        self.titleLabel = tkb.Label(master=self.titleFrame, text="New Bill", 
                                    font=("Calibri", 25, "bold"), bootstyle="success" )
         self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
@@ -107,11 +107,12 @@ class MainViewFrame(tkb.Frame):
                                            text = "Gender",font=("Calibri", 15, "bold"), 
                                       bootstyle="success", justify="left" )
         self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
-        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, 
+        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, bootstyle="success",
                                             values=("Male", "Female", "Other"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                              cursor='hand2')
         self.clientGenderCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
+
 
 
         
@@ -124,18 +125,32 @@ class MainViewFrame(tkb.Frame):
                                       bootstyle="success")
         self.itemNameLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
+        def on_option_change(event):
+            value = self.itemNameEntry.get()
+            #lab2.destroy()
+            currentMedQty = medicineDf.loc[medicineDf["Name"] == value]["Current Stock"].tolist()
+            self.qtyInStockLabel.configure(text="Quantity in Stock:"+ str(currentMedQty[0]))  
+
         self.itemNameEntry = ttk.Combobox(master=self.searchGrid, values=medSuggestionList,
-                                          style='success.TCombobox')
+                                          style='success.TCombobox',
+                                          justify=LEFT, 
+                                          font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
-        
+        self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
+
         def autofill(event):
             currChar = self.itemNameEntry.get()
-            
-            updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
+            query="SELECT * FROM medicines where name like '%{}%'".format(currChar)
+            updatedData = loadDatabase(query)
+            updatedList = updatedData['Name'].tolist()
+            #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
             self.itemNameEntry.configure(values=updatedList)
         self.itemNameEntry.bind("<KeyRelease>", autofill)
 
+                   
+            
 
         #self.itemNameEntry.bind('<KeyPress>', AutoComplete.key_pressed)
         #self.itemNameEntry.bind('<BackSpace>', AutoComplete.backspace)
@@ -168,23 +183,24 @@ class MainViewFrame(tkb.Frame):
             global currentMedName
             global billTotal 
             
+            
             currentMedName = self.itemNameEntry.get()
             currentSaleQty = self.qtySaleEntry.get()
-            currentMedQty = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Quantity"].iloc[0])
+            currentMedQty = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Current Stock"].iloc[0])
             currentMedPrice = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Price"].iloc[0])
             currentMedType = str(medicineDf.loc[medicineDf["Name"] == currentMedName]["Type"].iloc[0])
             
             totalSalePrice = int(currentSaleQty)*currentMedPrice
             
-            numRows=self.billTable.rows
+            #numRows=self.billTable.rows
   
-            self.billTable.add_row(index=numRows, values=[currentMedName, currentMedType, currentMedPrice, currentSaleQty, totalSalePrice])
+            self.billTable.insert("",END, values=[strftime("%d/%m/%Y, %H:%M:%S"),currentMedName, currentMedType, currentMedPrice, currentSaleQty, totalSalePrice])
             self.itemNameEntry.delete(0,len(currentMedName))
             self.qtySaleEntry.delete(0,len(currentSaleQty))
             #print("number of rows:",self.billTable.rows)
-            if self.billTable.rows == 2: #If there is one entry in table
+            if len(self.billTable.get_children()) ==  1: #If there is one entry in table
                 billTotal = totalSalePrice
-            elif self.billTable.rows > 2: #If there are multiple entries in table
+            elif len(self.billTable.get_children()) > 1: #If there are multiple entries in table
                 billTotal = billTotal+totalSalePrice
             self.billTotalLabel.configure(text= "Bill Total: " + str(billTotal))
             #print(type(currentMedType), type(currentMedName), type(currentMedQty), type(currentMedPrice), type(currentSaleQty), type(totalSalePrice))
@@ -193,8 +209,8 @@ class MainViewFrame(tkb.Frame):
             #print("Bill Total:",billTotal)
         
         def clearBillTable():
-            numRows = self.billTable.rows
-            self.billTable.delete_rows(range(1,numRows))
+            for record in self.billTable.get_children():
+                self.billTable.delete(record)   
 
         self.addToBillButton = tkb.Button(master=self.searchGrid, text="Add to Bill", 
                                       bootstyle="success", 
