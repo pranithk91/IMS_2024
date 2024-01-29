@@ -9,9 +9,10 @@ import pandas as pd
 from CTkTable import CTkTable
 from time import strftime
 import sqlite3
-from tkcalendar import DateEntry
+#from tkcalendar import DateEntry
 import ttkbootstrap as tkb
 #from treeactions import *
+from datetime import datetime
 
 medicineDf = loadDatabase("SELECT * FROM medicines")
 medSuggestionList = medicineDf['Name'].tolist()
@@ -65,14 +66,14 @@ class ClientMainViewFrame(tkb.Frame):
 
             else:
                 client_id = getClientid(currentClientName)
-                self.opTable.insert("",END, values=[strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
+                self.opTable.insert("",END, values=[strftime("%d-%m-%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
 
                 
                 conn = sqlite3.connect('medicine_database.db')
                 conn.execute("""
                     INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (strftime("%d/%m/%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc,currentPaymentMode, currentAmount))
+                """, (strftime("%d-%m-%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc,currentPaymentMode, currentAmount))
                 conn.commit()     
                 self.clientUIDEntry.configure(state=NORMAL)
                 self.clientUIDEntry.delete(0,END)
@@ -84,6 +85,106 @@ class ClientMainViewFrame(tkb.Frame):
                 self.clientAgeEntry.delete(0,len(currentClientAge)) 
                 self.clientPayModeCbox.set("")
                 self.clientAmountEntry.delete(0,len(currentAmount))     
+
+        def fetchDetails():
+            selected_attribute = self.searchByCbox.get()
+            self.warningLabel.configure(text="")
+            if not selected_attribute:
+                self.warningLabel.configure(text="Please select a valid attribute.")
+                return
+
+            if selected_attribute == "Phone":
+                fetchDetailsPhone()
+            elif selected_attribute == "Patient Name":
+                fetchDetailsName()
+            elif selected_attribute == "UID":
+                fetchDetailsUID()
+            elif selected_attribute == "Date":
+                fetchDetailsDate()
+            else:
+                self.warningLabel.configure(text="Please select a valid attribute.")
+                return
+
+        def fetchDetailsDate():
+            selected_date = self.dateFetchEntry.entry.get()
+            
+            selected_date = datetime.strptime(selected_date, "%d-%m-%Y").strftime("%d-%m-%Y")
+            print(selected_date)
+
+            query = f"SELECT * FROM Patients WHERE substr(TimeStamp,1,10) = ?"
+            conn = sqlite3.connect('medicine_database.db')
+            result = conn.execute(query, (selected_date,)).fetchall()
+            print(len(result))
+            for item in self.opTable.get_children():
+                self.opTable.delete(item)
+
+            for x in result:
+                self.opTable.insert("", END, values=list(x))
+
+        def fetchDetailsUID():
+            search_value = self.uidFetchEntry.get()
+
+            if not search_value:
+                self.warningLabel.configure(text="Please enter a UID to fetch details.")
+                return
+
+            for item in self.opTable.get_children():
+                self.opTable.delete(item)
+
+            query = f"SELECT * FROM Patients WHERE UID = ?"
+
+            conn = sqlite3.connect('medicine_database.db')
+            result = conn.execute(query, (search_value,)).fetchall()
+
+            if not result:
+                self.warningLabel.configure(text="No records found for the provided UID.")
+                return
+
+            for x in result:
+                self.opTable.insert("", END, values=list(x))
+            
+            self.uidFetchEntry.delete(0,END)
+            self.uidFetchEntry.insert(0, "Enter UID")
+                
+        def fetchDetailsPhone():
+            search_value = self.clientPhoneEntry.get()
+
+            if not search_value:
+                self.warningLabel.configure(text="Please enter the correct phone number to fetch details.")
+                return
+
+            for item in self.opTable.get_children():
+                self.opTable.delete(item)
+
+            query = f"SELECT * FROM Patients WHERE Phone = ?"
+
+            conn = sqlite3.connect('medicine_database.db')
+            result = conn.execute(query, (search_value,)).fetchall()
+
+            for x in result:
+                self.opTable.insert("", END, values=list(x))
+
+        def fetchDetailsName():
+            search_value = self.clientNameEntry.get()
+
+            if not search_value:
+                self.warningLabel.configure(text="Please enter a patient name to fetch details.")
+                return
+
+            for item in self.opTable.get_children():
+                self.opTable.delete(item)
+
+            query = f"SELECT * FROM Patients WHERE Name = ?"
+
+            conn = sqlite3.connect('medicine_database.db')
+            result = conn.execute(query, (search_value,)).fetchall()
+
+            if not result:
+                self.warningLabel.configure(text="No records found for the provided patient name.")
+                return
+
+            for x in result:
+                self.opTable.insert("", END, values=list(x))
 
 
 
@@ -278,8 +379,9 @@ class ClientMainViewFrame(tkb.Frame):
         self.uidFetchEntry.grid(row=0,column=0)
         self.uidFetchEntry.insert(0, "Enter UID")
         self.uidFetchEntry.bind("<Button-1>",uidEntryBind)
-        self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30))         
-
+        #self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30))         
+        
+        dateFetchEntry = StringVar()
         self.dateFetchEntry = tkb.DateEntry(self.fetchDetGrid, bootstyle="success")
         self.dateFetchEntry.grid(row=0,column=1,padx=(80,30))
 
@@ -292,7 +394,7 @@ class ClientMainViewFrame(tkb.Frame):
 
         self.fetchDetailsButton = tkb.Button(master=self.fetchDetGrid, text="Fetch Details",
                                        bootstyle="success",
-                                      command=addToTable)
+                                      command=fetchDetails)
         self.fetchDetailsButton.grid(row=0, column=3,sticky="w" ,pady=(0,0),padx = (0,30))
 
         
