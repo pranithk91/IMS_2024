@@ -8,7 +8,7 @@ import pandas as pd
 from CTkTable import CTkTable
 from time import strftime
 from new_client import ClientMainViewFrame
-import ttkbootstrap as tkb
+import ttkbootstrap as ttb
 from autocomplete import AutoComplete
 
 medicineDf = loadDatabase("SELECT * FROM medicines")
@@ -16,11 +16,11 @@ medSuggestionList = medicineDf['Name'].tolist()
 #print(medSuggestionList)
 
 
-class MainViewFrame(tkb.Frame):
+class MainViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,bootstyle="default", width=900, height=800)
+        super().__init__(master,  width=950, height=800, relief=tk.GROOVE)
         self.pack_propagate(0)
-        self.grid(column=1, row=0)
+        self.grid(column=1, row=0, pady = (10,10), padx=(30,30))
 
 
         def clearBillTable():
@@ -32,15 +32,15 @@ class MainViewFrame(tkb.Frame):
         
         # Title Section    
         
-        self.titleFrame = tkb.Frame(master=self, bootstyle="default")
+        self.titleFrame = ttk.Frame(master=self)
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         
-        self.titleLabel = tkb.Label(master=self.titleFrame, text="New Bill", 
-                                   font=("Calibri", 25, "bold"), bootstyle="success" )
+        self.titleLabel = ttk.Label(master=self.titleFrame, text="New Bill", 
+                                   font=("Calibri", 25, "bold"), style="success.TLabel" )
         self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
 
-        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), bootstyle="success" )
+        self.timeLabel = ttk.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), style="success.TLabel" )
         self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,0))
         def get_time():
             string = strftime('%I:%M:%S %p')
@@ -49,15 +49,15 @@ class MainViewFrame(tkb.Frame):
         get_time()
 
         # Client Details Section
-        self.clientGrid = tkb.Frame(master=self, bootstyle="default")
+        self.clientGrid = ttk.Frame(master=self)
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
-        self.clientUIDLabel = tkb.Label(master=self.clientGrid, text="Patient UID", 
-                                        font=("Calibri", 15, "bold"), bootstyle="success", 
+        self.clientUIDLabel = ttk.Label(master=self.clientGrid, text="Patient UID", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
                                         justify="left")
         self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
-        self.clientUIDEntry = tkb.Entry(master=self.clientGrid, 
-                                        bootstyle="success", 
+        self.clientUIDEntry = ttk.Entry(master=self.clientGrid, 
+                                        style="success.TEntry", 
                                         width=25,
                                         state=DISABLED
                                         )
@@ -80,34 +80,34 @@ class MainViewFrame(tkb.Frame):
 
         
         
-        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
+        self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
                                          
-                                        font=("Calibri", 15, "bold"), bootstyle="success", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
                                         justify="left")
         self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
-        self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
-                                        bootstyle="success", 
+        self.clientNameEntry = ttk.Entry(master=self.clientGrid, 
+                                        style="success.TEntry", 
                                         width=25
                                         )
         self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
         #self.clientNameEntry.bind("<KeyRelease>", getUID)
         
-        self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
+        self.clientPhoneLabel = ttk.Label(master=self.clientGrid, 
                                       text="Phone No:", font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left")
+                                      style="success.Tlabel", justify="left")
         self.clientPhoneLabel.grid(row=0, column=2, sticky="w") 
-        self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
-                                         bootstyle="success", width=25
+        self.clientPhoneEntry = ttk.Entry(master=self.clientGrid, 
+                                         style="success.TEntry", width=25
                                          )
         
         self.clientPhoneEntry.grid(row=1, column=2, sticky='w')    
 
 
-        self.clientGenderLabel  = tkb.Label(master=self.clientGrid,
+        self.clientGenderLabel  = ttk.Label(master=self.clientGrid,
                                            text = "Gender",font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left" )
+                                      style="success.TLabel", justify="left" )
         self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
-        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, bootstyle="success",
+        self.clientGenderCbox = ttk.Combobox(master=self.clientGrid, style="success.TCombobox",
                                             values=("Male", "Female", "Other"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                              cursor='hand2')
@@ -117,12 +117,12 @@ class MainViewFrame(tkb.Frame):
 
         
         # Search Section
-        self.searchGrid = tkb.Frame(master=self, bootstyle="default")
+        self.searchGrid = ttk.Frame(master=self, bootstyle="default")
         self.searchGrid.pack(fill="both", padx=27, pady=(31, 0))
 
-        self.itemNameLabel = tkb.Label(master=self.searchGrid, 
+        self.itemNameLabel = ttk.Label(master=self.searchGrid, 
                                       text="Item Name", font=("Calibri", 15, "bold"), 
-                                      bootstyle="success")
+                                      style="success.TLabel")
         self.itemNameLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
         def on_option_change(event):
@@ -213,13 +213,13 @@ class MainViewFrame(tkb.Frame):
             for record in self.billTable.get_children():
                 self.billTable.delete(record)   
 
-        self.addToBillButton = tkb.Button(master=self.searchGrid, text="Add to Bill", 
-                                      bootstyle="success", 
+        self.addToBillButton = ttk.Button(master=self.searchGrid, text="Add to Bill", 
+                                      style="success.TButton", 
                                       command=getMedDetails)
         self.addToBillButton.grid(row=1, column=2, sticky='e', padx=15)
 
 
-        quantity_frame = tkb.Frame(master=self.searchGrid, bootstyle="default")
+        quantity_frame = ttk.Frame(master=self.searchGrid, bootstyle="default")
         quantity_frame.grid(row=1, column=1, padx=(10,0), pady=(0,0), sticky="w")
 
         def quantityIncrease():
@@ -245,45 +245,45 @@ class MainViewFrame(tkb.Frame):
                     
 
         
-        self.qtyDecreaseButton = tkb.Button(master=quantity_frame, text="-", 
-                                            width=5, bootstyle="success",
+        self.qtyDecreaseButton = ttk.Button(master=quantity_frame, text="-", 
+                                            width=5, style="success.TButton",
                                             command=quantityDecrease
                                             )
         self.qtyDecreaseButton.pack(side="left", anchor="w")
-        self.qtySaleEntry = tkb.Entry(master=quantity_frame, #placeholder_text=0,
-                                       bootstyle="success", font=("Arial Black", 16),
+        self.qtySaleEntry = ttk.Entry(master=quantity_frame, #placeholder_text=0,
+                                       style="success.TEntry", font=("Arial Black", 16),
                                        width=10
                                         )
         self.qtySaleEntry.pack(side="left", anchor="w", padx=10)
-        self.qtyIncreaseButton = tkb.Button(master=quantity_frame, text="+", width=5,  
-                                           bootstyle="success",
+        self.qtyIncreaseButton = ttk.Button(master=quantity_frame, text="+", width=5,  
+                                           style="success.TButton",
                                            command=quantityIncrease
                                            )
         self.qtyIncreaseButton.pack(side="left", anchor="w")
         
-        #self.detailsFrame = tkb.Frame(master=self.searchGrid, fg_color="transparent")
-        self.qtyInStockLabel = tkb.Label(master=self.searchGrid, text = "Quantity in Stock: 0",
+        #self.detailsFrame = ttk.Frame(master=self.searchGrid, fg_color="transparent")
+        self.qtyInStockLabel = ttk.Label(master=self.searchGrid, text = "Quantity in Stock: 0",
                                         font=("Calibri", 15, "bold"), 
-                                        bootstyle="success",
+                                        style="success.TLabel",
                                         )
         self.qtyInStockLabel.grid(row=3, column=0, sticky="w", pady=30)
 
-        self.billTableFrame = tkb.Frame(master=self, bootstyle="default")
+        self.billTableFrame = ttk.Frame(master=self, bootstyle="default")
         self.billTableFrame.pack(expand=True, fill="both", padx=27, pady=21)
 
-        self.newSaleButton = tkb.Button(master=self.billTableFrame, text="Clear Table",
+        self.newSaleButton = ttk.Button(master=self.billTableFrame, text="Clear Table",
                                       
-                                      bootstyle="success", 
+                                      style="success.TButton", 
                                       
                                       command=clearBillTable)
         self.newSaleButton.pack(side="top",  anchor = "ne")
 
-        self.billTable = tkb.Treeview(master=self.billTableFrame, 
+        self.billTable = ttk.Treeview(master=self.billTableFrame, 
                                   columns=["Time Stamp", "Med Name", "Type", "MRP", "Quantity", "Total Price"],
                                   show="headings",
                                     #yscrollcommand=self.treeSrollBar,
                                     selectmode="extended",
-                                  bootstyle="success")
+                                  style="success.Treeview")
         #self.billTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
         #self.billTable.pack(expand=True)
 
@@ -304,9 +304,9 @@ class MainViewFrame(tkb.Frame):
    
         self.billTable.pack(expand=True, fill='both')
 
-        self.billTotalLabel = tkb.Label(master=self.billTableFrame, text="Bill Total: 0",
+        self.billTotalLabel = ttk.Label(master=self.billTableFrame, text="Bill Total: 0",
                                        font=("Calibri", 15, "bold"), 
-                                        bootstyle="success"
+                                        style="successTLabel."
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
@@ -315,8 +315,8 @@ class MainViewFrame(tkb.Frame):
         
 
 
-        self.billConfirmButton = tkb.Button(master=self.billTableFrame, text="Confirm Details",
-                                      bootstyle="success",
+        self.billConfirmButton = ttk.Button(master=self.billTableFrame, text="Confirm Details",
+                                      style="success.TButton",
                                       command=confirmDetails)
         
         self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,30), pady=(20,0))

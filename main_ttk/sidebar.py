@@ -9,40 +9,42 @@ from new_sale import MainViewFrame
 
 import ttkbootstrap as tkb
 
-class clientWindow:
+
+
+
+class MedicineApp(ttk.Frame):
     def __init__(self, master):
-        self.master = master
-        master.title("IMS 2024")
-
-        # Sidebar Frame
-        self.sidebarFrame = SidebarFrame(master)
-        self.sidebarFrame.pack_propagate(0)
-        #self.sidebar_frame.pack(fill="y", anchor="w", side="left")
-
-
-class MedicineApp(tk.Frame):
-    def __init__(self, master):
-        super().__init__(master, background="#2A8C55", width=176, height=650)
-        self.pack_propagate(0)
-        self.grid(column=0, row=0)
+        super().__init__(master)
+        #self.pack_propagate(0)
+        self.sidebarFrame=ttk.Frame(master,width=300, height=650, relief = tk.GROOVE)
+        self.sidebarFrame.grid(column=0, row=0)
         #self.pack(fill="y", anchor="w", side="left")
 
         # Logo
-        self.logoLabel = CTkLabel(master=self, text="", image=self.logoImg)
+        oImg = Image.open("main_ttk/logo.png")
+        res_img = oImg.resize((77, 85), Image.LANCZOS)
+        
+        img= ImageTk.PhotoImage(res_img)        
+        self.logoLabel = ttk.Label(master=self.sidebarFrame,  image=img)
         self.logoLabel.pack(pady=(38, 0), anchor="center")
-
+        
         # Buttons
         self.opButton = self.create_button("OP Register", "plus_icon.png", command=self.client_frame)
+        self.opButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(30,20) )
         #self.ordersButton = self.create_button("Orders", "package_icon.png")
         self.ordersListButton = self.create_button("Orders", "list_icon.png", command=self.main_frame)
+        self.ordersListButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(30,20) )
         self.returnsButton = self.create_button("Returns", "returns_icon.png")
+        self.returnsButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(30,20) )
         self.settingsButton = self.create_button("Settings", "settings_icon.png") 
-        self.accountButton = self.create_button("Account", "person_icon.png", pady=(160, 0))
+        self.settingsButton.pack(anchor="center", ipady=5, pady=(16, 0) ,padx=(30,20))
+        self.accountButton = self.create_button("Account", "person_icon.png")
+        self.accountButton.pack(anchor="center", ipady=5, pady=(160, 0),padx=(30,20) )
 
         #self.frames = {}
         
         self.main_view = MainViewFrame(master)
-        
+
 
     def main_frame(self):
 
@@ -55,11 +57,10 @@ class MedicineApp(tk.Frame):
         self.main_view.tkraise()
 
 
-    def create_button(self, text, image_filename, pady=(16, 0), command = None):
-        img_data = Image.open(f"main/{image_filename}")
-        img = CTkImage(dark_image=img_data, light_image=img_data)
-        return CTkButton(master=self, image=img, text=text, fg_color="transparent", font=("Arial Bold", 14),
-                         hover_color="#207244", anchor="w",command = command).pack(anchor="center", ipady=5, pady=pady )
+    def create_button(self, text, image_filename,  command = None):
+        img_data = Image.open(f"main_ttk/{image_filename}")
+        img = ImageTk.PhotoImage(img_data)
+        return ttk.Button(master=self.sidebarFrame, image=img, text=text, width=18,  style="success.TButton" , command = command)
 
     # Main View Frame
     
@@ -68,19 +69,21 @@ class MedicineApp(tk.Frame):
 
     @property
     def logoImg(self):
-        return CTkImage(dark_image=Image.open("main/logo.png"),
-                        light_image=Image.open("main/logo.png"), size=(77.68, 85.42))
+        oImg = Image.open("main_ttk/logo.png")
+        res_img = oImg.resize((77, 85), Image.ANTIALIAS)
+        
+        return ImageTk.PhotoImage(res_img)
 
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Pranith Pharmacy')
-        self.geometry('856x650')
+        self.title('IMS 2024')
+        self.geometry('1190x900')
         #self.resizable(False, False)
 
 
-class SidebarFrame(tkb.Frame):
+"""class SidebarFrame(tkb.Frame):
     def __init__(self, master=None):
         super().__init__(master, width=176, height=650)
         self.pack_propagate(0)
@@ -103,15 +106,15 @@ class SidebarFrame(tkb.Frame):
 
         #image = im = Image.open("/path/to/your/image.ext")
     def create_button(self, text, image_filename, pady=(16, 0)):
-        img_data = Image.open(f"main/{image_filename}")
+        img_data = Image.open(f"main_ttk/{image_filename}")
         img = ImageTk.PhotoImage(img_data)
         return tkb.Button(master=self, image=img, text=text,bootstyle="success").pack(anchor="center", ipady=5, pady=pady)
 
     @property
     def logoImg(self):
-        logoImgData=Image.open("main/logo.png")
+        logoImgData=Image.open("main_ttk/logo.png")
         img = ImageTk.PhotoImage(logoImgData, size=(77.68, 85.42))
-        return img
+        return img"""
 
 if __name__ == "__main__":
     app = App()
