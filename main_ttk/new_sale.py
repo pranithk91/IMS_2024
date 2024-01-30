@@ -136,6 +136,7 @@ class MainViewFrame(tkb.Frame):
                                           justify=LEFT, 
                                           font=("calibri", 12, "bold"), 
                                              cursor='hand2')
+        self.itemNameCheckbutton = ttk.Checkbutton(self.itemNameEntry,style='success.TCombobox' )
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
         self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
