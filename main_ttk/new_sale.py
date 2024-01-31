@@ -77,18 +77,31 @@ class MainViewFrame(ttk.Frame):
 #            else:
 #                pass
 
-
-        
+        patientNameQuery = """select * from Patients 
+                                where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')"""
+        currentDayPatients = loadDatabase(patientNameQuery)
+        currentDayPatientNames = currentDayPatients['Name'].tolist()
         
         self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
                                          
                                         font=("Calibri", 15, "bold"), style="success.TLabel", 
                                         justify="left")
         self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
-        self.clientNameEntry = ttk.Entry(master=self.clientGrid, 
-                                        style="success.TEntry", 
-                                        width=25
-                                        )
+        currentPatientName = StringVar()
+        self.clientNameEntry = ttk.Combobox(master=self.clientGrid, values=currentDayPatientNames,
+                                            textvariable= currentPatientName,
+                                          style='success.TCombobox',
+                                          justify=LEFT, 
+                                          font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        def on_name_select(event):
+            
+            currentPatientPhone, currentPatientGender = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Phone", "Gender"]
+            print(currentPatientPhone, currentPatientGender)
+            #self.clientPhoneEntry.insert(0, str(currentPatientPhone[0]))
+
+        self.clientNameEntry.bind('<<ComboboxSelected>>', on_name_select)
+
         self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
         #self.clientNameEntry.bind("<KeyRelease>", getUID)
         
@@ -114,10 +127,11 @@ class MainViewFrame(ttk.Frame):
         self.clientGenderCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
 
         self.radioSelect = StringVar()
-        self.clientRadioButton = ttk.Radiobutton(master=self.clientGrid, text="Medicine Only",variable=self.radioSelect, style="success.TRadiobutton" )
+
+        self.clientRadioButton = ttk.Checkbutton(master=self.clientGrid, text="Medicine Only",variable=self.radioSelect, style="success.TCheckbutton" )
         self.clientRadioButton.grid(row=2, column=1,sticky="w", padx = (10,30), pady=(15,0))
-        def radioButtonbind():
-            if self.clientRadioButton.value ==        
+        
+
         
         # Search Section
         self.searchGrid = ttk.Frame(master=self, bootstyle="default")
@@ -139,7 +153,6 @@ class MainViewFrame(ttk.Frame):
                                           justify=LEFT, 
                                           font=("calibri", 12, "bold"), 
                                              cursor='hand2')
-        self.itemNameCheckbutton = ttk.Checkbutton(self.itemNameEntry,style='success.TCombobox' )
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
         self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
