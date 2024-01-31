@@ -14,9 +14,7 @@ frame.pack()
 
 ttk.Label(frame, image=con_img).pack()
 
-s = ttk.Style()
-s.configure('success.TButton',         relief=[('pressed', 'groove'),
-                ('!pressed', 'ridge')])
+
 
 
 s = ttk.Style()
@@ -28,7 +26,9 @@ s.configure('Wild.TButton',
 s.map('Wild.TButton',
     foreground=[('disabled', 'yellow'),
                 ('pressed', 'red'),
-                ('active', 'blue')],
+                ('active', 'blue'),
+                ('!active', 'green')
+                ],
     background=[('disabled', 'magenta'),
                 ('pressed', '!focus', 'cyan'),
                 ('active', 'green')],

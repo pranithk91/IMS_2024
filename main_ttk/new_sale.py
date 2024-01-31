@@ -18,9 +18,9 @@ medSuggestionList = medicineDf['Name'].tolist()
 
 class MainViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,  width=950, height=800, relief=tk.GROOVE)
+        super().__init__(master,  width=950, height=850, relief=tk.GROOVE)
         self.pack_propagate(0)
-        self.grid(column=1, row=0, pady = (10,10), padx=(30,30))
+        self.grid(column=1, row=0, pady = (10,10), padx=(25,25))
 
 
         def clearBillTable():
@@ -113,8 +113,11 @@ class MainViewFrame(ttk.Frame):
                                              cursor='hand2')
         self.clientGenderCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
 
-
-
+        self.radioSelect = StringVar()
+        self.clientRadioButton = ttk.Radiobutton(master=self.clientGrid, text="Medicine Only",variable=self.radioSelect, style="success.TRadiobutton" )
+        self.clientRadioButton.grid(row=2, column=1,sticky="w", padx = (10,30), pady=(15,0))
+        def radioButtonbind():
+            if self.clientRadioButton.value ==        
         
         # Search Section
         self.searchGrid = ttk.Frame(master=self, bootstyle="default")
