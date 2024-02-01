@@ -10,6 +10,8 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
+from gspreaddb import pharmData, pharmacyWS
+import sqlite3
 
 medicineDf = loadDatabase("SELECT * FROM medicines")
 medSuggestionList = medicineDf['Name'].tolist()
@@ -78,7 +80,7 @@ class MainViewFrame(ttk.Frame):
 #                pass
 
         patientNameQuery = """select * from Patients 
-                                where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')"""
+                                where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) > date('now', '-1 day')"""
         currentDayPatients = loadDatabase(patientNameQuery)
         currentDayPatientNames = currentDayPatients['Name'].tolist()
         
@@ -96,12 +98,9 @@ class MainViewFrame(ttk.Frame):
                                              cursor='hand2')
         def on_name_select(event):
             
-            currentPatientPhone = currentDayPatients.loc[
-                currentDayPatients["Name"] == currentPatientName.get()]["Phone"]
-            currentPatientGender = currentDayPatients.loc[
-                currentDayPatients["Name"] == currentPatientName.get()]["Gender"]
-            currentPatientUID = currentDayPatients.loc[
-                currentDayPatients["Name"] == currentPatientName.get()]["UID"]
+            currentPatientPhone = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Phone"].tolist()
+            currentPatientGender = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Gender"].tolist()
+            currentPatientUID = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["UID"].tolist()
             self.clientPhoneEntry.insert(0, str(currentPatientPhone[0]))
             self.clientGenderCbox.set(currentPatientGender[0])
             self.clientUIDEntry.insert(0,currentPatientUID[0] )
@@ -342,7 +341,18 @@ class MainViewFrame(ttk.Frame):
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
         def confirmDetails():
-                    pass
+            pwsLastRowNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
+            for record in self.billTable.get_children():
+                recValues = list(self.billTable.item(record,'values'))
+                pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
+                pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
+                pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])
+                pwsLastRowNo+=1
+                #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
+                #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
+
+                print(recValues)
+            print (pwsLastRowNo)
         
 
 
