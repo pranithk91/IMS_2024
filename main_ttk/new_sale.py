@@ -58,8 +58,8 @@ class MainViewFrame(ttk.Frame):
         self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
         self.clientUIDEntry = ttk.Entry(master=self.clientGrid, 
                                         style="success.TEntry", 
-                                        width=25,
-                                        state=DISABLED
+                                        width=25
+                                        
                                         )
         
         self.clientUIDEntry.grid(row=1, column=0, sticky='w', padx = (30,30))        
@@ -96,11 +96,26 @@ class MainViewFrame(ttk.Frame):
                                              cursor='hand2')
         def on_name_select(event):
             
-            currentPatientPhone, currentPatientGender = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Phone", "Gender"]
-            print(currentPatientPhone, currentPatientGender)
-            #self.clientPhoneEntry.insert(0, str(currentPatientPhone[0]))
+            currentPatientPhone = currentDayPatients.loc[
+                currentDayPatients["Name"] == currentPatientName.get()]["Phone"]
+            currentPatientGender = currentDayPatients.loc[
+                currentDayPatients["Name"] == currentPatientName.get()]["Gender"]
+            currentPatientUID = currentDayPatients.loc[
+                currentDayPatients["Name"] == currentPatientName.get()]["UID"]
+            self.clientPhoneEntry.insert(0, str(currentPatientPhone[0]))
+            self.clientGenderCbox.set(currentPatientGender[0])
+            self.clientUIDEntry.insert(0,currentPatientUID[0] )
 
         self.clientNameEntry.bind('<<ComboboxSelected>>', on_name_select)
+
+        def autofillNames(event):
+            currChar = currentPatientName.get()
+            query="SELECT * FROM patients where name like '%{}%' and substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')".format(currChar)
+            updatedData = loadDatabase(query)
+            updatedList = updatedData['Name'].tolist()
+            #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
+            self.itemNameEntry.configure(values=updatedList)
+        self.clientNameEntry.bind("<KeyRelease>", autofillNames)
 
         self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
         #self.clientNameEntry.bind("<KeyRelease>", getUID)
@@ -157,14 +172,14 @@ class MainViewFrame(ttk.Frame):
 
         self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
 
-        def autofill(event):
+        def autofillMeds(event):
             currChar = self.itemNameEntry.get()
             query="SELECT * FROM medicines where name like '%{}%'".format(currChar)
             updatedData = loadDatabase(query)
             updatedList = updatedData['Name'].tolist()
             #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
             self.itemNameEntry.configure(values=updatedList)
-        self.itemNameEntry.bind("<KeyRelease>", autofill)
+        self.itemNameEntry.bind("<KeyRelease>", autofillMeds)
 
                    
             

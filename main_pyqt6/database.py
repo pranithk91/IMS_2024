@@ -79,6 +79,25 @@ def loadDatabase(query):
 
     return med_df    
 
+conn = sqlite3.connect('medicine_database.db')
+
+def select_all_meds(conn):
+    """
+    Query all rows in the tasks table
+    :param conn: the Connection object
+    :return:
+    """
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM patients where name like '%Hemanth%' and substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')")
+
+    rows = cur.fetchall()
+    mednames = []
+    for i in rows:
+        mednames.append(i[0])
+    return mednames
+  
+print(select_all_meds(conn))
+
 def loadPharmacy():
     conn = sqlite3.connect('medicine_database.db')
     query = "SELECT * FROM medicines"
