@@ -21,9 +21,9 @@ medSuggestionList = medicineDf['Name'].tolist()
 
 class ClientMainViewFrame(tkb.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,bootstyle="default", width=950, height=850, relief = tk.GROOVE)
+        super().__init__(master,bootstyle="default", width=950, height=800, relief = tk.GROOVE)
         self.pack_propagate(0)
-        self.grid(column=1, row=0, padx=(25,25), pady=(10,10))
+        self.grid(column=1, row=0, padx=(30,30), pady=(10,10))
         
         #self.windowWidth = root.winfo_width()
         #print(self.windowWidth)
