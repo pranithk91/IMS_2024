@@ -340,10 +340,14 @@ class MainViewFrame(ttk.Frame):
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
+        def getBillNo():
+            pass
         def confirmDetails():
-            pwsLastRowNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
+            pwsLastRowNo,pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
+            getBillNo()
             for record in self.billTable.get_children():
                 recValues = list(self.billTable.item(record,'values'))
+
                 pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
                 pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
                 pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])

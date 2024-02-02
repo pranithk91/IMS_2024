@@ -19,7 +19,7 @@ client = gs.authorize(credentials)
 Spread = client.open("OP Register Dev")
 pharmacyWS = Spread.worksheet("Pharmacy")
 def pharmData():
-        
+        pwsBillNoColNo = pharmacyWS.find("Bill No", in_row=1).col
         pwsMedNameColNo = pharmacyWS.find("Medicine name", in_row=1).col
         pwsDateColNo = pharmacyWS.find("Date", in_row=1).col
         pwsPatientNameColNo = pharmacyWS.find("Name", in_row=1).col
