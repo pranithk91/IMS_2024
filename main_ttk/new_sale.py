@@ -10,11 +10,12 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS
+from gspreaddb import pharmData, pharmacyWS, getMedData
 import sqlite3
 
-medicineDf = loadDatabase("SELECT * FROM medicines")
-medSuggestionList = medicineDf['Name'].tolist()
+#medicineDf = loadDatabase("SELECT * FROM medicines")
+#medSuggestionList = medicineDf['Name'].tolist()
+medSuggestionList = getMedData()
 #print(medSuggestionList)
 
 
@@ -171,13 +172,20 @@ class MainViewFrame(ttk.Frame):
 
         self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
 
+        #def autofillMeds(event):
+        #    currChar = self.itemNameEntry.get()
+        #    query="SELECT * FROM medicines where name like '%{}%'".format(currChar)
+        #    updatedData = loadDatabase(query)
+        #    updatedList = updatedData['Name'].tolist()
+        #    #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
+        #    self.itemNameEntry.configure(values=updatedList)
+
         def autofillMeds(event):
             currChar = self.itemNameEntry.get()
-            query="SELECT * FROM medicines where name like '%{}%'".format(currChar)
-            updatedData = loadDatabase(query)
-            updatedList = updatedData['Name'].tolist()
+            updatedList=[med for med in medSuggestionList if currChar.lower() in med.lower()]
             #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
             self.itemNameEntry.configure(values=updatedList)
+
         self.itemNameEntry.bind("<KeyRelease>", autofillMeds)
 
                    

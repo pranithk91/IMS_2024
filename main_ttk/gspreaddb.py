@@ -3,7 +3,7 @@ import pandas as pd
 #import pandas as pd
 import gspread as gs
 from google.oauth2 import service_account
-from gspread_pandas import Spread, Client
+#from gspread_pandas import Spread, Client
 
 SCOPES = [
 'https://www.googleapis.com/auth/spreadsheets',
@@ -18,6 +18,7 @@ client = gs.authorize(credentials)
 
 Spread = client.open("OP Register Dev")
 pharmacyWS = Spread.worksheet("Pharmacy")
+
 def pharmData():
         pwsBillNoColNo = pharmacyWS.find("Bill No", in_row=1).col
         pwsMedNameColNo = pharmacyWS.find("Medicine name", in_row=1).col
@@ -29,7 +30,15 @@ def pharmData():
 
         pwsLastRowNo = pharmacyWS.find("", in_column  = 1).row
         return pwsLastRowNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo
+medListWS = Spread.worksheet("Medicine List")
+def getMedData():
+        mlsMedNameColNo = medListWS.find("Name", in_row=1).col
+        medList = medListWS.col_values(mlsMedNameColNo)
+        medList = medList[2:]
+        medList.sort(key=str.lower)
+        return medList
 
+print(getMedData())
 
 #cellList = pharmacyWS.findall("Acnelak")
 #print(cellList)
