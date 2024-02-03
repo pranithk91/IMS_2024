@@ -31,6 +31,7 @@ def pharmData():
         pwsLastRowNo = pharmacyWS.find("", in_column  = 1).row
         return pwsLastRowNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo
 medListWS = Spread.worksheet("Medicine List")
+
 def getMedData():
         mlsMedNameColNo = medListWS.find("Name", in_row=1).col
         medList = medListWS.col_values(mlsMedNameColNo)
