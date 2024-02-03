@@ -351,7 +351,7 @@ class MainViewFrame(ttk.Frame):
         def getBillNo():
             pass
         def confirmDetails():
-            pwsLastRowNo,pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
+            pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
             getBillNo()
             for record in self.billTable.get_children():
                 recValues = list(self.billTable.item(record,'values'))

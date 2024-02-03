@@ -25,11 +25,12 @@ def pharmData():
         pwsDateColNo = pharmacyWS.find("Date", in_row=1).col
         pwsPatientNameColNo = pharmacyWS.find("Name", in_row=1).col
         pwsQtyColNo = pharmacyWS.find("Quantity", in_row=1).col
-        pwsPayModeColNo = pharmacyWS.find("Payment Mode", in_row=1).col
-        pwsDiscountColNo = pharmacyWS.find("Discount", in_row=1).col
+        
 
         pwsLastRowNo = pharmacyWS.find("", in_column  = 1).row
-        return pwsLastRowNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo
+        return pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo
+
+
 medListWS = Spread.worksheet("Medicine List")
 
 def getMedData():
@@ -38,6 +39,28 @@ def getMedData():
         medList = medList[2:]
         medList.sort(key=str.lower)
         return medList
+
+
+inoviceWS = Spread.worksheet("Inovices")
+
+def getInvoiceDate():
+        insLastRowNo = inoviceWS.find("", in_column  = 1).row
+        insPayModeColNo = inoviceWS.find("Payment Mode", in_row=1).col
+        insDiscountColNo = inoviceWS.find("Discount", in_row=1).col
+        insDateColNo = inoviceWS.find("Date", in_row=1).col
+        insPatientNameColNo = inoviceWS.find("Name", in_row=1).col 
+        insBillAmountColNo = inoviceWS.find("Bill Amount", in_row=1).col    
+        insCashColNo = inoviceWS.find("Cash", in_row=1).col
+        insUPIColNo = inoviceWS.find("UPI", in_row=1).col
+        insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
+
+        return insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo
+
+def getBillNo(insLastRowNo, insinvNoColNo):
+        
+        currBillNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+        return currBillNo
+
 
 print(getMedData())
 
