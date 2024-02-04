@@ -10,7 +10,7 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, medListData
+from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS
 import sqlite3
 
 medicineDf = medListData
@@ -252,7 +252,7 @@ class MainViewFrame(ttk.Frame):
                 self.qtySaleEntry.insert(0,1)
             else: currentEntry = int(self.qtySaleEntry.get())
             if currentEntry > 0 :
-                print(currentEntry)
+                
                 self.qtySaleEntry.delete(0,currentEntry)         
                 self.qtySaleEntry.insert(0,currentEntry+1)
         def quantityDecrease():
@@ -289,6 +289,17 @@ class MainViewFrame(ttk.Frame):
                                         style="success.TLabel",
                                         )
         self.qtyInStockLabel.grid(row=3, column=0, sticky="w", pady=30)
+        
+        self.update()
+        self.windowWidth = self.winfo_width()
+
+        self.warningLabel = ttk.Label(master=self,
+                                    text = "",font=("Calibri", 17), 
+                                style="TLabel.success" )
+        
+        
+        self.warningLabel.place(x=self.windowWidth//2, y = 300)
+        self.warningLabel.pack()
 
         self.billTableFrame = ttk.Frame(master=self, bootstyle="default")
         self.billTableFrame.pack(expand=True, fill="both", padx=27, pady=21)
@@ -332,24 +343,49 @@ class MainViewFrame(ttk.Frame):
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
-        def getBillNo():
-            pass
+        def addToInvoices():
+            insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceDate()
+            
+            clientName = self.clientNameEntry.get()
+            clientPhone = self.clientPhoneEntry.get()
+            if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
+                self.warningLabel.configure(text = "")
+            elif len(clientName)==0:
+                self.warningLabel.configure(text = "Warning: Invalid Name")
+            
+            elif len (clientPhone) != 10:
+                self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
+            else:
+                inoviceWS.update_cell(insLastRowNo, insDateColNo, strftime("%d-%b"))
+                inoviceWS.update_cell(insLastRowNo,insPatientNameColNo, clientName)
+                inoviceWS.update_cell(insLastRowNo,insBillAmountColNo, billTotal)
+            
+
+
+
+
+
         def confirmDetails():
-            pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo, pwsPayModeColNo, pwsDiscountColNo = pharmData()
-            getBillNo()
-            for record in self.billTable.get_children():
-                recValues = list(self.billTable.item(record,'values'))
+            pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
+            addToInvoices()
 
-                pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
-                pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
-                pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])
-                pwsLastRowNo+=1
-                #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
-                #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
+            if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
+                pass
 
-                print(recValues)
-            print (pwsLastRowNo)
-        
+            else:                
+                currInvoiceNo = getBillNo()
+                for record in self.billTable.get_children():
+                    recValues = list(self.billTable.item(record,'values'))
+                    pharmacyWS.update_cell(pwsLastRowNo,pwsBillNoColNo, currInvoiceNo)
+                    pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, strftime("%d-%b"))
+                    pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
+                    pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])
+                    pwsLastRowNo+=1
+                    #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
+                    #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
+                    self.warningLabel.configure(text = "")
+                
+            
 
 
         self.billConfirmButton = ttk.Button(master=self.billTableFrame, text="Confirm Details",

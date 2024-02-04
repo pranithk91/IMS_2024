@@ -27,9 +27,11 @@ def pharmData():
         pwsQtyColNo = pharmacyWS.find("Quantity", in_row=1).col
         
 
-        pwsLastRowNo = pharmacyWS.find("", in_column  = 1).row
+        pwsLastRowNo = pharmacyWS.find("", in_column  = pwsDateColNo).row
+
         return pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo
 
+pharmData()
 
 medListWS = Spread.worksheet("Medicine List")
 
@@ -63,8 +65,9 @@ medListData = medListData[1:]
 #print(medListData)
 
 inoviceWS = Spread.worksheet("Invoices")
+
 def getInvoiceDate():
-        insLastRowNo = inoviceWS.find("", in_column  = 1).row
+        
         insPayModeColNo = inoviceWS.find("Payment Mode", in_row=1).col
         insDiscountColNo = inoviceWS.find("Discount", in_row=1).col
         insDateColNo = inoviceWS.find("Date", in_row=1).col
@@ -73,12 +76,17 @@ def getInvoiceDate():
         insCashColNo = inoviceWS.find("Cash", in_row=1).col
         insUPIColNo = inoviceWS.find("UPI", in_row=1).col
         insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
-
+        insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
         return insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo
 
-def getBillNo(insLastRowNo, insinvNoColNo):
-        
+getInvoiceDate()
+def getBillNo():
+        insDateColNo = inoviceWS.find("Date", in_row=1).col
+        insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
+        insLastRowNo = len(inoviceWS.col_values(insDateColNo))
+
         currBillNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+
         return currBillNo
 
 
