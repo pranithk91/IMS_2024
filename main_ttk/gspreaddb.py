@@ -40,9 +40,29 @@ def getMedData():
         medList.sort(key=str.lower)
         return medList
 
+#def getMedDetails(medName):
+#        mlsMedNameColNo = medListWS.find("Name", in_row=1).col
+#        mlsMedQtyColNo = medListWS.find("Current Stock", in_row=1).col
+#        mlsMedNameRowNo = medListWS.find(medName, in_column=mlsMedNameColNo).row
+#        mlsMedTypeColNo = medListWS.find("Type", in_row=1).col
+#        mlsMedPriceColNo = medListWS.find("Price", in_row=1).col
+#        values_list = medListWS.row_values(mlsMedNameRowNo)
+#        medQty = values_list[mlsMedQtyColNo-1]
+#        medType = values_list[mlsMedTypeColNo-1]
+#        medPrice = values_list[mlsMedPriceColNo-1]
+#        return medQty, medType, medPrice
 
-inoviceWS = Spread.worksheet("Inovices")
 
+
+
+
+list_of_lists = medListWS.get_all_values()
+medListData = pd.DataFrame(list_of_lists)
+medListData.columns = medListData.iloc[0]
+medListData = medListData[1:]
+#print(medListData)
+
+inoviceWS = Spread.worksheet("Invoices")
 def getInvoiceDate():
         insLastRowNo = inoviceWS.find("", in_column  = 1).row
         insPayModeColNo = inoviceWS.find("Payment Mode", in_row=1).col
@@ -62,7 +82,7 @@ def getBillNo(insLastRowNo, insinvNoColNo):
         return currBillNo
 
 
-print(getMedData())
+
 
 #cellList = pharmacyWS.findall("Acnelak")
 #print(cellList)

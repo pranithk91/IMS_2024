@@ -10,12 +10,14 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, getMedData
+from gspreaddb import pharmData, pharmacyWS, medListData
 import sqlite3
 
-#medicineDf = loadDatabase("SELECT * FROM medicines")
+medicineDf = medListData
 #medSuggestionList = medicineDf['Name'].tolist()
-medSuggestionList = getMedData()
+medSuggestionList = list(set(medListData["Name"].tolist()))
+medSuggestionList.sort()
+medSuggestionList=medSuggestionList[1:]
 #print(medSuggestionList)
 
 
@@ -157,11 +159,24 @@ class MainViewFrame(ttk.Frame):
                                       style="success.TLabel")
         self.itemNameLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
-        def on_option_change(event):
-            value = self.itemNameEntry.get()
+
+        #Update Quantity Label on medicine option select
+        def onMedNameSelect(event):
+            global currentMedQty
+            global currentMedPrice
+            global currentMedType
+            currentMedName = self.itemNameEntry.get()
             #lab2.destroy()
-            currentMedQty = medicineDf.loc[medicineDf["Name"] == value]["Current Stock"].tolist()
-            self.qtyInStockLabel.configure(text="Quantity in Stock:"+ str(currentMedQty[0]))  
+            currentMedQty = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Current Stock"].iloc[0])
+            currentMedPrice = float(medicineDf.loc[medicineDf["Name"] == currentMedName]["Price"].iloc[0])
+            currentMedType = str(medicineDf.loc[medicineDf["Name"] == currentMedName]["Type"].iloc[0])
+            
+            self.qtyInStockLabel.configure(text="Quantity in Stock:"+ str(currentMedQty))  
+        
+        def autofillMeds(event):
+            currChar = self.itemNameEntry.get()
+            updatedList=[med for med in medSuggestionList if currChar.lower() in med.lower()]
+            self.itemNameEntry.configure(values=updatedList)
 
         self.itemNameEntry = ttk.Combobox(master=self.searchGrid, values=medSuggestionList,
                                           style='success.TCombobox',
@@ -170,66 +185,36 @@ class MainViewFrame(ttk.Frame):
                                              cursor='hand2')
         self.itemNameEntry.grid(row=1, column=0, sticky='w', padx = (30,20))
 
-        self.itemNameEntry.bind('<<ComboboxSelected>>', on_option_change)
+        self.itemNameEntry.bind('<<ComboboxSelected>>', onMedNameSelect)
 
-        #def autofillMeds(event):
-        #    currChar = self.itemNameEntry.get()
-        #    query="SELECT * FROM medicines where name like '%{}%'".format(currChar)
-        #    updatedData = loadDatabase(query)
-        #    updatedList = updatedData['Name'].tolist()
-        #    #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
-        #    self.itemNameEntry.configure(values=updatedList)
 
-        def autofillMeds(event):
-            currChar = self.itemNameEntry.get()
-            updatedList=[med for med in medSuggestionList if currChar.lower() in med.lower()]
-            #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
-            self.itemNameEntry.configure(values=updatedList)
+
+
 
         self.itemNameEntry.bind("<KeyRelease>", autofillMeds)
 
                    
             
 
-        #self.itemNameEntry.bind('<KeyPress>', AutoComplete.key_pressed)
-        #self.itemNameEntry.bind('<BackSpace>', AutoComplete.backspace)
-        #self.itemNameEntry.bind('<Tab>', AutoComplete.tab_completion)
-        #self.itemNameEntry.bind('<Up>', AutoComplete.up_direction)
-        #self.itemNameEntry.bind('<Down>', AutoComplete.down_direction)
+
         
 
-        """self.medicineDropDown = CTkScrollableDropdown(self.itemNameEntry, 
-                                                      values=medSuggestionList, 
-                                                      command=lambda e: fillSelectedValue(e), 
-                                                      autocomplete=True)"""
     
-        # Fill the entry with selected drop down value    
-        # adding this line
         
-        def fillSelectedValue(value):
-            
-            currentEntry = len(self.itemNameEntry.get())
-            self.itemNameEntry.delete(0,currentEntry)
-            self.itemNameEntry.insert(0,value)
-            currentMedQty = medicineDf.loc[medicineDf["Name"] == value]["Quantity"].tolist()           
-            self.qtyInStockLabel.configure(text="Quantity in Stock:"+ str(currentMedQty[0]))
-        # Get the details of the selected medicine from the dropdown value
-        
-        def getMedDetails():
-            global currentMedQty 
-            global currentMedPrice
-            global currentMedType 
+        def addToBill():
+            #global currentMedQty 
+            #global currentMedPrice
+            #global currentMedType 
             global currentMedName
             global billTotal 
             
             
             currentMedName = self.itemNameEntry.get()
             currentSaleQty = self.qtySaleEntry.get()
-            currentMedQty = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Current Stock"].iloc[0])
-            currentMedPrice = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Price"].iloc[0])
-            currentMedType = str(medicineDf.loc[medicineDf["Name"] == currentMedName]["Type"].iloc[0])
+            #currentMedQty,currentMedType,currentMedPrice = getMedDetails(currentMedName)
+
             
-            totalSalePrice = int(currentSaleQty)*currentMedPrice
+            totalSalePrice = int(currentSaleQty)*float(currentMedPrice)
             
             #numRows=self.billTable.rows
   
@@ -238,12 +223,11 @@ class MainViewFrame(ttk.Frame):
             self.qtySaleEntry.delete(0,len(currentSaleQty))
             #print("number of rows:",self.billTable.rows)
             if len(self.billTable.get_children()) ==  1: #If there is one entry in table
-                billTotal = totalSalePrice
+                billTotal = int(totalSalePrice)
             elif len(self.billTable.get_children()) > 1: #If there are multiple entries in table
-                billTotal = billTotal+totalSalePrice
+                billTotal = int(billTotal)+int(totalSalePrice)
             self.billTotalLabel.configure(text= "Bill Total: " + str(billTotal))
-            #print(type(currentMedType), type(currentMedName), type(currentMedQty), type(currentMedPrice), type(currentSaleQty), type(totalSalePrice))
-            
+            self.qtyInStockLabel.configure(text="Quantity in Stock:")
             
             #print("Bill Total:",billTotal)
         
@@ -253,7 +237,7 @@ class MainViewFrame(ttk.Frame):
 
         self.addToBillButton = ttk.Button(master=self.searchGrid, text="Add to Bill", 
                                       style="success.TButton", 
-                                      command=getMedDetails)
+                                      command=addToBill)
         self.addToBillButton.grid(row=1, column=2, sticky='e', padx=15)
 
 

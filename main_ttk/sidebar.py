@@ -16,7 +16,7 @@ class MedicineApp(ttk.Frame):
     def __init__(self, master):
         super().__init__(master)
         #self.pack_propagate(0)
-        self.sidebarFrame=ttk.Frame(master,width=300, height=850, relief = tk.GROOVE)
+        self.sidebarFrame=ttk.Frame(master,width=300, height=950, relief = tk.GROOVE)
         self.sidebarFrame.grid(column=0, row=0, padx=(25,0))
         #self.pack(fill="y", anchor="w", side="left")
 
