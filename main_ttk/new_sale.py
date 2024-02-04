@@ -274,7 +274,7 @@ class MainViewFrame(ttk.Frame):
         self.qtyDecreaseButton.pack(side="left", anchor="w")
         self.qtySaleEntry = ttk.Entry(master=quantity_frame, #placeholder_text=0,
                                        style="success.TEntry", font=("Arial Black", 16),
-                                       width=10
+                                       width=5
                                         )
         self.qtySaleEntry.pack(side="left", anchor="w", padx=10)
         self.qtyIncreaseButton = ttk.Button(master=quantity_frame, text="+", width=5,  
@@ -335,7 +335,7 @@ class MainViewFrame(ttk.Frame):
         self.billTable.heading("Quantity", text="Quantity", anchor=W)
         self.billTable.heading("Total Price", text="Total Price", anchor=W)
    
-        self.billTable.pack(expand=True, fill='both')
+        self.billTable.pack(expand=True, fill='both', pady=(10,0))
 
         self.billTotalLabel = ttk.Label(master=self.billTableFrame, text="Bill Total: 0",
                                        font=("Calibri", 15, "bold"), 
@@ -384,9 +384,28 @@ class MainViewFrame(ttk.Frame):
                     #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
                     #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
                     self.warningLabel.configure(text = "")
-                
+            for record in self.billTable.get_children():
+                self.billTable.delete(record)                  
             
+        def selectRecord(event):
+            # Clear entry boxes
+            self.itemNameEntry.delete(0,END)
+            self.qtySaleEntry.delete(0,END)
+            
+            
+            # Grab record Number
+            selected = self.billTable.focus()
+            # Grab record values
+            values = self.billTable.item(selected,'values')
+            values = list(values)
+            print(values)
+            # outpus to entry boxes
+            self.itemNameEntry.insert(0,values[1])
+            self.qtySaleEntry.insert(0,values[4])
+            #self..insert(0, values[6])"""
 
+        #def update_record():
+        self.billTable.bind("<Button-1>", selectRecord)
 
         self.billConfirmButton = ttk.Button(master=self.billTableFrame, text="Confirm Details",
                                       style="success.TButton",
