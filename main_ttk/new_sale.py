@@ -398,14 +398,19 @@ class MainViewFrame(ttk.Frame):
             # Grab record values
             values = self.billTable.item(selected,'values')
             values = list(values)
+            self.billTable.delete(selected)
+            global billTotal
             print(values)
             # outpus to entry boxes
             self.itemNameEntry.insert(0,values[1])
             self.qtySaleEntry.insert(0,values[4])
+            billTotal = int(billTotal)-float(values[5])
+            self.billTotalLabel.configure(text= "Bill Total: " + str(billTotal))
+            #self.qtyInStockLabel.configure(text="Quantity in Stock:")
             #self..insert(0, values[6])"""
 
         #def update_record():
-        self.billTable.bind("<Button-1>", selectRecord)
+        self.billTable.bind("<Double-Button-1>", selectRecord)
 
         self.billConfirmButton = ttk.Button(master=self.billTableFrame, text="Confirm Details",
                                       style="success.TButton",

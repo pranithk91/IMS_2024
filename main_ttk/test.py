@@ -136,3 +136,23 @@ c.setFillColorRGB(1,0,0) # font colour
 #c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
 c.showPage()
 c.save()
+
+import tkinter as tk
+from tkinter import messagebox
+
+def check_length(event):
+    user_input = entry.get()
+    if len(user_input) != 10:
+        messagebox.showwarning("Warning", "Input must be 10 digits.")
+
+root = tk.Tk()
+root.title("Input Length Checker")
+
+label = tk.Label(root, text="Enter 10-digit input:")
+label.pack(pady=5)
+
+entry = tk.Entry(root)
+entry.pack(pady=5)
+entry.bind("<FocusOut>", check_length)  # Bind event listener to check length when focus leaves the entry field
+
+root.mainloop()
