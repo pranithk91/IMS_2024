@@ -1,9 +1,9 @@
 from customtkinter import *
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter import *
 from PIL import Image, ImageTk
-from database import loadDatabase, getClientid
+#from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
 import pandas as pd
 from CTkTable import CTkTable
@@ -13,15 +13,13 @@ import sqlite3
 import ttkbootstrap as tkb
 #from treeactions import *
 from datetime import datetime
-
-medicineDf = loadDatabase("SELECT * FROM medicines")
-medSuggestionList = medicineDf['Name'].tolist()
+from gspreaddb import getOPData,getClientid, opWS
 
 
 
-class ClientMainViewFrame(tkb.Frame):
+class ClientMainViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
-        super().__init__(master,bootstyle="default", width=950, height=850, relief = tk.GROOVE)
+        super().__init__(master, width=950, height=850, relief = tk.GROOVE)
         self.pack_propagate(0)
         self.grid(column=1, row=0, padx=(30,30), pady=(10,10))
         
@@ -60,21 +58,26 @@ class ClientMainViewFrame(tkb.Frame):
 
             if len(currentClientName)==0:
                 self.warningLabel.configure(text = "Warning: Invalid Name")
+                messagebox.showwarning("Warning", "Invalid Name")
             
             elif len (currentClientPhone) != 10:
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
-
+                messagebox.showwarning("Warning", " Phone number needs 10 digits.")
             else:
                 client_id = getClientid(currentClientName)
-                self.opTable.insert("",END, values=[strftime("%d-%m-%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
+                self.opTable.insert("",END, values=[client_id, strftime("%d-%m-%Y, %H:%M:%S"),  currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
 
+                oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+                opWS.update_cell(opLastRow, oPUIDColNo, client_id)
+                opWS.update_cell(opLastRow, oPDateColNo, strftime("%d-%b"))
+                opWS.update_cell(opLastRow, oPPhoneColNo, currentClientPhone)
+                opWS.update_cell(opLastRow, oPNameColNo, currentClientName)
+                opWS.update_cell(opLastRow, oPGenderColNo, currentClientGender)
+                opWS.update_cell(opLastRow, oPAgeColNo, currentClientAge)                
+                opWS.update_cell(opLastRow, oPPayModeColNo, currentPaymentMode)
+                opWS.update_cell(opLastRow, oPAmountColNo, currentAmount)
                 
-                conn = sqlite3.connect('medicine_database.db')
-                conn.execute("""
-                    INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (strftime("%d-%m-%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc,currentPaymentMode, currentAmount))
-                conn.commit()     
+     
                 self.clientUIDEntry.configure(state=NORMAL)
                 self.clientUIDEntry.delete(0,END)
                 self.clientUIDEntry.configure(state=DISABLED)
@@ -108,17 +111,18 @@ class ClientMainViewFrame(tkb.Frame):
         def fetchDetailsDate():
             selected_date = self.dateFetchEntry.entry.get()
             
-            selected_date = datetime.strptime(selected_date, "%d-%m-%Y").strftime("%d-%m-%Y")
-            print(selected_date)
+            selected_date = datetime.strptime(selected_date, "%d-%m-%Y").strftime("%d-%b")
+            
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+            
+            rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(selected_date, in_column=oPDateColNo)]
+            
 
-            query = f"SELECT * FROM Patients WHERE substr(TimeStamp,1,10) = ?"
-            conn = sqlite3.connect('medicine_database.db')
-            result = conn.execute(query, (selected_date,)).fetchall()
-            print(len(result))
+            
             for item in self.opTable.get_children():
                 self.opTable.delete(item)
 
-            for x in result:
+            for x in rowsWithDate:
                 self.opTable.insert("", END, values=list(x))
 
         def fetchDetailsUID():
@@ -131,16 +135,15 @@ class ClientMainViewFrame(tkb.Frame):
             for item in self.opTable.get_children():
                 self.opTable.delete(item)
 
-            query = f"SELECT * FROM Patients WHERE UID = ?"
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
 
-            conn = sqlite3.connect('medicine_database.db')
-            result = conn.execute(query, (search_value,)).fetchall()
+            rowsWithUID = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPUIDColNo)]
 
-            if not result:
+            if len(rowsWithUID)==0:
                 self.warningLabel.configure(text="No records found for the provided UID.")
                 return
 
-            for x in result:
+            for x in rowsWithUID:
                 self.opTable.insert("", END, values=list(x))
             
             self.uidFetchEntry.delete(0,END)
@@ -156,12 +159,12 @@ class ClientMainViewFrame(tkb.Frame):
             for item in self.opTable.get_children():
                 self.opTable.delete(item)
 
-            query = f"SELECT * FROM Patients WHERE Phone = ?"
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
 
-            conn = sqlite3.connect('medicine_database.db')
-            result = conn.execute(query, (search_value,)).fetchall()
+            rowsWithPhone = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPPhoneColNo)]
 
-            for x in result:
+
+            for x in rowsWithPhone:
                 self.opTable.insert("", END, values=list(x))
 
         def fetchDetailsName():
@@ -174,16 +177,15 @@ class ClientMainViewFrame(tkb.Frame):
             for item in self.opTable.get_children():
                 self.opTable.delete(item)
 
-            query = f"SELECT * FROM Patients WHERE Name = ?"
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
 
-            conn = sqlite3.connect('medicine_database.db')
-            result = conn.execute(query, (search_value,)).fetchall()
+            rowsWithName = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPNameColNo)]
 
-            if not result:
+            if len(rowsWithName)==0:
                 self.warningLabel.configure(text="No records found for the provided patient name.")
                 return
 
-            for x in result:
+            for x in rowsWithName:
                 self.opTable.insert("", END, values=list(x))
 
 
@@ -202,15 +204,15 @@ class ClientMainViewFrame(tkb.Frame):
         
         # Title Section    
         
-        self.titleFrame = tkb.Frame(master=self, bootstyle="default")
+        self.titleFrame = ttk.Frame(master=self)
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
         
-        self.titleLabel = tkb.Label(master=self.titleFrame, text="Patient Registration", 
-                                   font=("Calibri", 25, "bold"), bootstyle="success" )
+        self.titleLabel = ttk.Label(master=self.titleFrame, text="Patient Registration", 
+                                   font=("Calibri", 25, "bold"), style = "TLabel.success" )
         self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
 
 
-        self.timeLabel = tkb.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), bootstyle="success" )
+        self.timeLabel = ttk.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), style = "TLabel.success" )
         self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,0))
         def get_time():
             string = strftime('%I:%M:%S %p')
@@ -219,15 +221,15 @@ class ClientMainViewFrame(tkb.Frame):
         get_time()
 
         # Client Section
-        self.clientGrid = tkb.Frame(master=self, bootstyle="default")
+        self.clientGrid = ttk.Frame(master=self)
         self.clientGrid.pack(fill="both", padx=27, pady=(31, 0))
         
-        self.clientUIDLabel = tkb.Label(master=self.clientGrid, text="Patient UID", 
-                                        font=("Calibri", 15, "bold"), bootstyle="success", 
+        self.clientUIDLabel = ttk.Label(master=self.clientGrid, text="Patient UID", 
+                                        font=("Calibri", 15, "bold"), style = "TLabel.success", 
                                         justify="left")
         self.clientUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
-        self.clientUIDEntry = tkb.Entry(master=self.clientGrid, 
-                                        bootstyle="success", 
+        self.clientUIDEntry = ttk.Entry(master=self.clientGrid, 
+                                        style = "TEntry.success", 
                                         width=25,
                                         state=DISABLED
                                         )
@@ -250,34 +252,34 @@ class ClientMainViewFrame(tkb.Frame):
 
         
         
-        self.clientNameLabel = tkb.Label(master=self.clientGrid, text="Patient Name", 
+        self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
                                          
-                                        font=("Calibri", 15, "bold"), bootstyle="success", 
+                                        font=("Calibri", 15, "bold"), style = "TLabel.success", 
                                         justify="left")
         self.clientNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
-        self.clientNameEntry = tkb.Entry(master=self.clientGrid, 
-                                        bootstyle="success", 
+        self.clientNameEntry = ttk.Entry(master=self.clientGrid, 
+                                        style = "TEntry.success", 
                                         width=25
                                         )
         self.clientNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
         self.clientNameEntry.bind("<KeyRelease>", getUID)
         
-        self.clientPhoneLabel = tkb.Label(master=self.clientGrid, 
+        self.clientPhoneLabel = ttk.Label(master=self.clientGrid, 
                                       text="Phone No:", font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left")
+                                      style = "TLabel.success", justify="left")
         self.clientPhoneLabel.grid(row=0, column=2, sticky="w") 
-        self.clientPhoneEntry = tkb.Entry(master=self.clientGrid, 
-                                         bootstyle="success", width=25
+        self.clientPhoneEntry = ttk.Entry(master=self.clientGrid, 
+                                         style = "TEntry.success", width=25
                                          )
         
         self.clientPhoneEntry.grid(row=1, column=2, sticky='w')    
 
 
-        self.clientGenderLabel  = tkb.Label(master=self.clientGrid,
+        self.clientGenderLabel  = ttk.Label(master=self.clientGrid,
                                            text = "Gender",font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left" )
+                                      style = "TLabel.success", justify="left" )
         self.clientGenderLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
-        self.clientGenderCbox = tkb.Combobox(master=self.clientGrid, 
+        self.clientGenderCbox = ttk.Combobox(master=self.clientGrid, style="TCombobox.success",
                                             values=("Male", "Female", "Other"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                              cursor='hand2')
@@ -285,78 +287,78 @@ class ClientMainViewFrame(tkb.Frame):
 
 
 
-        self.clientdetGrid = tkb.Frame(master=self,bootstyle="default")
+        self.clientdetGrid = ttk.Frame(master=self)
         self.clientdetGrid.pack(fill="both", padx=27, pady=(20, 0))
 
 
 
                           
-        self.clientAgeLabel  = tkb.Label(master=self.clientdetGrid,
+        self.clientAgeLabel  = ttk.Label(master=self.clientdetGrid,
                                            text = "Age",font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left" )
+                                      style = "TLabel.success", justify="left" )
         self.clientAgeLabel.grid(row=0, column=0, sticky="w",padx = (30,102))
-        self.clientAgeEntry = tkb.Entry(master=self.clientdetGrid, 
-                                         bootstyle="success", 
+        self.clientAgeEntry = ttk.Entry(master=self.clientdetGrid, 
+                                         style = "TEntry.success", 
                                          width=14)
         self.clientAgeEntry.grid(row=1, column=0, sticky='w',padx = (30,102)) 
 
-        self.clientOPLabel  = tkb.Label(master=self.clientdetGrid,
+        self.clientOPLabel  = ttk.Label(master=self.clientdetGrid,
                                            text = "OP/Proc",font=("Calibri", 15, "bold"), 
-                                      bootstyle="success", justify="left" )
+                                      style = "TLabel.success", justify="left" )
         self.clientOPLabel.grid(row=0, column=1, sticky="w")
-        self.clientOPCbox = tkb.Combobox(master=self.clientdetGrid, 
+        self.clientOPCbox = ttk.Combobox(master=self.clientdetGrid, 
                                             values=("OP", "Procedure"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                             width=18, height=40, cursor='hand2')
         self.clientOPCbox.grid(row=1, column=1,sticky="w", padx = (0,27))
 
         
-        self.clientPayModeLabel  = tkb.Label(master=self.clientdetGrid,
+        self.clientPayModeLabel  = ttk.Label(master=self.clientdetGrid,
                                            text = "Payment Mode",font=("Calibri", 15, "bold"), 
-                                            bootstyle="success", justify="left" )
+                                            style = "TLabel.success", justify="left" )
         self.clientPayModeLabel.grid(row=0, column=2, sticky="w")
-        self.clientPayModeCbox = tkb.Combobox(master=self.clientdetGrid, 
+        self.clientPayModeCbox = ttk.Combobox(master=self.clientdetGrid, style="TCombobox.success",
                                             values=("Cash", "UPI", "Both"), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                             width=18, height=40, cursor='hand2')
         self.clientPayModeCbox.grid(row=1, column=2,sticky="w", padx = (0,27))
 
 
-        self.clientAmountLabel  = tkb.Label(master=self.clientdetGrid,
+        self.clientAmountLabel  = ttk.Label(master=self.clientdetGrid,
                                            text = "Amount",font=("Calibri", 15, "bold"), 
-                                     bootstyle="success", justify="left" )
+                                     style = "TLabel.success", justify="left" )
         self.clientAmountLabel.grid(row=0, column=3, sticky="w")
-        self.clientAmountEntry = tkb.Entry(master=self.clientdetGrid, 
-                                         bootstyle="success", 
+        self.clientAmountEntry = ttk.Entry(master=self.clientdetGrid, 
+                                         style = "TEntry.success", 
                                           width=15)
         self.clientAmountEntry.grid(row=1, column=3, sticky='w',padx = (0,30)) 
         
         self.update()
         self.windowWidth = self.winfo_width()
         print(self.windowWidth)
-        self.confirmButtonGrid = tkb.Frame(master=self,bootstyle="default", width=200)
+        self.confirmButtonGrid = ttk.Frame(master=self, width=200)
         
         self.confirmButtonGrid.place(x=self.windowWidth//2)
         self.confirmButtonGrid.pack(pady=(30,30))
 
         
-        self.confirmDetailsButton = tkb.Button(master=self.confirmButtonGrid, text="Register",
+        self.confirmDetailsButton = ttk.Button(master=self.confirmButtonGrid, text="Register",
                                        #font=("Calibri", 15), 
-                                      bootstyle="success", 
+                                      style = "TButton.success", 
                                       #height=20,  
                                       command=addToTable)
         self.confirmDetailsButton.grid(row=0, column=0, sticky="w",padx = (0,30))
 
-        self.clearEntriesButton = tkb.Button(master=self.confirmButtonGrid, text="Clear Entries",
+        self.clearEntriesButton = ttk.Button(master=self.confirmButtonGrid, text="Clear Entries",
                                        #font=("Calibri", 15), 
-                                      bootstyle="success", 
+                                      style = "TButton.success", 
                                       #height=20,  
                                       command=clearEntries)
         self.clearEntriesButton.grid(row=0, column=1, sticky="w")
 
-        self.warningLabel = tkb.Label(master=self,
+        self.warningLabel = ttk.Label(master=self,
                                            text = "",font=("Calibri", 17), 
-                                     bootstyle="success" )
+                                     style = "TLabel.success" )
         
         
         self.warningLabel.place(x=self.windowWidth//2, y = 300)
@@ -364,7 +366,7 @@ class ClientMainViewFrame(tkb.Frame):
         
         
         #Fetch Details
-        self.fetchDetGrid = tkb.Frame(master=self, bootstyle="default")
+        self.fetchDetGrid = ttk.Frame(master=self)
         self.fetchDetGrid.place(x=self.windowWidth//2)
         self.fetchDetGrid.pack(pady=(20, 0))
 
@@ -373,8 +375,8 @@ class ClientMainViewFrame(tkb.Frame):
                 self.uidFetchEntry.delete(0, END)
             else :
                 pass
-        self.uidFetchEntry = tkb.Entry(master=self.fetchDetGrid, 
-                                         bootstyle="success", 
+        self.uidFetchEntry = ttk.Entry(master=self.fetchDetGrid, 
+                                         style = "TEntry.success", 
                                           width=15)
         self.uidFetchEntry.grid(row=0,column=0)
         self.uidFetchEntry.insert(0, "Enter UID")
@@ -386,14 +388,14 @@ class ClientMainViewFrame(tkb.Frame):
         self.dateFetchEntry.grid(row=0,column=1,padx=(80,30))
 
 
-        self.searchByCbox = tkb.Combobox(master=self.fetchDetGrid, 
+        self.searchByCbox = ttk.Combobox(master=self.fetchDetGrid, style= 'TCombobox.success',
                                             values=("UID", "Patient Name", "Phone", "Date" ), state='readonly', 
                                             justify=CENTER, font=("calibri", 12, "bold"), 
                                              cursor='hand2')
         self.searchByCbox.grid(row=0, column=2,sticky="w", pady=20, padx = (0,30))
 
-        self.fetchDetailsButton = tkb.Button(master=self.fetchDetGrid, text="Fetch Details",
-                                       bootstyle="success",
+        self.fetchDetailsButton = ttk.Button(master=self.fetchDetGrid, text="Fetch Details",
+                                       style = "TButton.success",
                                       command=fetchDetails)
         self.fetchDetailsButton.grid(row=0, column=3,sticky="w" ,pady=(0,0),padx = (0,30))
 
@@ -401,22 +403,22 @@ class ClientMainViewFrame(tkb.Frame):
 
         
         #Table section
-        self.opTableFrame = tkb.Frame(master=self,  bootstyle="default")
+        self.opTableFrame = ttk.Frame(master=self  )
         self.opTableFrame.pack(expand=True, fill="both", padx=27, pady=20)
 
    
 
 
 
-        self.refreshTableButton = tkb.Button(master=self.opTableFrame, text="Refresh Table",
-                                       bootstyle="success", 
+        self.refreshTableButton = ttk.Button(master=self.opTableFrame, text="Refresh Table",
+                                       style = "TButton.success", 
                                       command=refreshTable)
         self.refreshTableButton.pack(side="top",  anchor = "ne" ,pady=(10,10)) 
 
         
 
-        self.opTable = tkb.Treeview(master=self.opTableFrame, bootstyle="success",
-                                    columns=["Time Stamp", "UID", "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Payment Mode", "Amount"],
+        self.opTable = ttk.Treeview(master=self.opTableFrame, style = "Treeview.success",
+                                    columns=["UID", "Time Stamp",  "Patient Name", "Phone No.", "Gender", "Age", "OP/Proc", "Payment Mode", "Amount"],
                                     show="headings",
                                     #yscrollcommand=self.treeSrollBar,
                                     selectmode="extended",
@@ -446,8 +448,8 @@ class ClientMainViewFrame(tkb.Frame):
 
         #self.opTable.pack(expand=True)
 
-        self.billTotalLabel = tkb.Label(master=self.opTableFrame, text="Bill Total: 0",
-                                       bootstyle="success", justify="right"
+        self.billTotalLabel = ttk.Label(master=self.opTableFrame, text="Bill Total: 0",
+                                       style = "TLabel.success", justify="right"
                                         )
         self.billTotalLabel.pack(anchor="ne", side="right")
 
@@ -496,10 +498,10 @@ class ClientMainViewFrame(tkb.Frame):
         #def update_record():
         self.opTable.bind("<Button-1>", selectRecord)
 
-        self.buttonFrame = tkb.Frame(master=self,  bootstyle="default")
+        self.buttonFrame = ttk.Frame(master=self)
         self.buttonFrame.pack(fill="x", expand="yes", padx=20)
 
-        self.editRecordButton = tkb.Button(self.buttonFrame, text="Edit Record", bootstyle="success", command=selectRecord)
+        self.editRecordButton = ttk.Button(self.buttonFrame, text="Edit Record", style = "TButton.success", command=selectRecord)
         self.editRecordButton.grid(row=0, column=0, padx=10, pady=10)
 
         """update_button = Button(button_frame, text="Update Record", command=update_record)

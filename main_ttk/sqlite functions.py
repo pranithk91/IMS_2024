@@ -50,4 +50,40 @@ def getMedDetails():
     #print(type(currentMedType), type(currentMedName), type(currentMedQty), type(currentMedPrice), type(currentSaleQty), type(totalSalePrice))
     
     
-    #print("Bill Total:",billTotal)           
+    #print("Bill Total:",billTotal)   
+
+
+
+    # Add client to db         
+    conn = sqlite3.connect('medicine_database.db')
+    conn.execute("""
+            INSERT INTO Patients (TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (strftime("%d-%m-%Y, %H:%M:%S"), client_id, currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc,currentPaymentMode, currentAmount))
+        conn.commit()
+    
+    #Fetch by dates
+    query = f"SELECT * FROM Patients WHERE substr(TimeStamp,1,10) = ?"
+    conn = sqlite3.connect('medicine_database.db')
+    result = conn.execute(query, (selected_date,)).fetchall()
+    print(len(result))
+    for item in self.opTable.get_children():
+        self.opTable.delete(item)
+
+    for x in result:
+        self.opTable.insert("", END, values=list(x))
+
+    query = f"SELECT * FROM Patients WHERE UID = ?"
+
+    conn = sqlite3.connect('medicine_database.db')
+    result = conn.execute(query, (search_value,)).fetchall()
+
+    query = f"SELECT * FROM Patients WHERE Phone = ?"
+
+    conn = sqlite3.connect('medicine_database.db')
+    result = conn.execute(query, (search_value,)).fetchall()    
+
+    query = f"SELECT * FROM Patients WHERE Name = ?"
+
+    conn = sqlite3.connect('medicine_database.db')
+    result = conn.execute(query, (search_value,)).fetchall()

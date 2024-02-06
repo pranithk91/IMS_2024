@@ -1,6 +1,6 @@
 from customtkinter import *
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from PIL import Image
 from database import loadDatabase
 from CTkScrollableDropdown import *
@@ -350,11 +350,15 @@ class MainViewFrame(ttk.Frame):
             clientPhone = self.clientPhoneEntry.get()
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 self.warningLabel.configure(text = "")
-            elif len(clientName)==0:
+            
+            if len(clientName)==0:
                 self.warningLabel.configure(text = "Warning: Invalid Name")
+                messagebox.showwarning("Warning", "Invalid Name")
+
             
             elif len (clientPhone) != 10:
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
+                messagebox.showwarning("Warning", " Phone number needs 10 digits.")
             else:
                 inoviceWS.update_cell(insLastRowNo, insDateColNo, strftime("%d-%b"))
                 inoviceWS.update_cell(insLastRowNo,insPatientNameColNo, clientName)

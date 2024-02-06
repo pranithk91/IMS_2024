@@ -138,16 +138,3 @@ c.showPage()
 c.save()
 
 
-
-def getInvoiceDate():
-        insFirstRow = inoviceWS.row_values(1)
-        insinvNoColNo= insFirstRow.index("Inovice No")+1
-        insPatientNameColNo= insFirstRow.index("Name")+1
-        insBillAmountColNo= insFirstRow.index("Bill Amount")+1
-        insDiscountColNo= insFirstRow.index("Discount")+1
-        insPayModeColNo= insFirstRow.index("Payment Mode")+1
-        insCashColNo= insFirstRow.index("Cash")+1
-        insUPIColNo= insFirstRow.index("UPI")+1
-        insDateColNo = insFirstRow.index("Date")+1
-        insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
-        print(insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo)

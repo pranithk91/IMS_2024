@@ -3,8 +3,10 @@ import pandas as pd
 #import pandas as pd
 import gspread as gs
 from google.oauth2 import service_account
+import time
+import datetime
 #from gspread_pandas import Spread, Client
-
+start_time = time.time()
 SCOPES = [
 'https://www.googleapis.com/auth/spreadsheets',
 'https://www.googleapis.com/auth/drive'
@@ -17,23 +19,32 @@ credentials = service_account.Credentials.from_service_account_file(
 client = gs.authorize(credentials)
 
 Spread = client.open("OP Register Dev")
-pharmacyWS = Spread.worksheet("Pharmacy")
 
+
+pharmacyWS = Spread.worksheet("Pharmacy")
 def pharmData():
-        pwsBillNoColNo = pharmacyWS.find("Bill No", in_row=1).col
-        pwsMedNameColNo = pharmacyWS.find("Medicine name", in_row=1).col
-        pwsDateColNo = pharmacyWS.find("Date", in_row=1).col
-        pwsPatientNameColNo = pharmacyWS.find("Name", in_row=1).col
-        pwsQtyColNo = pharmacyWS.find("Quantity", in_row=1).col
+        pwsFirstRow = pharmacyWS.row_values(1)
+        print(pwsFirstRow)
+        pwsBillNoColNo = pwsFirstRow.index("Bill No")+1
+        pwsMedNameColNo = pwsFirstRow.index("Medicine name")+1
+        pwsDateColNo = pwsFirstRow.index("Date")+1
+        pwsPatientNameColNo = pwsFirstRow.index("Name")+1
+        pwsQtyColNo = pwsFirstRow.index("Quantity")+1
         
 
         pwsLastRowNo = pharmacyWS.find("", in_column  = pwsDateColNo).row
-
+        #print(pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo)
         return pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo
 
+"""start_time = time.time()
+
 pharmData()
+end_time = time.time()
+
+print(end_time-start_time)"""
 
 medListWS = Spread.worksheet("Medicine List")
+
 
 def getMedData():
         mlsMedNameColNo = medListWS.find("Name", in_row=1).col
@@ -42,17 +53,8 @@ def getMedData():
         medList.sort(key=str.lower)
         return medList
 
-#def getMedDetails(medName):
-#        mlsMedNameColNo = medListWS.find("Name", in_row=1).col
-#        mlsMedQtyColNo = medListWS.find("Current Stock", in_row=1).col
-#        mlsMedNameRowNo = medListWS.find(medName, in_column=mlsMedNameColNo).row
-#        mlsMedTypeColNo = medListWS.find("Type", in_row=1).col
-#        mlsMedPriceColNo = medListWS.find("Price", in_row=1).col
-#        values_list = medListWS.row_values(mlsMedNameRowNo)
-#        medQty = values_list[mlsMedQtyColNo-1]
-#        medType = values_list[mlsMedTypeColNo-1]
-#        medPrice = values_list[mlsMedPriceColNo-1]
-#        return medQty, medType, medPrice
+
+
 
 
 
@@ -64,22 +66,61 @@ medListData.columns = medListData.iloc[0]
 medListData = medListData[1:]
 #print(medListData)
 
-inoviceWS = Spread.worksheet("Invoices")
+
 
 def getInvoiceDate():
-        
-        insPayModeColNo = inoviceWS.find("Payment Mode", in_row=1).col
-        insDiscountColNo = inoviceWS.find("Discount", in_row=1).col
-        insDateColNo = inoviceWS.find("Date", in_row=1).col
-        insPatientNameColNo = inoviceWS.find("Name", in_row=1).col 
-        insBillAmountColNo = inoviceWS.find("Bill Amount", in_row=1).col    
-        insCashColNo = inoviceWS.find("Cash", in_row=1).col
-        insUPIColNo = inoviceWS.find("UPI", in_row=1).col
-        insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
+        insFirstRow = inoviceWS.row_values(1)
+        insinvNoColNo= insFirstRow.index("Inovice No")+1
+        insPatientNameColNo= insFirstRow.index("Name")+1
+        insBillAmountColNo= insFirstRow.index("Bill Amount")+1
+        insDiscountColNo= insFirstRow.index("Discount")+1
+        insPayModeColNo= insFirstRow.index("Payment Mode")+1
+        insCashColNo= insFirstRow.index("Cash")+1
+        insUPIColNo= insFirstRow.index("UPI")+1
+        insDateColNo = insFirstRow.index("Date")+1
         insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
         return insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo
 
-getInvoiceDate()
+
+inoviceWS = Spread.worksheet("Invoices")
+
+opWS =Spread.worksheet("OP")
+
+def getOPData():
+        oPFirstRow = opWS.row_values(1)
+        oPUIDColNo = oPFirstRow.index("UID")+1
+        oPDateColNo = oPFirstRow.index("Date")+1
+        oPNameColNo = oPFirstRow.index("Name")+1
+        oPPhoneColNo = oPFirstRow.index("Phone No")+1
+        oPGenderColNo = oPFirstRow.index("Gender")+1
+        oPAgeColNo = oPFirstRow.index("Age")+1
+        oPPayModeColNo = oPFirstRow.index("Payment mode")+1
+        oPAmountColNo = oPFirstRow.index("Amount")+1
+        opLastRow = len(opWS.col_values(oPNameColNo))
+               
+        return oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo
+
+
+
+aCountWS = Spread.worksheet("ACount")
+
+def getClientid(name):
+    now = datetime.datetime.now()  
+    year_str = str(now.year)[-2:]  
+    month_str = str(now.month).zfill(2)
+    name_prefix = name[:3].upper()
+    first_letter = name[0]   
+    
+    currLetter = aCountWS.find(first_letter,in_column=1).row
+    currCount = int(aCountWS.cell(currLetter,2).value)
+
+    
+    count = currCount + 1
+    serial_num = str(count).zfill(2)
+    
+    return f"{year_str}{month_str}{name_prefix}{serial_num}"
+
+
 def getBillNo():
         insDateColNo = inoviceWS.find("Date", in_row=1).col
         insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
@@ -89,7 +130,9 @@ def getBillNo():
 
         return currBillNo
 
+end_time = time.time()
 
+print(end_time-start_time)
 
 
 #cellList = pharmacyWS.findall("Acnelak")
