@@ -41,7 +41,7 @@ class MedicineApp(ttk.Frame):
         self.accountButton = self.create_button("Account", "person_icon.png")
         self.accountButton.pack(anchor="center", ipady=5, pady=(160, 80),padx=(25,25) )
 
-        #self.frames = {}
+        #self.frames = 
         
         self.main_view = MainViewFrame(master)
 
