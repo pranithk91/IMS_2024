@@ -97,19 +97,21 @@ def getOPData():
         oPPayModeColNo = oPFirstRow.index("Payment mode")+1
         oPAmountColNo = oPFirstRow.index("Amount")+1
         opLastRow = len(opWS.col_values(oPNameColNo))
-               
-        return oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo
 
+        return oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo
 
 
 aCountWS = Spread.worksheet("ACount")
 
 def getClientid(name):
+    name = name.strip()
+    name = name.replace(" ", "")
+    name = name.replace(".", "")
     now = datetime.datetime.now()  
     year_str = str(now.year)[-2:]  
     month_str = str(now.month).zfill(2)
     name_prefix = name[:3].upper()
-    first_letter = name[0]   
+    first_letter = name_prefix[0]   
     
     currLetter = aCountWS.find(first_letter,in_column=1).row
     currCount = int(aCountWS.cell(currLetter,2).value)
@@ -119,6 +121,17 @@ def getClientid(name):
     serial_num = str(count).zfill(2)
     
     return f"{year_str}{month_str}{name_prefix}{serial_num}"
+
+oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo =getOPData()
+
+names = opWS.col_values(oPAgeColNo)
+for i in range(66, len(names)):
+       name = names[i]
+       cid = getClientid(name)
+       opWS.update_cell(i+1,oPNameColNo, name)  
+       opWS.update_cell(i+1,oPUIDColNo,cid)
+
+
 
 
 def getBillNo():

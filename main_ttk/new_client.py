@@ -112,31 +112,26 @@ class ClientMainViewFrame(ttk.Frame):
             selected_date = self.dateFetchEntry.entry.get()
             
             selected_date = datetime.strptime(selected_date, "%d-%m-%Y").strftime("%d-%b")
-            
             oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-            
             rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(selected_date, in_column=oPDateColNo)]
             
-
-            
-            for item in self.opTable.get_children():
-                self.opTable.delete(item)
+            removeAll()
 
             for x in rowsWithDate:
                 self.opTable.insert("", END, values=list(x))
+            self.dateFetchEntry.entry.delete(0, tk.END)
+            self.dateFetchEntry.entry.insert(0, strftime("%d-%m-%Y"))
+            
 
         def fetchDetailsUID():
             search_value = self.uidFetchEntry.get()
-
             if not search_value:
                 self.warningLabel.configure(text="Please enter a UID to fetch details.")
                 return
-
-            for item in self.opTable.get_children():
-                self.opTable.delete(item)
+            
+            removeAll()
 
             oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-
             rowsWithUID = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPUIDColNo)]
 
             if len(rowsWithUID)==0:
@@ -155,12 +150,9 @@ class ClientMainViewFrame(ttk.Frame):
             if not search_value:
                 self.warningLabel.configure(text="Please enter the correct phone number to fetch details.")
                 return
-
-            for item in self.opTable.get_children():
-                self.opTable.delete(item)
-
+            
+            removeAll()
             oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-
             rowsWithPhone = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPPhoneColNo)]
 
 
@@ -173,10 +165,8 @@ class ClientMainViewFrame(ttk.Frame):
             if not search_value:
                 self.warningLabel.configure(text="Please enter a patient name to fetch details.")
                 return
-
-            for item in self.opTable.get_children():
-                self.opTable.delete(item)
-
+            
+            removeAll()
             oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
 
             rowsWithName = [opWS.row_values(x.row) for x in opWS.findall(search_value, in_column=oPNameColNo)]
@@ -191,15 +181,16 @@ class ClientMainViewFrame(ttk.Frame):
 
 
         def refreshTable():
-            query = """select 
-                    TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount from Patients 
-                    where  substr(TimeStamp,7,4) || '-' || substr(TimeStamp,4,2) || '-' || substr(TimeStamp,1,2) = date()"""
-            conn = sqlite3.connect('medicine_database.db')
-            #numRows=self.opTable.rows
-            result = conn.execute(query).fetchall()
+            
+            selected_date = strftime("%d-%b")
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+            rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(selected_date, in_column=oPDateColNo)]
+            
             removeAll()
-            for x in result:
-                self.opTable.insert("",END, values = list(x))
+
+            for x in rowsWithDate:
+                self.opTable.insert("", END, values=list(x))
+            
 
         
         # Title Section    
@@ -496,7 +487,7 @@ class ClientMainViewFrame(ttk.Frame):
             #self..insert(0, values[6])"""
 
         #def update_record():
-        self.opTable.bind("<Button-1>", selectRecord)
+        self.opTable.bind("<Double-Button-1>", selectRecord)
 
         self.buttonFrame = ttk.Frame(master=self)
         self.buttonFrame.pack(fill="x", expand="yes", padx=20)

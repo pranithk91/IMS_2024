@@ -87,3 +87,11 @@ def getMedDetails():
 
     conn = sqlite3.connect('medicine_database.db')
     result = conn.execute(query, (search_value,)).fetchall()
+
+    def refreshTable():
+        query = """select 
+                TimeStamp, UID, Name, Phone, Gender, Age, OpProc, PayMode, Amount from Patients 
+                where  substr(TimeStamp,7,4) || '-' || substr(TimeStamp,4,2) || '-' || substr(TimeStamp,1,2) = date()"""
+        conn = sqlite3.connect('medicine_database.db')
+        #numRows=self.opTable.rows
+        result = conn.execute(query).fetchall()
