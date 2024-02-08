@@ -122,14 +122,6 @@ def getClientid(name):
     
     return f"{year_str}{month_str}{name_prefix}{serial_num}"
 
-oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo =getOPData()
-
-names = opWS.col_values(oPAgeColNo)
-for i in range(66, len(names)):
-       name = names[i]
-       cid = getClientid(name)
-       opWS.update_cell(i+1,oPNameColNo, name)  
-       opWS.update_cell(i+1,oPUIDColNo,cid)
 
 
 

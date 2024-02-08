@@ -363,6 +363,7 @@ class MainViewFrame(ttk.Frame):
                 inoviceWS.update_cell(insLastRowNo, insDateColNo, strftime("%d-%b"))
                 inoviceWS.update_cell(insLastRowNo,insPatientNameColNo, clientName)
                 inoviceWS.update_cell(insLastRowNo,insBillAmountColNo, billTotal)
+                inoviceWS.update_cell(insLastRowNo,insDiscountColNo, self.discountEntry.get())
             
 
 
@@ -422,6 +423,29 @@ class MainViewFrame(ttk.Frame):
         
         self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,30), pady=(20,0))
 
+        self.discountLabel = ttk.Label(master=self.billTableFrame, text="Discount",
+                                       font=("Calibri", 15, "bold"), 
+                                        style="success.TLabel"
+                                        )
+        self.discountLabel.pack(anchor="ne", side="left",pady=(20,0))\
+        
+        discountAmount = IntVar()
+        self.discountEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       textvariable=discountAmount,
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry")
+        self.discountEntry.pack(anchor="ne", side="left",padx=(20,20), pady=(20,0))
+
+        
+        def applyDiscount():
+            discountedBillTotal = float(billTotal) - discountAmount.get()
+            self.billTotalLabel.configure(text= "Bill Total: " + str(discountedBillTotal))
+
+        self.applyDiscountButton = ttk.Button(master=self.billTableFrame, text="Apply Discount",
+                                style="success.TButton",
+                                command=applyDiscount)
+        
+        self.applyDiscountButton.pack(anchor="ne", side="left", pady=(20,0))
 
 
 
