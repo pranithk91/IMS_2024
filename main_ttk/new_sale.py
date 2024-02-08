@@ -239,7 +239,25 @@ class MainViewFrame(ttk.Frame):
                                       style="success.TButton", 
                                       command=addToBill)
         self.addToBillButton.grid(row=1, column=2, sticky='e', padx=15)
-
+        
+        self.payModeLabel = ttk.Label(master=self.searchGrid, 
+                                      text="Payment Mode", font=("Calibri", 15, "bold"), 
+                                      style="success.TLabel")
+        self.payModeLabel.grid(row=0, column=3, sticky="w", padx=(30,30))
+        self.payModeCombobox = ttk.Combobox(master=self.searchGrid, values=["Cash", "UPI", "Both","Card"],
+                                          style='success.TCombobox',
+                                          justify=LEFT, 
+                                          font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        self.payModeCombobox.grid(row=1, column=3, sticky='w', padx = (30,20))
+        
+        def activateBothEntries(event):
+            if self.payModeCombobox.get() == 'Both':
+                self.cashAmtEntry.configure(state=NORMAL)
+                self.cashAmtEntry.insert(0,"Cash")
+                self.upiAmtEntry.configure(state=NORMAL)
+                self.upiAmtEntry.insert(0,"UPI")
+        self.payModeCombobox.bind('<<ComboboxSelected>>', activateBothEntries )
 
         quantity_frame = ttk.Frame(master=self.searchGrid, bootstyle="default")
         quantity_frame.grid(row=1, column=1, padx=(10,0), pady=(0,0), sticky="w")
@@ -348,6 +366,10 @@ class MainViewFrame(ttk.Frame):
             
             clientName = self.clientNameEntry.get()
             clientPhone = self.clientPhoneEntry.get()
+            cashAmount = self.cashAmtEntry.get()
+            upiAmount = self.upiAmtEntry.get()
+            payMode = self.payModeCombobox.get()
+
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 self.warningLabel.configure(text = "")
             
@@ -360,11 +382,13 @@ class MainViewFrame(ttk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
                 messagebox.showwarning("Warning", " Phone number needs 10 digits.")
             else:
-                inoviceWS.update_cell(insLastRowNo, insDateColNo, strftime("%d-%b"))
+                inoviceWS.update_cell(insLastRowNo,insDateColNo, strftime("%d-%b"))
                 inoviceWS.update_cell(insLastRowNo,insPatientNameColNo, clientName)
                 inoviceWS.update_cell(insLastRowNo,insBillAmountColNo, billTotal)
-                inoviceWS.update_cell(insLastRowNo,insDiscountColNo, self.discountEntry.get())
-            
+                inoviceWS.update_cell(insLastRowNo,insPayModeColNo,payMode)
+                inoviceWS.update_cell(insLastRowNo,insDiscountColNo, discountAmount.get())
+                inoviceWS.update_cell(insLastRowNo,insCashColNo, cashAmount)
+                inoviceWS.update_cell(insLastRowNo,insUPIColNo, upiAmount)
 
 
 
@@ -381,7 +405,7 @@ class MainViewFrame(ttk.Frame):
                 currInvoiceNo = getBillNo()
                 for record in self.billTable.get_children():
                     recValues = list(self.billTable.item(record,'values'))
-                    pharmacyWS.update_cell(pwsLastRowNo,pwsBillNoColNo, currInvoiceNo)
+                    pharmacyWS.update_cell(pwsLastRowNo, pwsBillNoColNo, currInvoiceNo)
                     pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, strftime("%d-%b"))
                     pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
                     pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])
@@ -389,9 +413,28 @@ class MainViewFrame(ttk.Frame):
                     #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
                     #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
                     self.warningLabel.configure(text = "")
-            for record in self.billTable.get_children():
-                self.billTable.delete(record)                  
+
+                for record in self.billTable.get_children():
+                    self.billTable.delete(record)
+                self.clientUIDEntry.delete(0,END)
+                self.clientNameEntry.delete(0,END)     
+                self.clientPhoneEntry.delete(0,END)
+                self.clientGenderCbox.set("")   
+                self.payModeCombobox.set("")
+                self.cashAmtEntry.configure(state=NORMAL)
+                self.cashAmtEntry.delete(0,END)
+                self.cashAmtEntry.configure(state=DISABLED)
+                self.upiAmtEntry.configure(state=NORMAL)
+                self.upiAmtEntry.delete(0,END)
+                self.upiAmtEntry.configure(state=DISABLED)
+                self.discountEntry.delete(0,END)
+
+                  
+                                 
             
+
+
+
         def selectRecord(event):
             # Clear entry boxes
             self.itemNameEntry.delete(0,END)
@@ -421,7 +464,7 @@ class MainViewFrame(ttk.Frame):
                                       style="success.TButton",
                                       command=confirmDetails)
         
-        self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,30), pady=(20,0))
+        self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,20), pady=(20,0))
 
         self.discountLabel = ttk.Label(master=self.billTableFrame, text="Discount",
                                        font=("Calibri", 15, "bold"), 
@@ -434,7 +477,7 @@ class MainViewFrame(ttk.Frame):
                                        textvariable=discountAmount,
                                        font=("Calibri", 12, "bold"),
                                        width=15,style="success.TEntry")
-        self.discountEntry.pack(anchor="ne", side="left",padx=(20,20), pady=(20,0))
+        self.discountEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
 
         
         def applyDiscount():
@@ -445,7 +488,27 @@ class MainViewFrame(ttk.Frame):
                                 style="success.TButton",
                                 command=applyDiscount)
         
-        self.applyDiscountButton.pack(anchor="ne", side="left", pady=(20,0))
+        self.applyDiscountButton.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+
+        def focusEntry(event):
+           fw = master.focus_get()
+           fw.delete(0,END)
+
+        
+
+        self.cashAmtEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry",state=DISABLED)
+        self.cashAmtEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+        
+        self.cashAmtEntry.bind("<Button-1>", focusEntry)
+        self.upiAmtEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry",state=DISABLED)
+        self.upiAmtEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+        self.upiAmtEntry.bind("<Button-1>", focusEntry)
 
 
 
