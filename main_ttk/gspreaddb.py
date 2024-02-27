@@ -18,7 +18,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 client = gs.authorize(credentials)
 
-Spread = client.open("OP Register Dev")
+Spread = client.open("OP Register")
 
 
 pharmacyWS = Spread.worksheet("Pharmacy")
@@ -30,9 +30,7 @@ def pharmData():
         pwsDateColNo = pwsFirstRow.index("Date")+1
         pwsPatientNameColNo = pwsFirstRow.index("Name")+1
         pwsQtyColNo = pwsFirstRow.index("Quantity")+1
-        
-
-        pwsLastRowNo = pharmacyWS.find("", in_column  = pwsDateColNo).row
+        pwsLastRowNo = len(pharmacyWS.col_values(pwsMedNameColNo))+1
         #print(pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo)
         return pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo
 
@@ -96,7 +94,7 @@ def getOPData():
         oPAgeColNo = oPFirstRow.index("Age")+1
         oPPayModeColNo = oPFirstRow.index("Payment mode")+1
         oPAmountColNo = oPFirstRow.index("Amount")+1
-        opLastRow = len(opWS.col_values(oPNameColNo))
+        opLastRow = len(opWS.col_values(oPNameColNo))+1
 
         return oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo
 

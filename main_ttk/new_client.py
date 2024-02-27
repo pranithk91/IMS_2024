@@ -54,7 +54,7 @@ class ClientMainViewFrame(ttk.Frame):
             
  
                                         
-            print(currentClientName, currentClientPhone )  
+            #print(currentClientName, currentClientPhone )  
 
             if len(currentClientName)==0:
                 self.warningLabel.configure(text = "Warning: Invalid Name")

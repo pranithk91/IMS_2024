@@ -95,3 +95,7 @@ def getMedDetails():
         conn = sqlite3.connect('medicine_database.db')
         #numRows=self.opTable.rows
         result = conn.execute(query).fetchall()
+
+
+    patientNameQuery = """select * from Patients 
+                            where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) > date('now', '-1 day')"""

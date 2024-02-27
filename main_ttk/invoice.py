@@ -4,14 +4,16 @@ from datetime import date
 def my_temp(c):
     # Set A5 size dimensions
     a5_width, a5_height = 5.8 * inch, 8.3 * inch
-    c.translate(a5_width - 0.1 * inch, 0.1 * inch)  # Adjust origin to top-left corner
+    c.translate(a5_width - 0.05 * inch, 0.05 * inch)  # Adjust origin to top-left corner
     
     # define a smaller font for A5
     c.setFont("Helvetica", 10)
     
     # Other adjustments...
+    c.setStrokeColorRGB(0, 1, 0)
+    c.setFillColorRGB(0,0,1)
     c.rotate(90)
-    #c.drawImage(r'C:\Users\KP\Development\IMS_2024\main_ttk\logo.png', -0.4 * inch, 7.8 * inch)
+    c.drawImage('C:\\Users\\KP\\Development\\IMS_2024\\main_ttk\\logoMain.png', 3.3 * inch, 3.0 * inch)
     c.setFont("Helvetica", 20)
     c.drawString(0.2*inch, 5.4 * inch, "Pranith Medical Store")
     c.setFont("Helvetica", 12)
@@ -22,7 +24,7 @@ def my_temp(c):
     
     
     dt = date.today().strftime('%d-%b-%Y')
-    c.drawString(6.8 * inch, 5.35 * inch, dt)
+    c.drawString(6.8 * inch, 5.25 * inch, dt)
     
     
     # Other adjustments...
@@ -45,6 +47,7 @@ def my_temp(c):
     global QtyLine
     global AmtLine
     global billYLine
+    global PcodeLine
 
     PcodeLine = 0.5
     ProductLine = PcodeLine + 0.9
@@ -95,46 +98,55 @@ def my_temp(c):
 
 
 from reportlab.pdfgen import canvas
-my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\my_pdf.pdf' 
+#$bill_No = "PM2403404"
+
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter, A5
 #from temp_invoice import my_temp # import the template
 #from invoice_data import *  # get all data required for invoice
+billData=[['T BIL',13,1,30],['Azimic 500',26.2,2,5],['Razuur-DSR',10,2,20], ['Zecort 12',20.3,1,7 ],['Nevlon Intense',375,1,1],['Lozivate-F',225,1,1],['Acnelak', 360,1,1],['Silaclin-AD',210,1,1], ['EDZ-6',17,1,7 ]]
+def printBill(my_prod, bill_No):
+    my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
+    c = canvas.Canvas(my_path,pagesize=A5)
+    
+    c=my_temp(c) # run the template
+    
+    print(ProductLine, QtyLine, AmtLine, RateLine)
+    c.setFillColorRGB(0,0,0) # font colour
 
-my_prod=[['Acnelak',360,1,2],['Dryrid',90,2,3],['EDZ-6',75,2,17]]
-c = canvas.Canvas(my_path,pagesize=A5)
-c=my_temp(c) # run the template
-bill_No = "PM2403404"
-print(ProductLine, QtyLine, AmtLine, RateLine)
-c.setFillColorRGB(0,0,0) # font colour
-
-c.setFont("Helvetica", 12)
-c.drawString(6.8 * inch, 5.15 * inch, bill_No)
-
-row_gap=0.3 # gap between each row
-line_y=4.3 # location of fist Y position 
-total=0
-for rec in my_prod:
-    c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[0])) # p Name
-    c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[1])) # p Price
-    c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[3])) # p Qunt 
-    sub_total=rec[1]*rec[3]
-    c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
-    total=round(total+sub_total,1)
-    line_y=line_y-row_gap
-c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
-c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total 
-#discount=round((discount_rate/100) * total,1)
-#c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
-#c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
-#tax=round((tax_rate/100) * (total-discount),1)
-#c.drawRightString(4*inch,1.2*inch,str(tax_rate)+'%') # tax 
-#c.drawRightString(7*inch,1.2*inch,str(tax)) # tax 
-total_final=total
-c.setFont("Times-Bold", 22)
-c.setFillColorRGB(1,0,0) # font colour
-#c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
-c.showPage()
-c.save()
+    c.setFont("Helvetica", 12)
+    c.drawString(6.8 * inch, 4.95 * inch, bill_No)
+    c.setFont("Helvetica", 8)
+    row_gap=0.15 # gap between each row
+    line_y=4.3 # location of fist Y position 
+    total=0
+    i = 1
+    for rec in my_prod:
+        c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
+        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[2])) # product Code
+        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[0])) # p Name
+        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[1])) # p Price
+        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[3])) # p Qant 
+        sub_total=rec[1]*rec[3]
+        c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
+        total=round(total+sub_total,1)
+        line_y=line_y-row_gap
+        i+=1
+    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
+    c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total 
+    #discount=round((discount_rate/100) * total,1)
+    #c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
+    #c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
+    #tax=round((tax_rate/100) * (total-discount),1)
+    #c.drawRightString(4*inch,1.2*inch,str(tax_rate)+'%') # tax 
+    #c.drawRightString(7*inch,1.2*inch,str(tax)) # tax 
+    total_final=total
+    c.setFont("Times-Bold", 22)
+    c.setFillColorRGB(1,0,0) # font colour
+    #c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
+    c.rotate(90)
+    c.showPage()
+    c.save()
 
 
+printBill(billData, "PM2403404")

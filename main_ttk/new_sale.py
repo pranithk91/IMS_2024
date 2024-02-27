@@ -2,7 +2,7 @@ from customtkinter import *
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image
-from database import loadDatabase
+#from database import loadDatabase
 from CTkScrollableDropdown import *
 import pandas as pd
 from CTkTable import CTkTable
@@ -10,8 +10,9 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS
+from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS,  opWS, getOPData
 import sqlite3
+from datetime import date
 
 medicineDf = medListData
 #medSuggestionList = medicineDf['Name'].tolist()
@@ -20,13 +21,24 @@ medSuggestionList.sort()
 medSuggestionList=medSuggestionList[1:]
 #print(medSuggestionList)
 
+today = date.today().strftime("%d-%b")
+columnheaders = opWS.row_values(1)
+oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
+currentDayPatients = pd.DataFrame(rowsWithDate)
+currentDayPatients.columns = columnheaders
 
 class MainViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
         super().__init__(master,  width=950, height=850, relief=tk.GROOVE)
         self.pack_propagate(0)
         self.grid(column=1, row=0, pady = (10,10), padx=(25,25))
-
+        today = date.today().strftime("%d-%b")
+        columnheaders = opWS.row_values(1)
+        oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+        rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
+        currentDayPatients = pd.DataFrame(rowsWithDate)
+        currentDayPatients.columns = columnheaders
 
         def clearBillTable():
             
@@ -46,7 +58,7 @@ class MainViewFrame(ttk.Frame):
 
 
         self.timeLabel = ttk.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), style="success.TLabel" )
-        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (350,0))
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (520,0))
         def get_time():
             string = strftime('%I:%M:%S %p')
             self.timeLabel.configure(text=string)
@@ -81,10 +93,16 @@ class MainViewFrame(ttk.Frame):
 #                    self.clientUIDEntry.configure(state=DISABLED)
 #            else:
 #                pass
+        def getCurrentDayPatients():
 
-        patientNameQuery = """select * from Patients 
-                                where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) > date('now', '-1 day')"""
-        currentDayPatients = loadDatabase(patientNameQuery)
+            today = date.today().strftime("%d-%b")
+            columnheaders = opWS.row_values(1)
+            oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+            rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
+            currentDayPatients = pd.DataFrame(rowsWithDate)
+            currentDayPatients.columns = columnheaders
+            
+            return currentDayPatients
         currentDayPatientNames = currentDayPatients['Name'].tolist()
         
         self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
@@ -99,8 +117,9 @@ class MainViewFrame(ttk.Frame):
                                           justify=LEFT, 
                                           font=("calibri", 12, "bold"), 
                                              cursor='hand2')
+
         def on_name_select(event):
-            
+            currentDayPatients = getCurrentDayPatients()
             currentPatientPhone = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Phone"].tolist()
             currentPatientGender = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Gender"].tolist()
             currentPatientUID = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["UID"].tolist()
@@ -112,6 +131,7 @@ class MainViewFrame(ttk.Frame):
 
         def autofillNames(event):
             currChar = currentPatientName.get()
+            nameList = getCurrentDayPatients()
             query="SELECT * FROM patients where name like '%{}%' and substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')".format(currChar)
             updatedData = loadDatabase(query)
             updatedList = updatedData['Name'].tolist()
@@ -396,7 +416,7 @@ class MainViewFrame(ttk.Frame):
 
         def confirmDetails():
             pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
-            addToInvoices()
+            addToInvoices() 
 
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 pass
