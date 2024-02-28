@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import *
-from PIL import Image, ImageTk
+from PIL import Image#, ImageTk
 from database import loadDatabase, getClientid
 from new_client import ClientMainViewFrame
 from new_sale import MainViewFrame
