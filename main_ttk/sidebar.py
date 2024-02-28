@@ -9,7 +9,7 @@ from new_sale import MainViewFrame
 
 import ttkbootstrap as tkb
 
-
+ 
 
 
 class MedicineApp(ttk.Frame):

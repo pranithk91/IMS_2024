@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 #from database import loadDatabase, getClientid
 #from CTkScrollableDropdown import *
 import pandas as pd
-from CTkTable import CTkTable
+#from CTkTable import CTkTable
 from time import strftime
 import sqlite3
 #from tkcalendar import DateEntry
