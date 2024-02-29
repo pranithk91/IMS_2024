@@ -18,7 +18,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 client = gs.authorize(credentials)
 
-Spread = client.open("OP Register")
+Spread = client.open("OP Register Dev")
 
 
 pharmacyWS = Spread.worksheet("Pharmacy")
@@ -95,10 +95,10 @@ def getOPData():
         oPPayModeColNo = oPFirstRow.index("Payment mode")+1
         oPAmountColNo = oPFirstRow.index("Amount")+1
         opLastRow = len(opWS.col_values(oPNameColNo))+1
-
+        print("OPData ran")
         return oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo
 
-
+oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
 aCountWS = Spread.worksheet("ACount")
 
 def getClientid(name):

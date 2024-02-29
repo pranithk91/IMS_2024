@@ -99,3 +99,14 @@ def getMedDetails():
 
     patientNameQuery = """select * from Patients 
                             where substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) > date('now', '-1 day')"""
+
+    query="SELECT * FROM patients where name like '%{}%' and substr(TimeStamp, 7,4) || '-' || substr(TimeStamp, 4,2) || '-' || substr(TimeStamp, 1,2) = date('now', '-1 day')".format(currChar)
+    updatedData = loadDatabase(query)
+
+            def autofillNames(event):
+            currChar = currentPatientName.get()
+            nameList = getCurrentDayPatients()
+
+            updatedList = updatedData['Name'].tolist()
+            #updatedList = [x for x in medSuggestionList if x.startswith(currChar)]
+            self.itemNameEntry.configure(values=updatedList)

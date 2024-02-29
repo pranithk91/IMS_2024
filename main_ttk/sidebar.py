@@ -3,7 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from PIL import Image, ImageTk
-from database import loadDatabase, getClientid
+#from database import loadDatabase, getClientid
+from gspreaddb import getOPData
 from new_client import ClientMainViewFrame
 from new_sale import MainViewFrame
 
@@ -32,7 +33,7 @@ class MedicineApp(ttk.Frame):
         self.opButton = self.create_button("OP Register", "plus_icon.png", command=self.client_frame)
         self.opButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(25,25) )
         #self.ordersButton = self.create_button("Orders", "package_icon.png")
-        self.ordersListButton = self.create_button("Orders", "list_icon.png", command=self.main_frame)
+        self.ordersListButton = self.create_button("Pharmacy", "list_icon.png", command=self.main_frame)
         self.ordersListButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(25,25) )
         self.returnsButton = self.create_button("Returns", "returns_icon.png")
         self.returnsButton.pack(anchor="center", ipady=5, pady=(16, 0),padx=(25,25) )
@@ -43,7 +44,7 @@ class MedicineApp(ttk.Frame):
 
         #self.frames = 
         
-        self.main_view = MainViewFrame(master)
+        self.main_view = ClientMainViewFrame(master)
 
 
     def main_frame(self):
