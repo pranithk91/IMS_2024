@@ -13,7 +13,7 @@ def my_temp(c):
     c.setStrokeColorRGB(0, 1, 0)
     c.setFillColorRGB(0,0,1)
     c.rotate(90)
-    c.drawImage('C:\\Users\\KP\\Development\\IMS_2024\\main_ttk\\logoMain.png', 3.3 * inch, 3.0 * inch)
+    #c.drawImage('C:\\Users\\KP\\Development\\IMS_2024\\main_ttk\\logoMain.png', 3.3 * inch, 3.0 * inch)
     c.setFont("Helvetica", 20)
     c.drawString(0.2*inch, 5.4 * inch, "Pranith Medical Store")
     c.setFont("Helvetica", 12)
@@ -104,7 +104,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter, A5
 #from temp_invoice import my_temp # import the template
 #from invoice_data import *  # get all data required for invoice
-billData=[['T BIL',13,1,30],['Azimic 500',26.2,2,5],['Razuur-DSR',10,2,20], ['Zecort 12',20.3,1,7 ],['Nevlon Intense',375,1,1],['Lozivate-F',225,1,1],['Acnelak', 360,1,1],['Silaclin-AD',210,1,1], ['EDZ-6',17,1,7 ]]
+billData=[['Lashaft',21,1,30],['Com-D3',25.2,2,4],['Razuur-DSR',10,2,10], ['Chymotra',505,1,1 ],['Tofasure',990,1,1],['Silkworm',275,1,1],['Betnesol Forte', 1.3,1,10]]
 def printBill(my_prod, bill_No):
     my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
     c = canvas.Canvas(my_path,pagesize=A5)
@@ -149,4 +149,4 @@ def printBill(my_prod, bill_No):
     c.save()
 
 
-printBill(billData, "PM2403404")
+printBill(billData, "PM2405905")

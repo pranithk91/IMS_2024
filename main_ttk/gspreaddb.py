@@ -138,11 +138,3 @@ end_time = time.time()
 print(end_time-start_time)
 
 
-#cellList = pharmacyWS.findall("Acnelak")
-#print(cellList)
-#nameColNo = pharmacyWS.find("Medicine name").col
-#print(nameColNo)
-#acellList = [(c.row, c.col)  for c in cellList if c.col==nameColNo ]
-#print(acellList)
-#for x in acellList:
-#        print("Found something at R%sC%s" % (x[0], x[1]))
