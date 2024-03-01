@@ -10,10 +10,11 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS,  opWS, oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo 
+from gspreaddb import * #pharmData, pharmacyWS, medListData, getBillNo,getInvoiceData,inoviceWS,  
+#from gspreaddb import opWS, oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo 
 import sqlite3
 from datetime import date
-
+from invoice import printBill
 
 medicineDf = medListData
 #medSuggestionList = medicineDf['Name'].tolist()
@@ -32,14 +33,23 @@ class MainViewFrame(ttk.Frame):
         columnheaders = opWS.row_values(1)
         #oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
         rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
-        print(rowsWithDate)
-        print(len(rowsWithDate))
+        #print(rowsWithDate)
+        #print(len(rowsWithDate))
         currentDayPatients = pd.DataFrame(rowsWithDate)
 
         try:
             currentDayPatients.columns = columnheaders[:-1]
         except:
             currentDayPatientNames = []
+        
+        medicineDf = medListData
+        #medSuggestionList = medicineDf['Name'].tolist()
+        medSuggestionList = list(set(medListData["Name"].tolist()))
+        medSuggestionList.sort()
+        medSuggestionList=medSuggestionList[1:]
+        #print(medSuggestionList)
+        #oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+
 
         def clearBillTable():
             
@@ -369,8 +379,8 @@ class MainViewFrame(ttk.Frame):
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
         def addToInvoices():
-            insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceDate()
-            
+            #insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceDate()
+            insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
             clientName = self.clientNameEntry.get()
             clientPhone = self.clientPhoneEntry.get()
             cashAmount = self.cashAmtEntry.get()
@@ -402,16 +412,18 @@ class MainViewFrame(ttk.Frame):
 
 
         def confirmDetails():
-            pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
+            #pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
             addToInvoices() 
-
+            pwsLastRowNo = len(pharmacyWS.col_values(pwsMedNameColNo))+1
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 pass
 
             else:                
                 currInvoiceNo = getBillNo()
+                billData = []
                 for record in self.billTable.get_children():
                     recValues = list(self.billTable.item(record,'values'))
+                    billData.append(recValues)
                     pharmacyWS.update_cell(pwsLastRowNo, pwsBillNoColNo, currInvoiceNo)
                     pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, strftime("%d-%b"))
                     pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
@@ -421,8 +433,11 @@ class MainViewFrame(ttk.Frame):
                     #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
                     self.warningLabel.configure(text = "")
 
+                printBill(billData, currInvoiceNo)
+
                 for record in self.billTable.get_children():
                     self.billTable.delete(record)
+
                 self.clientUIDEntry.delete(0,END)
                 self.clientNameEntry.delete(0,END)     
                 self.clientPhoneEntry.delete(0,END)

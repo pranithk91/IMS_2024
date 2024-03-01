@@ -66,7 +66,7 @@ medListData = medListData[1:]
 
 
 
-def getInvoiceDate():
+def getInvoiceData():
         insFirstRow = inoviceWS.row_values(1)
         insinvNoColNo= insFirstRow.index("Inovice No")+1
         insPatientNameColNo= insFirstRow.index("Name")+1
@@ -132,6 +132,17 @@ def getBillNo():
         currBillNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
 
         return currBillNo
+
+def getBillDetails():
+    insLastRowNo = len(inoviceWS.col_values(insDateColNo))
+    #print(insLastRowNo,insinvNoColNo)
+    billNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+    rowsWithBillNo = [pharmacyWS.row_values(x.row) for x in pharmacyWS.findall(billNo, in_column=pwsBillNoColNo)]
+    return rowsWithBillNo, billNo
+insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceData()
+pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
+
+
 
 end_time = time.time()
 

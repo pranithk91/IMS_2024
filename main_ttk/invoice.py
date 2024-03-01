@@ -104,7 +104,6 @@ from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter, A5
 #from temp_invoice import my_temp # import the template
 #from invoice_data import *  # get all data required for invoice
-billData=[['Lashaft',21,1,30],['Com-D3',25.2,2,4],['Razuur-DSR',10,2,10], ['Chymotra',505,1,1 ],['Tofasure',990,1,1],['Silkworm',275,1,1],['Betnesol Forte', 1.3,1,10]]
 def printBill(my_prod, bill_No):
     my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
     c = canvas.Canvas(my_path,pagesize=A5)
@@ -124,10 +123,10 @@ def printBill(my_prod, bill_No):
     for rec in my_prod:
         c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
         c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[2])) # product Code
-        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[0])) # p Name
-        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[1])) # p Price
-        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[3])) # p Qant 
-        sub_total=rec[1]*rec[3]
+        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[1])) # p Name
+        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[3])) # p Price
+        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
+        sub_total=float(rec[3])*int(rec[4])
         c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
         total=round(total+sub_total,1)
         line_y=line_y-row_gap
@@ -149,4 +148,3 @@ def printBill(my_prod, bill_No):
     c.save()
 
 
-printBill(billData, "PM2405905")
