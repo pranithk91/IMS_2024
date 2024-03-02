@@ -106,7 +106,7 @@ class MainViewFrame(ttk.Frame):
         #try:
         currentDayPatients.columns = columnheaders[:-1]
         currentDayPatientNames = currentDayPatients['Name'].tolist()
-        print(currentDayPatientNames)
+        #print(currentDayPatientNames)
         #except:
         #    currentDayPatientNames = []
         self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
@@ -470,7 +470,7 @@ class MainViewFrame(ttk.Frame):
             values = list(values)
             self.billTable.delete(selected)
             global billTotal
-            print(values)
+            #print(values)
             # outpus to entry boxes
             self.itemNameEntry.insert(0,values[1])
             self.qtySaleEntry.insert(0,values[4])
@@ -493,7 +493,7 @@ class MainViewFrame(ttk.Frame):
                                        font=("Calibri", 15, "bold"), 
                                         style="success.TLabel"
                                         )
-        self.discountLabel.pack(anchor="ne", side="left",pady=(20,0))\
+        self.discountLabel.pack(anchor="ne", side="left",pady=(20,0))
         
         discountAmount = IntVar()
         self.discountEntry = ttk.Entry(master=self.billTableFrame, text="Discount",

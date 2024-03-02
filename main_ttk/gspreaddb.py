@@ -24,7 +24,7 @@ Spread = client.open("OP Register Dev")
 pharmacyWS = Spread.worksheet("Pharmacy")
 def pharmData():
         pwsFirstRow = pharmacyWS.row_values(1)
-        print(pwsFirstRow)
+        #print(pwsFirstRow)
         pwsBillNoColNo = pwsFirstRow.index("Bill No")+1
         pwsMedNameColNo = pwsFirstRow.index("Medicine name")+1
         pwsDateColNo = pwsFirstRow.index("Date")+1

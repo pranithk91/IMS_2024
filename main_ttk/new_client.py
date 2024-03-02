@@ -326,7 +326,7 @@ class ClientMainViewFrame(ttk.Frame):
         
         self.update()
         self.windowWidth = self.winfo_width()
-        print(self.windowWidth)
+        #print(self.windowWidth)
         self.confirmButtonGrid = ttk.Frame(master=self, width=200)
         
         self.confirmButtonGrid.place(x=self.windowWidth//2)
@@ -472,7 +472,7 @@ class ClientMainViewFrame(ttk.Frame):
             # Grab record values
             values = self.opTable.item(selected,'values')
             values = list(values)
-            print(values)
+            #print(values)
             # outpus to entry boxes
             self.clientUIDEntry.configure(state=NORMAL)
             self.clientUIDEntry.insert(0,values[1])
