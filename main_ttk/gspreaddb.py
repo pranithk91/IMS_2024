@@ -5,6 +5,7 @@ import gspread as gs
 from google.oauth2 import service_account
 import time
 import datetime
+from invoice import printBill
 #from gspread_pandas import Spread, Client
 start_time = time.time()
 SCOPES = [
@@ -18,7 +19,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 client = gs.authorize(credentials)
 
-Spread = client.open("OP Register Dev")
+Spread = client.open("OP Register")
 
 
 pharmacyWS = Spread.worksheet("Pharmacy")
@@ -139,6 +140,7 @@ def getBillDetails():
     billNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
     rowsWithBillNo = [pharmacyWS.row_values(x.row) for x in pharmacyWS.findall(billNo, in_column=pwsBillNoColNo)]
     return rowsWithBillNo, billNo
+
 insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceData()
 pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
 
