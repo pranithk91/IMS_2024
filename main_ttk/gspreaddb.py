@@ -53,7 +53,7 @@ def getMedData():
         return medList
 
 
-
+ 
 
 
 
@@ -63,7 +63,6 @@ list_of_lists = medListWS.get_all_values()
 medListData = pd.DataFrame(list_of_lists)
 medListData.columns = medListData.iloc[0]
 medListData = medListData[1:]
-#print(medListData)
 
 
 
