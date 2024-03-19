@@ -125,25 +125,27 @@ def getClientid(name):
 
 
 def getBillNo():
-        insDateColNo = inoviceWS.find("Date", in_row=1).col
-        insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
-        insLastRowNo = len(inoviceWS.col_values(insDateColNo))
+        #insDateColNo = inoviceWS.find("Date", in_row=1).col
+        #insinvNoColNo = inoviceWS.find("Inovice No", in_row=1).col
+        insLastRowNo = len(inoviceWS.col_values(insPatientNameColNo))
 
         currBillNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
 
         return currBillNo
 
-def getBillDetails():
+def getBillDetails(billNo):
     insLastRowNo = len(inoviceWS.col_values(insDateColNo))
     #print(insLastRowNo,insinvNoColNo)
-    billNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+    if billNo==0:
+        billNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+
     rowsWithBillNo = [pharmacyWS.row_values(x.row) for x in pharmacyWS.findall(billNo, in_column=pwsBillNoColNo)]
     return rowsWithBillNo, billNo
 
 insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceData()
 pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
 
-
+#print(getBillDetails("PM2407308"))
 
 end_time = time.time()
 

@@ -1,5 +1,51 @@
 from reportlab.lib.units import inch
 from datetime import date
+import sqlite3
+import pandas as pd
+#import pandas as pd
+import gspread as gs
+from google.oauth2 import service_account
+import time
+import datetime
+
+#from gspread_pandas import Spread, Client
+start_time = time.time()
+SCOPES = [
+'https://www.googleapis.com/auth/spreadsheets',
+'https://www.googleapis.com/auth/drive'
+]
+SERVICE_ACCOUNT_FILE = 'main_ttk\sheets-to-python-credential.json'
+
+credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+
+client = gs.authorize(credentials)
+
+Spread = client.open("OP Register")
+
+
+pharmacyWS = Spread.worksheet("Pharmacy")
+def pharmData():
+        pwsFirstRow = pharmacyWS.row_values(1)
+        #print(pwsFirstRow)
+        pwsBillNoColNo = pwsFirstRow.index("Bill No")+1
+        pwsMedNameColNo = pwsFirstRow.index("Medicine name")+1
+        pwsDateColNo = pwsFirstRow.index("Date")+1
+        pwsPatientNameColNo = pwsFirstRow.index("Name")+1
+        pwsQtyColNo = pwsFirstRow.index("Quantity")+1
+        pwsLastRowNo = len(pharmacyWS.col_values(pwsMedNameColNo))+1
+        #print(pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo)
+        return pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo
+
+pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
+def getBillDetails(billNo):
+    #insLastRowNo = len(inoviceWS.col_values(insDateColNo))
+    #print(insLastRowNo,insinvNoColNo)
+    #if billNo==0:
+        #billNo = inoviceWS.cell(insLastRowNo, insinvNoColNo).value
+
+    rowsWithBillNo = [pharmacyWS.row_values(x.row) for x in pharmacyWS.findall(billNo, in_column=pwsBillNoColNo)]
+    return rowsWithBillNo
 
 def my_temp(c):
     # Set A5 size dimensions
@@ -122,11 +168,11 @@ def printBill(my_prod, bill_No):
     i = 1
     for rec in my_prod:
         c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
-        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[2])) # product Code
-        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[1])) # p Name
-        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[3])) # p Price
+        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[5])) # product Code
+        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[3])) # p Name
+        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[7])) # p Price
         c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
-        sub_total=float(rec[3])*int(rec[4])
+        sub_total=float(rec[7])*int(rec[4])
         c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
         total=round(total+sub_total,1)
         line_y=line_y-row_gap
@@ -147,4 +193,48 @@ def printBill(my_prod, bill_No):
     c.showPage()
     c.save()
 
+def printBillFromSheet(my_prod, bill_No):
+    my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
+    c = canvas.Canvas(my_path,pagesize=A5)
+    
+    c=my_temp(c) # run the template
+    
+    print(ProductLine, QtyLine, AmtLine, RateLine)
+    c.setFillColorRGB(0,0,0) # font colour
 
+    c.setFont("Helvetica", 12)
+    c.drawString(6.8 * inch, 4.95 * inch, bill_No)
+    c.setFont("Helvetica", 8)
+    row_gap=0.15 # gap between each row
+    line_y=4.3 # location of fist Y position 
+    total=0
+    i = 1
+    for rec in my_prod:
+        c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
+        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[5])) # product Code
+        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[3])) # p Name
+        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[7])) # p Price
+        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
+        sub_total=float(rec[7])*int(rec[4])
+        c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
+        total=round(total+sub_total,1)
+        line_y=line_y-row_gap
+        i+=1
+    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
+    c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total 
+    #discount=round((discount_rate/100) * total,1)
+    #c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
+    #c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
+    #tax=round((tax_rate/100) * (total-discount),1)
+    #c.drawRightString(4*inch,1.2*inch,str(tax_rate)+'%') # tax 
+    #c.drawRightString(7*inch,1.2*inch,str(tax)) # tax 
+    total_final=total
+    c.setFont("Times-Bold", 22)
+    c.setFillColorRGB(1,0,0) # font colour
+    #c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
+    c.rotate(90)
+    c.showPage()
+    c.save()
+billNo = 'PM2407502'
+billData = getBillDetails(billNo)
+printBill(billData,billNo)
