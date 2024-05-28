@@ -1,3 +1,8 @@
+import tkinter as tk
+from tkinter import messagebox
+import subprocess
+import os
+
 from reportlab.lib.units import inch
 
 from datetime import date
@@ -11,7 +16,6 @@ import datetime
 
 
 #from gspread_pandas import Spread, Client
-start_time = time.time()
 SCOPES = [
 'https://www.googleapis.com/auth/spreadsheets',
 'https://www.googleapis.com/auth/drive'
@@ -199,53 +203,23 @@ def printBill(my_prod, bill_No):
     c.showPage()
     c.save()
 
-def printBillFromSheet(my_prod, bill_No):
-    my_path=r'C:\Users\prani\OneDrive\Documents\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
-    c = canvas.Canvas(my_path,pagesize=A5)
+def print_file():
+    #file_name = r'C:\Users\prani\OneDrive\Documents\IMS_2024\main_ttk\Invoices\{}.pdf'.format(entry.get())
+    billNo = entry.get()
+    #ptName = 'Valli'
+    billData = getBillDetails(billNo)
+    printBill(billData,billNo)
+    entry.se
     
-    c=my_temp(c) # run the template
-    
-    print(ProductLine, QtyLine, AmtLine, RateLine)
-    c.setFillColorRGB(0,0,0) # font colour
 
-    c.setFont("Helvetica", 12)
-    c.drawString(6.8 * inch, 4.95 * inch, bill_No)
-    c.setFont("Helvetica", 8)
-    row_gap=0.15 # gap between each row
-    line_y=4.3 # location of fist Y position 
-    total=0
-    i = 1
-    for rec in my_prod:
-        
-        c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
-        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[5])) # product Code
-        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[3])) # p Name
-        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[7])) # p Price
-        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
-        sub_total=float(rec[7])*int(rec[4])
-        c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
-        total=round(total+sub_total,1)
-        line_y=line_y-row_gap
-        i+=1
-    ptName = my_prod[0][2]
-    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
-    c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total 
-    c.drawString(0.2 * inch, (billYLine-row_gap) * inch, 'Name')
-    c.drawString((PcodeLine+0.05)*inch,(billYLine-row_gap)*inch,ptName)
-    #discount=round((discount_rate/100) * total,1)
-    #c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
-    #c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
-    #tax=round((tax_rate/100) * (total-discount),1)
-    #c.drawRightString(4*inch,1.2*inch,str(tax_rate)+'%') # tax 
-    #c.drawRightString(7*inch,1.2*inch,str(tax)) # tax 
-    total_final=total
-    c.setFont("Times-Bold", 22)
-    c.setFillColorRGB(1,0,0) # font colour
-    #c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
-    c.rotate(90)
-    c.showPage()
-    c.save()
-billNo = 'PM2414719'
-#ptName = 'Valli'
-billData = getBillDetails(billNo)
-printBill(billData,billNo)
+app = tk.Tk()
+app.title("Print File")
+
+tk.Label(app, text="Enter file name:").pack(pady=10)
+
+entry = tk.Entry(app, width=40)
+entry.pack(pady=5)
+
+tk.Button(app, text="Print File", command=print_file).pack(pady=20)
+
+app.mainloop()
