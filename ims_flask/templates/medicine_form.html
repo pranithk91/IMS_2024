@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medicine Form</title>
+    <link rel="stylesheet" type="text/css" href="srv1644-files.hstgr.io/a6dbcbce4f7ce0ca/files/public_html/CSS/styles.css">
+</head>
+<body>
+    <h2 class="modal-title text-primary" style="align-content: center;">Add Medicine</h2>
+    
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <input type="text" name="name" placeholder="Name" required><br>
+        <input type="text" name="type" placeholder="Type"><br>
+        <input type="text" name="company" placeholder="Company"><br>
+        <input type="number" name="MRP" placeholder="MRP" step="0.01" required><br>
+        <input type="number" name="PTR" placeholder="PTR" step="0.01" required><br>
+        <input type="number" name="GST" placeholder="GST" step="0.01" required><br>
+        <input type="text" name="HSN" placeholder="HSN"><br>
+        <input type="text" name="offer1" placeholder="Offer 1"><br>
+        <input type="text" name="offer2" placeholder="Offer 2"><br>
+        <input type="number" name="weight" placeholder="Weight" step="0.01" required><br>
+        <input type="submit" value="Add Medicine">
+    </form>
+    
+</body>
+</html>

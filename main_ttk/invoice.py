@@ -69,7 +69,7 @@ def my_temp(c):
     c.line(0.2, 4.9 * inch, 8.0 * inch, 4.9 * inch)
     
     
-    dt = date.today().strftime('%d-%b-%Y')
+    dt = date.today().strftime('30-05-%Y')
     c.drawString(6.8 * inch, 5.25 * inch, dt)
     
     
@@ -170,9 +170,9 @@ def printBill(my_prod, bill_No,ptName):
         c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
         c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[5])) # product Code
         c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[3])) # p Name
-        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[7])) # p Price
+        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[6])) # p Price
         c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
-        sub_total=float(rec[7])*int(rec[4])
+        sub_total=float(rec[6])*int(rec[4])
         c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
         total=round(total+sub_total,1)
         line_y=line_y-row_gap
@@ -239,7 +239,7 @@ def printBillFromSheet(my_prod, bill_No, ptName):
     c.rotate(90)
     c.showPage()
     c.save()
-billNo = 'PM2413306'
-ptName = 'Geethanjali'
+billNo = 'PM2423134'
+ptName = 'Mani'
 billData = getBillDetails(billNo)
 printBill(billData,billNo, ptName)

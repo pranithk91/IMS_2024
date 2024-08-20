@@ -1,0 +1,387 @@
+from customtkinter import *
+import tkinter as tk
+from tkinter import ttk, messagebox
+from PIL import Image
+#from CTkScrollableDropdown import *
+import pandas as pd
+#from CTkTable import CTkTable
+from time import strftime
+#from new_client import ClientMainViewFrame
+import ttkbootstrap as ttb
+#from autocomplete import AutoComplete
+from datetime import date
+#from invoice import printBill
+from database_functions import insert_into_table
+
+
+
+class MainViewFrame(ttk.Frame):
+    def __init__(self, master=NONE):
+        super().__init__(master,  width=950, height=850, relief=tk.GROOVE)
+        self.pack_propagate(0)
+        self.grid(column=1, row=0, pady = (10,10), padx=(25,25))
+        today = date.today().strftime("%d-%b")
+          
+        # Title Section    
+        
+        self.titleFrame = ttk.Frame(master=self)
+        self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)
+        
+        self.titleLabel = ttk.Label(master=self.titleFrame, text="New Product Entry", 
+                                   font=("Calibri", 25, "bold"), style="success.TLabel" )
+        self.titleLabel.grid(row=0, column=0, sticky="w", padx=(30,30))
+
+
+        self.timeLabel = ttk.Label(master=self.titleFrame, font=("Calibri", 17, "bold"), style="success.TLabel" )
+        self.timeLabel.grid(row=0, column=1, sticky="e",padx = (520,0))
+        def get_time():
+            string = strftime('%I:%M:%S %p')
+            self.timeLabel.configure(text=string)
+            self.timeLabel.after(1000, get_time)
+        get_time()
+
+        # Medicine Details Section
+        self.medicineGrid = ttk.Frame(master=self)
+        self.medicineGrid.pack(fill="both", padx=27, pady=(31, 0))
+        
+        self.medicineUIDLabel = ttk.Label(master=self.medicineGrid, text="Medicine UID", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.medicineUIDLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
+        self.medicineUIDEntry = ttk.Entry(master=self.medicineGrid, 
+                                        style="success.TEntry", 
+                                        width=25
+                                        
+                                        )
+        
+        self.medicineUIDEntry.grid(row=1, column=0, sticky='w', padx = (30,30))        
+        
+
+        self.medicineNameLabel = ttk.Label(master=self.medicineGrid, text="Medicine Name", 
+                                         
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.medicineNameLabel.grid(row=0, column=1, sticky="w",padx = (10,30)) 
+        currentMedicineName = tk.StringVar()
+        self.MedicineNameEntry = ttk.Entry(master=self.medicineGrid, 
+                                        style="success.TEntry", 
+                                        width=25                                        
+                                        )
+
+        self.MedicineNameEntry.grid(row=1, column=1, sticky='w', padx = (10,30))
+
+        
+        self.medicineCompanyLabel = ttk.Label(master=self.medicineGrid, 
+                                      text="Mfr Company:", font=("Calibri", 15, "bold"), 
+                                      style="success.Tlabel", justify="left")
+        self.medicineCompanyLabel.grid(row=0, column=2, sticky="w") 
+        self.medicineCompanyEntry = ttk.Entry(master=self.medicineGrid, 
+                                         style="success.TEntry", width=25
+                                         )
+        
+        self.medicineCompanyEntry.grid(row=1, column=2, sticky='w')    
+
+
+        self.medicineTypeLabel  = ttk.Label(master=self.medicineGrid,
+                                           text = "Type",font=("Calibri", 15, "bold"), 
+                                      style="success.TLabel", justify="left" )
+        self.medicineTypeLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
+        self.medicineTypeCbox = ttk.Combobox(master=self.medicineGrid, style="success.TCombobox",
+                                            values=('Body Wash',	'Cleanser',	'conditioner',	'Cream',	'Facewash',	'Gel',	'Hair Dye',	'Injection',	'Lip Balm',	'Lotion',	'Moisturiser',	'Oil',	'Ointment',	'Others',	'Peel',	'Powder',	'Serum',	'Shampoo',	'Soap',	'Spray',	'Sunscreen',	'Syrup',	'Tablet',), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        self.medicineTypeCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
+
+        self.radioSelect = StringVar()
+
+        self.clientRadioButton = ttk.Checkbutton(master=self.medicineGrid, text="Medicine Only",variable=self.radioSelect, style="success.TCheckbutton" )
+        self.clientRadioButton.grid(row=2, column=1,sticky="w", padx = (10,30), pady=(15,0))
+        
+
+        
+        # Search Section
+        self.medicineGrid2 = ttk.Frame(master=self)
+        self.medicineGrid2.pack(fill="both", padx=27, pady=(31, 0))
+        self.mrpLabel = ttk.Label(master=self.medicineGrid2, text="Price", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.mrpLabel.grid(row=0, column=0, sticky="w",padx = (30,30)) 
+        self.mrpEntry = ttk.Entry(master=self.medicineGrid2, 
+                                        style="success.TEntry", 
+                                        width=25
+                                        
+                                        )
+        
+        self.mrpEntry.grid(row=1, column=0, sticky='w', padx = (30,30))        
+        
+
+        self.gstLabel = ttk.Label(master=self.medicineGrid2, text="GST", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.gstLabel.grid(row=0, column=1, sticky="w",padx = (30,30)) 
+        self.gstEntry = ttk.Entry(master=self.medicineGrid2, 
+                                        style="success.TEntry", 
+                                        width=25                                        
+                                        )        
+        self.gstEntry.grid(row=1, column=1, sticky='w', padx = (30,30))   
+
+
+        self.hsnLabel = ttk.Label(master=self.medicineGrid2, text="HSN", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.hsnLabel.grid(row=0, column=2, sticky="w",padx = (30,30)) 
+        self.hsnEntry = ttk.Entry(master=self.medicineGrid2, 
+                                        style="success.TEntry", 
+                                        width=25                                        
+                                        )        
+        self.hsnEntry.grid(row=1, column=2, sticky='w', padx = (30,30))
+
+        
+        self.ptrLabel = ttk.Label(master=self.medicineGrid2, text="PTR", 
+                                        font=("Calibri", 15, "bold"), style="success.TLabel", 
+                                        justify="left")
+        self.ptrLabel.grid(row=0, column=3, sticky="w",padx = (30,30)) 
+        self.ptrEntry = ttk.Entry(master=self.medicineGrid2, 
+                                        style="success.TEntry", 
+                                        width=25                                        
+                                        )        
+        self.ptrEntry.grid(row=1, column=3, sticky='w', padx = (30,30))
+
+
+        self.medicineTypeLabel  = ttk.Label(master=self.medicineGrid,
+                                           text = "Type",font=("Calibri", 15, "bold"), 
+                                      style="success.TLabel", justify="left" )
+        self.medicineTypeLabel.grid(row=0, column=3, sticky="w",padx = (30,30))
+        self.medicineTypeCbox = ttk.Combobox(master=self.medicineGrid, style="success.TCombobox",
+                                            values=('Body Wash',	'Cleanser',	'conditioner',	'Cream',	'Facewash',	'Gel',	'Hair Dye',	'Injection',	'Lip Balm',	'Lotion',	'Moisturiser',	'Oil',	'Ointment',	'Others',	'Peel',	'Powder',	'Serum',	'Shampoo',	'Soap',	'Spray',	'Sunscreen',	'Syrup',	'Tablet',), state='readonly', 
+                                            justify=CENTER, font=("calibri", 12, "bold"), 
+                                             cursor='hand2')
+        self.medicineTypeCbox.grid(row=1, column=3,sticky="w", padx = (30,30))
+
+        self.radioSelect = StringVar()
+
+        self.clientRadioButton = ttk.Checkbutton(master=self.medicineGrid, text="Medicine Only",variable=self.radioSelect, style="success.TCheckbutton" )
+        self.clientRadioButton.grid(row=2, column=1,sticky="w", padx = (10,30), pady=(15,0))
+
+
+
+
+
+                   
+            
+
+
+        
+
+    
+        
+        def addToBill():
+            pass
+            
+            #print("Bill Total:",billTotal)
+        
+        def clearBillTable():
+            pass
+        
+        def activateBothEntries(event):
+            pass
+
+        quantity_frame = ttk.Frame(master=self.searchGrid, bootstyle="default")
+        quantity_frame.grid(row=1, column=1, padx=(10,0), pady=(0,0), sticky="w")
+
+        def quantityIncrease():
+            currentEntry = self.qtySaleEntry.get()
+            #print("type is ", type(currentEntry))
+            if currentEntry == "":
+                currentEntry = 0
+                self.qtySaleEntry.insert(0,1)
+            else: currentEntry = int(self.qtySaleEntry.get())
+            if currentEntry > 0 :
+                
+                self.qtySaleEntry.delete(0,currentEntry)         
+                self.qtySaleEntry.insert(0,currentEntry+1)
+        def quantityDecrease():
+            currentEntry = self.qtySaleEntry.get()
+            #print("type is ", type(currentEntry))
+            if currentEntry == "":
+                currentEntry = 0
+            else: currentEntry = int(self.qtySaleEntry.get())
+            if currentEntry > 1 :
+                self.qtySaleEntry.delete(0,currentEntry)
+                self.qtySaleEntry.insert(0,currentEntry-1)
+                    
+
+        
+        self.qtyDecreaseButton = ttk.Button(master=quantity_frame, text="-", 
+                                            width=5, style="success.TButton",
+                                            command=quantityDecrease
+                                            )
+        self.qtyDecreaseButton.pack(side="left", anchor="w")
+        self.qtySaleEntry = ttk.Entry(master=quantity_frame, #placeholder_text=0,
+                                       style="success.TEntry", font=("Arial Black", 16),
+                                       width=5
+                                        )
+        self.qtySaleEntry.pack(side="left", anchor="w", padx=10)
+        self.qtyIncreaseButton = ttk.Button(master=quantity_frame, text="+", width=5,  
+                                           style="success.TButton",
+                                           command=quantityIncrease
+                                           )
+        self.qtyIncreaseButton.pack(side="left", anchor="w")
+        
+        #self.detailsFrame = ttk.Frame(master=self.searchGrid, fg_color="transparent")
+        self.qtyInStockLabel = ttk.Label(master=self.searchGrid, text = "Quantity in Stock: 0",
+                                        font=("Calibri", 15, "bold"), 
+                                        style="success.TLabel",
+                                        )
+        self.qtyInStockLabel.grid(row=3, column=0, sticky="w", pady=30)
+        
+        self.update()
+        self.windowWidth = self.winfo_width()
+
+        self.warningLabel = ttk.Label(master=self,
+                                    text = "",font=("Calibri", 17), 
+                                style="TLabel.success" )
+        
+        
+        self.warningLabel.place(x=self.windowWidth//2, y = 300)
+        self.warningLabel.pack()
+
+        self.billTableFrame = ttk.Frame(master=self, bootstyle="default")
+        self.billTableFrame.pack(expand=True, fill="both", padx=27, pady=21)
+
+        self.newSaleButton = ttk.Button(master=self.billTableFrame, text="Clear Table",
+                                      
+                                      style="success.TButton", 
+                                      
+                                      command=clearBillTable)
+        self.newSaleButton.pack(side="top",  anchor = "ne")
+
+        self.billTable = ttk.Treeview(master=self.billTableFrame, 
+                                  columns=["Time Stamp", "Med Name", "Type", "MRP", "Quantity", "Total Price"],
+                                  show="headings",
+                                    #yscrollcommand=self.treeSrollBar,
+                                    selectmode="extended",
+                                  style="success.Treeview")
+        #self.billTable.edit_row(0, text_color="#fff", hover_color="#2A8C55")
+        #self.billTable.pack(expand=True)
+
+        self.billTable.column("Time Stamp", width=75)
+        self.billTable.column("Med Name", width=75)
+        self.billTable.column("Type", width=75)
+        self.billTable.column("MRP", width=75)
+        self.billTable.column("Quantity", width=75)
+        self.billTable.column("Total Price",width=75)
+
+
+        self.billTable.heading("Time Stamp", text="Time Stamp", anchor=W)
+        self.billTable.heading("Med Name", text="Med Name", anchor=W)
+        self.billTable.heading("Type", text="Type", anchor=W)
+        self.billTable.heading("MRP", text="MRP", anchor=W)
+        self.billTable.heading("Quantity", text="Quantity", anchor=W)
+        self.billTable.heading("Total Price", text="Total Price", anchor=W)
+   
+        self.billTable.pack(expand=True, fill='both', pady=(10,0))
+
+        self.billTotalLabel = ttk.Label(master=self.billTableFrame, text="Bill Total: 0",
+                                       font=("Calibri", 15, "bold"), 
+                                        style="successTLabel."
+                                        )
+        self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
+
+        def addToInvoices():
+            pass
+
+
+
+
+
+        def confirmDetails():
+            #pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
+            addToInvoices() 
+            
+            if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
+                pass
+
+            else:
+                for record in self.billTable.get_children():
+                    self.billTable.delete(record)
+
+                self.medicineUIDEntry.delete(0,END)
+                self.medicineUIDEntry.delete(0,END)     
+                self.medicineCompanyEntry.delete(0,END)
+                self.medicineTypeCbox.set("")   
+                #self.payModeCombobox.set("")
+                self.cashAmtEntry.configure(state=NORMAL)
+                self.cashAmtEntry.delete(0,END)
+                self.cashAmtEntry.configure(state=DISABLED)
+                self.upiAmtEntry.configure(state=NORMAL)
+                self.upiAmtEntry.delete(0,END)
+                self.upiAmtEntry.configure(state=DISABLED)
+                self.discountEntry.delete(0,END)
+
+                  
+                                 
+            
+
+
+
+        def selectRecord(event):
+            pass
+
+        #def update_record():
+        self.billTable.bind("<Double-Button-1>", selectRecord)
+
+        self.billConfirmButton = ttk.Button(master=self.billTableFrame, text="Confirm Details",
+                                      style="success.TButton",
+                                      command=confirmDetails)
+        
+        self.billConfirmButton.pack(anchor="ne", side="right",padx = (0,20), pady=(20,0))
+
+        self.discountLabel = ttk.Label(master=self.billTableFrame, text="Discount",
+                                       font=("Calibri", 15, "bold"), 
+                                        style="success.TLabel"
+                                        )
+        self.discountLabel.pack(anchor="ne", side="left",pady=(20,0))
+        
+        discountAmount = IntVar()
+        self.discountEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       textvariable=discountAmount,
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry")
+        self.discountEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+
+        
+        def applyDiscount():
+            pass
+
+        self.applyDiscountButton = ttk.Button(master=self.billTableFrame, text="Apply Discount",
+                                style="success.TButton",
+                                command=applyDiscount)
+        
+        self.applyDiscountButton.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+
+        def focusEntry(event):
+           pass
+
+        
+
+        self.cashAmtEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry",state=DISABLED)
+        self.cashAmtEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+        
+        self.cashAmtEntry.bind("<Button-1>", focusEntry)
+        self.upiAmtEntry = ttk.Entry(master=self.billTableFrame, text="Discount",
+                                       
+                                       font=("Calibri", 12, "bold"),
+                                       width=15,style="success.TEntry",state=DISABLED)
+        self.upiAmtEntry.pack(anchor="ne", side="left",padx=(20,0), pady=(20,0))
+        self.upiAmtEntry.bind("<Button-1>", focusEntry)
+
+
+
+if __name__ == "__main__":
+    app = tk.Tk()
+    MainViewFrame(app)
+    app.mainloop()
