@@ -72,7 +72,7 @@ def my_temp(c):
     
     
     dt = date.today().strftime('30-05-%Y')
-    c.drawString(6.8 * inch, 5.25 * inch, dt)
+    
     
     
     # Other adjustments...
@@ -183,10 +183,15 @@ def printBill(my_prod, bill_No):
         line_y=line_y-row_gap
         i+=1
     ptName = my_prod[0][2]
-    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
+    billDate = my_prod[0][1]+'-'+str(date.today().strftime('%Y'))
+    c.setFont("Times-Bold", 10)
+    c.setFillColorRGB(0,0,1)
+    c.drawString(6.8 * inch, 5.25 * inch, billDate)
+    c.setFillColorRGB(0,0,0)
+    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount: ')
     c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total
-    c.drawString(0.2 * inch, (billYLine-row_gap) * inch, 'Name')
-    c.drawString((PcodeLine+0.05)*inch,(billYLine-row_gap)*inch,ptName)
+    c.drawString(0.2 * inch, (billYLine-row_gap) * inch, 'Name: ')
+    c.drawString((PcodeLine+0.08)*inch,(billYLine-row_gap)*inch,ptName)
     #discount=round((discount_rate/100) * total,1)
     #c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
     #c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
@@ -201,52 +206,7 @@ def printBill(my_prod, bill_No):
     c.showPage()
     c.save()
 
-def printBillFromSheet(my_prod, bill_No):
-    my_path=r'C:\Users\prani\OneDrive\Documents\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
-    c = canvas.Canvas(my_path,pagesize=A5)
-    
-    c=my_temp(c) # run the template
-    
-    print(ProductLine, QtyLine, AmtLine, RateLine)
-    c.setFillColorRGB(0,0,0) # font colour
 
-    c.setFont("Helvetica", 12)
-    c.drawString(6.8 * inch, 4.95 * inch, bill_No)
-    c.setFont("Helvetica", 8)
-    row_gap=0.15 # gap between each row
-    line_y=4.3 # location of fist Y position 
-    total=0
-    i = 1
-    for rec in my_prod:
-        
-        c.drawString((0.2+0.05)*inch,line_y*inch,str(i))
-        c.drawString((PcodeLine+0.05)*inch,line_y*inch,str(rec[5])) # product Code
-        c.drawString((ProductLine+0.05)*inch,line_y*inch,str(rec[3])) # p Name
-        c.drawString((RateLine +0.05)*inch,line_y*inch,str(rec[7])) # p Price
-        c.drawString((QtyLine+0.05)*inch,line_y*inch,str(rec[4])) # p Qant 
-        sub_total=float(rec[7])*int(rec[4])
-        c.drawString((AmtLine+0.05)*inch,line_y*inch,str(sub_total)) # Sub Total 
-        total=round(total+sub_total,1)
-        line_y=line_y-row_gap
-        i+=1
-    ptName = my_prod[0][2]
-    c.drawRightString((AmtLine -0.05)*inch, (billYLine-row_gap) * inch, 'Bill Amount')
-    c.drawString((AmtLine+0.05)*inch,(billYLine-row_gap)*inch,str(float(total))) # Total 
-    c.drawString(0.2 * inch, (billYLine-row_gap) * inch, 'Name')
-    c.drawString((PcodeLine+0.05)*inch,(billYLine-row_gap)*inch,ptName)
-    #discount=round((discount_rate/100) * total,1)
-    #c.drawRightString(4*inch,1.8*inch,str(discount_rate)+'%') # discount
-    #c.drawRightString(7*inch,1.8*inch,'-'+str(discount)) # discount
-    #tax=round((tax_rate/100) * (total-discount),1)
-    #c.drawRightString(4*inch,1.2*inch,str(tax_rate)+'%') # tax 
-    #c.drawRightString(7*inch,1.2*inch,str(tax)) # tax 
-    total_final=total
-    c.setFont("Times-Bold", 22)
-    c.setFillColorRGB(1,0,0) # font colour
-    #c.drawRightString(2*inch,0.8*inch,str(total_final)) # tax 
-    c.rotate(90)
-    c.showPage()
-    c.save()
 billNo = 'PM2423134'
 ptName = 'Mani'
 billData = getBillDetails(billNo)
