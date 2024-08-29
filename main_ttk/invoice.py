@@ -153,7 +153,7 @@ from reportlab.lib.pagesizes import letter, A5
 #from temp_invoice import my_temp # import the template
 #from invoice_data import *  # get all data required for invoice
 def printBill(my_prod, bill_No):
-    my_path=r'C:\Users\prani\OneDrive\Documents\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
+    my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
     c = canvas.Canvas(my_path,pagesize=A5)
     
     c=my_temp(c) # run the template
@@ -202,7 +202,7 @@ def printBill(my_prod, bill_No):
     c.save()
 
 def printBillFromSheet(my_prod, bill_No):
-    my_path=r'C:\Users\prani\OneDrive\Documents\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
+    my_path=r'C:\Users\KP\Development\IMS_2024\main_ttk\Invoices\{}.pdf'.format(bill_No) 
     c = canvas.Canvas(my_path,pagesize=A5)
     
     c=my_temp(c) # run the template
@@ -247,7 +247,7 @@ def printBillFromSheet(my_prod, bill_No):
     c.rotate(90)
     c.showPage()
     c.save()
-billNo = 'PM2423134'
-ptName = 'Mani'
+billNo = 'PM2423302'
+ptName = 'S.ShainshaVali'
 billData = getBillDetails(billNo)
 printBill(billData,billNo)
