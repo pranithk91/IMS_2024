@@ -10,7 +10,7 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS
+from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo#,getInvoiceDate,inoviceWS
 import sqlite3
 
 medicineDf = medListData
@@ -21,7 +21,7 @@ medSuggestionList=medSuggestionList[1:]
 #print(medSuggestionList)
 
 
-class MainViewFrame(ttk.Frame):
+class DeliveriesViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
         super().__init__(master,  width=950, height=850, relief=tk.GROOVE)
         self.pack_propagate(0)
@@ -514,5 +514,5 @@ class MainViewFrame(ttk.Frame):
 
 if __name__ == "__main__":
     app = tk.Tk()
-    MainViewFrame(app)
+    DeliveriesViewFrame(app)
     app.mainloop()

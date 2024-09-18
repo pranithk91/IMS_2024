@@ -59,7 +59,7 @@ class MainViewFrame(ttk.Frame):
             self.billTotalLabel.configure(text = "Bill Total: 0")
 
         
-        # Title Section    
+        # Title Section     
         
         self.titleFrame = ttk.Frame(master=self)
         self.titleFrame.pack(anchor="w", pady=(29, 0), padx=27)

@@ -5,7 +5,7 @@ import gspread as gs
 from google.oauth2 import service_account
 import time
 import datetime
-from invoice import printBill
+#from invoice import printBill
 #from gspread_pandas import Spread, Client
 start_time = time.time()
 SCOPES = [
@@ -19,7 +19,7 @@ credentials = service_account.Credentials.from_service_account_file(
 
 client = gs.authorize(credentials)
 
-Spread = client.open("OP Register")
+Spread = client.open("OP Register Dev")
 
 
 pharmacyWS = Spread.worksheet("Pharmacy")
