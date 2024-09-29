@@ -1,116 +1,44 @@
-import sqlite3
-import pandas as pd
-import datetime
-#import pandas as pd
-#import gspread as gs
-#from google.oauth2 import service_account
-#from gspread_pandas import Spread, Client
 
-medicineTableQuery = """CREATE TABLE "medicines" (
-                    "Name"	TEXT,
-                    "Current Stock"	INTEGER,
-                    "Type"	TEXT,
-                    "Price"	REAL,
-                    "Weight (gms/ml/mg)"	REAL,
-                    "Mfr Company"	TEXT,
-                    "No. Sold"	INTEGER,
-                    "Deliveries"	INTEGER,
-                    "Initial Stock"	REAL,
-                    "Saleable Stock"	REAL,
-                    "Alternates"	TEXT,
-                    "Offer"	TEXT,
-                    "Quantity per strip"	REAL,
-                    "No of Strips"	REAL,
-                    "Strips per box"	REAL,
-                    "No of boxes"	REAL)"""
+import mysql.connector
+from mysql.connector import Error
+import time
 
-patientsTableQuery = """CREATE TABLE Patients 
-                    (UID VARCHAR(10) PRIMARY KEY, 
-                    Name VARCHAR(50), 
-                    Phone VARCHAR(10),
-                    Gender CHAR(1),Age INT, 
-                    OpProc VARCHAR(100), 
-                    Amount DECIMAL(10,2))"""
+start_time = time.time()
 
-conn = sqlite3.connect('medicine_database.db')
+def db_cursor(): 
+    try:
+        conn = mysql.connector.connect(
+            host="193.203.184.152",
+            port='3306',
+            user="u885517842_AdminUser",
+            password="MdP@ssword!!1",
+            database="u885517842_MedicalStore"
+        )
+        if conn.is_connected():
+            print("Connected to MySQL database")
+            cursor = conn.cursor()
+            return cursor, conn
+        
+    except Error as e:
+        print(f"Error while connecting to MySQL: {e}")
 
-def createDatabase():
+def selectTable(table_name, column_names = '*', condition= "1=1", Limit=None):
     
-    
-    
-    #cursor = conn.cursor()
-    conn.execute(patientsTableQuery)
-    conn.execute(medicineTableQuery)
-    conn.close()
-
-#print('a')
-def loadFromCsv(filename):
-    conn = sqlite3.connect('medicine_database.db')
-    #cursor = conn.cursor()
-    df=pd.read_csv('main/{}.csv'.format(filename))
-    df.to_sql('pharmacy', conn, if_exists='replace', index=False)
-    conn.commit()
-    conn.close()
-
-def getClientid(name):
-    now = datetime.datetime.now()  
-    year_str = str(now.year)[-2:]  
-    month_str = str(now.month).zfill(2)
-    name_prefix = name[:3].upper()
-    first_letter = name[0]   
-    
-    currCount = conn.execute("""
-        SELECT COUNT(*)
-        FROM Patients
-        WHERE UID LIKE ?
-    """, (f"{year_str}{month_str}{first_letter}%",)).fetchone()
-    
-    count = currCount[0] + 1
-    serial_num = str(count).zfill(2)
-    
-    return f"{year_str}{month_str}{name_prefix}{serial_num}"
-
-def loadDatabase(query):
-    # Connect to SQLite database
-    conn = sqlite3.connect('medicine_database.db')
-    #query = "SELECT * FROM medicines"
-    med_df = pd.read_sql_query(query, conn)
-    conn.close()
-
-    return med_df    
-
-def loadPharmacy():
-    conn = sqlite3.connect('medicine_database.db')
-    query = "SELECT * FROM medicines"
-    pharmDf = pd.read_sql_query(query, conn)
-    conn.close()
-
-    return pharmDf 
-
-def updatePharmacy(query):
-    conn = sqlite3.connect('medicine_database.db')
-    #query = "SELECT * FROM medicines"
-    pharmDf = pd.read_sql_query(query, conn)
-    conn.close()
+    cursor, conn = db_cursor()
+    if Limit == None:
+        query = "SELECT " + column_names + " FROM " + table_name + " WHERE " + condition
+    else:
+        query = "SELECT " + column_names + " FROM " + table_name + " WHERE " + condition + " LIMIT " + str(Limit)
+    cursor.execute(query)
+    results = cursor.fetchall()
+    if 'connection' in locals() and conn.is_connected():
+        cursor.close()
+        conn.close()
+        print("MariaDB connection is closed")
+    return results
 
 
+#print(selectTable('DeliveryBills', Limit=5))
+end_time = time.time()
 
-"""medicineDf = loadDatabase()
-currentMedQty = medicineDf[medicineDf["Name"] == "Acnelak"]["Quantity"]
-print(currentMedQty)
-"""
-"""def retrieve_medicine_names():
-    conn = sqlite3.connect('medicine_database.db')
-    cursor = conn.cursor()
-
-    
-    cursor.execute("SELECT Name FROM medicines")
-    medicine_names = [row[0] for row in cursor.fetchall()]
-
-    # Close the database connection
-    conn.close()
-
-    return medicine_names"""
-
-
-# Commit the changes and close the connection
+print(end_time-start_time)

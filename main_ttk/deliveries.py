@@ -10,10 +10,10 @@ from time import strftime
 from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo#,getInvoiceDate,inoviceWS
-import sqlite3
+#from gspreaddb import pharmData, pharmacyWS, medListData, getBillNo,getInvoiceDate,inoviceWS
+from database import selectTable
 
-medicineDf = medListData
+medicineDF = selectTable("MedicineList")
 #medSuggestionList = medicineDf['Name'].tolist()
 medSuggestionList = list(set(medListData["Name"].tolist()))
 medSuggestionList.sort()
