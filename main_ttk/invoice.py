@@ -207,7 +207,7 @@ def printBill(my_prod, bill_No):
     c.save()
 
 
-billNo = 'PM2425011'
+billNo = 'PM2427411'
 #ptName = 'Arshiya'
 billData = getBillDetails(billNo)
 printBill(billData,billNo)

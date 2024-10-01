@@ -78,15 +78,15 @@ def app():
         return
 
     # Dropdowns for name and invoice number
-    deliveryDate = st.date_input("Delivery Date")
+    deliveryDate = st.date_input("Delivery Date",key="deliveryDate")
     name = st.selectbox("Select Product Name", medicine_names)
     invoice_number = st.selectbox("Select Invoice Number", invoice_numbers)
 
     # Input fields for quantity, price, expiry date, batch number
-    deliveryDate = st.date_input("Delivery Date")
+    #deliveryDate = st.date_input("Delivery Date", key="deliveryDate")
     quantity = st.number_input("Quantity", min_value=0)
     price = st.number_input("Price", min_value=0.0, format="%.2f")
-    expiry_date = st.date_input("Expiry Date")
+    expiry_date = st.date_input("Expiry Date", key="expiryDate")
     batch_number = st.text_input("Batch Number")
 
     billSubmit=[]
