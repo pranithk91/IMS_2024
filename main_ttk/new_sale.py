@@ -2,28 +2,22 @@ from customtkinter import *
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image
-#from database import loadDatabase
+from database import selectTable, insertIntoTable
 from CTkScrollableDropdown import *
 import pandas as pd
 #from CTkTable import CTkTable
 from time import strftime
-from new_client import ClientMainViewFrame
+#from new_client import ClientMainViewFrame
 import ttkbootstrap as ttb
 from autocomplete import AutoComplete
-from gspreaddb import *
-from gspreaddb import medListData #pharmData, pharmacyWS, medListData, getBillNo,getInvoiceData,inoviceWS,  
-#from gspreaddb import opWS, oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo 
 import sqlite3
 from datetime import date
 from invoice import printBill
 
-#medicineDf = medListData
-#medSuggestionList = medicineDf['Name'].tolist()
-medSuggestionList = list(set(medListData["Name"].tolist()))
-medSuggestionList.sort()
-medSuggestionList=medSuggestionList[1:]
-#print(medSuggestionList)
-#oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
+medData = selectTable('MedicineList', column_names="MId, MName,  CurrentStock, MType, MRP,  GST, Weight")
+medicineDf=pd.DataFrame(medData, columns=['MId', 'MName',  'CurrentStock', 'MType', 'MRP',  'GST', 'Weight'])
+medSuggestionList = [med[1] for med in medData]
+
 
 class MainViewFrame(ttk.Frame):
     def __init__(self, master=NONE):
@@ -31,27 +25,7 @@ class MainViewFrame(ttk.Frame):
         self.pack_propagate(0)
         self.grid(column=1, row=0, pady = (10,10), padx=(25,25))
         today = date.today().strftime("%d-%b")
-        columnheaders = opWS.row_values(1)
-        #oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-        rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
-        #print(rowsWithDate)
-        #print(len(rowsWithDate))
-        currentDayPatients = pd.DataFrame(rowsWithDate)
-
-        try:
-            currentDayPatients.columns = columnheaders[:-1]
-        except:
-            currentDayPatientNames = []
-        
-        medicineDf = medListData
-        #medSuggestionList = medicineDf['Name'].tolist()
-        medSuggestionList = list(set(medListData["Name"].tolist()))
-        medSuggestionList.sort()
-        medSuggestionList=medSuggestionList[1:]
-        #print(medSuggestionList)
-        #oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-
-
+       
         def clearBillTable():
             
             numRows = self.billTable.rows
@@ -96,20 +70,15 @@ class MainViewFrame(ttk.Frame):
 
         def getCurrentDayPatients():
 
-            today = date.today().strftime("%d-%b")
-            columnheaders = opWS.row_values(1)
-            #oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-            rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(today, in_column=oPDateColNo)]
-            currentDayPatients = pd.DataFrame(rowsWithDate)
-            currentDayPatients.columns = columnheaders[:-1]
+            condition = f"Date = '{today}'"
+            Patients = selectTable('Patients', condition=condition )
+            PatientNames = [pat[2] for pat in Patients]
+            Patientdf=pd.DataFrame(Patients, columns=['UHId', 'Date', 'PName', 'PhoneNo', 'Age', 'Gender'])
             
-            return currentDayPatients
-        #try:
-        currentDayPatients.columns = columnheaders[:-1]
-        currentDayPatientNames = currentDayPatients['Name'].tolist()
-        #print(currentDayPatientNames)
-        #except:
-        #    currentDayPatientNames = []
+            return Patientdf, PatientNames
+        
+        currentDayPatientNames = getCurrentDayPatients()[1]
+        
         self.clientNameLabel = ttk.Label(master=self.clientGrid, text="Patient Name", 
                                          
                                         font=("Calibri", 15, "bold"), style="success.TLabel", 
@@ -124,10 +93,10 @@ class MainViewFrame(ttk.Frame):
                                              cursor='hand2')
 
         def on_name_select(event):
-            currentDayPatients = getCurrentDayPatients()
-            currentPatientPhone = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Phone No"].tolist()
-            currentPatientGender = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["Gender"].tolist()
-            currentPatientUID = currentDayPatients.loc[currentDayPatients["Name"] == currentPatientName.get()]["UID"].tolist()
+            currentDayPatients = getCurrentDayPatients()[0]
+            currentPatientPhone = currentDayPatients.loc[currentDayPatients["PName"] == currentPatientName.get()]["PhoneNo"].tolist()
+            currentPatientGender = currentDayPatients.loc[currentDayPatients["PName"] == currentPatientName.get()]["Gender"].tolist()
+            currentPatientUID = currentDayPatients.loc[currentDayPatients["PName"] == currentPatientName.get()]["UHId"].tolist()
             self.clientPhoneEntry.insert(0, str(currentPatientPhone[0]))
             self.clientGenderCbox.set(currentPatientGender[0])
             self.clientUIDEntry.insert(0,currentPatientUID[0] )
@@ -183,11 +152,14 @@ class MainViewFrame(ttk.Frame):
             global currentMedQty
             global currentMedPrice
             global currentMedType
+            #global currentMedId
+
             currentMedName = self.itemNameEntry.get()
             #print(medicineDf.loc[medicineDf["Name"] == currentMedName])
-            currentMedQty = int(medicineDf.loc[medicineDf["Name"] == currentMedName]["Current Stock"].iloc[0])
-            currentMedPrice = float(medicineDf.loc[medicineDf["Name"] == currentMedName]["Price"].iloc[0])
-            currentMedType = str(medicineDf.loc[medicineDf["Name"] == currentMedName]["Type"].iloc[0])
+            currentMedQty = int(medicineDf.loc[medicineDf["MName"] == currentMedName]["CurrentStock"].iloc[0])
+            currentMedPrice = float(medicineDf.loc[medicineDf["MName"] == currentMedName]["MRP"].iloc[0])
+            currentMedType = str(medicineDf.loc[medicineDf["MName"] == currentMedName]["MType"].iloc[0])
+            
             
             self.qtyInStockLabel.configure(text="Quantity in Stock:"+ str(currentMedQty))  
         
@@ -380,13 +352,20 @@ class MainViewFrame(ttk.Frame):
         self.billTotalLabel.pack(anchor="ne", side="right",pady=(20,0))
 
         def addToInvoices():
-            #insLastRowNo, insPatientNameColNo, insDateColNo, insBillAmountColNo, insPayModeColNo, insDiscountColNo, insCashColNo, insUPIColNo, insinvNoColNo = getInvoiceDate()
-            insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
+            
+            #insLastRowNo = len(inoviceWS.col_values(insDateColNo))+1
             clientName = self.clientNameEntry.get()
             clientPhone = self.clientPhoneEntry.get()
             cashAmount = self.cashAmtEntry.get()
             upiAmount = self.upiAmtEntry.get()
             payMode = self.payModeCombobox.get()
+            clientUId = self.clientUIDEntry.get()
+            invDate = strftime("%Y-%m-%d")
+            condition = f"InvoiceDate  = '{today}'"
+            Invcount = selectTable('MedicineInvoices', column_names='count(*)', condition=condition )
+            Invcount = f"{Invcount[0][0]:02}"
+
+            InvoiceId = 'PM'+str(date.today().strftime("%y"))+str(date.today().timetuple().tm_yday)+str(Invcount)
 
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 self.warningLabel.configure(text = "")
@@ -400,41 +379,44 @@ class MainViewFrame(ttk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
                 messagebox.showwarning("Warning", " Phone number needs 10 digits.")
             else:
-                inoviceWS.update_cell(insLastRowNo,insDateColNo, strftime("%d-%b"))
-                inoviceWS.update_cell(insLastRowNo,insPatientNameColNo, clientName)
-                inoviceWS.update_cell(insLastRowNo,insBillAmountColNo, billTotal)
-                inoviceWS.update_cell(insLastRowNo,insPayModeColNo,payMode)
-                inoviceWS.update_cell(insLastRowNo,insDiscountColNo, discountAmount.get())
-                inoviceWS.update_cell(insLastRowNo,insCashColNo, cashAmount)
-                inoviceWS.update_cell(insLastRowNo,insUPIColNo, upiAmount)
+                insertIntoTable('MedicineInvoices', f"'{invDate}','{InvoiceId}' , '{clientUId}','{billTotal}','{discountAmount}','{payMode}'", 
+                                column_names= "InvoiceDate,	InvoiceId,	UHId,	TotalAmount,	DiscountAmount,	PaymentMode" )
+                #InvoiceDate	InvoiceId	UHId	TotalAmount	DiscountAmount	PaymentMode
+            return InvoiceId    
 
 
 
 
 
         def confirmDetails():
-            #pwsLastRowNo, pwsBillNoColNo, pwsMedNameColNo, pwsDateColNo, pwsQtyColNo, pwsPatientNameColNo = pharmData()
-            addToInvoices() 
-            pwsLastRowNo = len(pharmacyWS.col_values(pwsMedNameColNo))+1
+            
+            currInvoiceNo = addToInvoices() 
+            #clientUId = self.clientUIDEntry.get()
+            
             if self.warningLabel.cget("text") == "Warning: Invalid Name" or self.warningLabel.cget("text") == "Warning: Phone number needs 10 digits":
                 pass
 
             else:                
-                currInvoiceNo = getBillNo()
+                
                 billData = []
+                billItems = len(self.billTable.get_children())
+                itemCount = 1
+                BTotal = 0
                 for record in self.billTable.get_children():
+                    
                     recValues = list(self.billTable.item(record,'values'))
+                    
                     billData.append(recValues)
-                    pharmacyWS.update_cell(pwsLastRowNo, pwsBillNoColNo, currInvoiceNo)
-                    pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, strftime("%d-%b"))
-                    pharmacyWS.update_cell(pwsLastRowNo, pwsMedNameColNo, recValues[1])
-                    pharmacyWS.update_cell(pwsLastRowNo, pwsQtyColNo, recValues[4])
-                    pwsLastRowNo+=1
-                    #pharmacyWS.update_cell(pwsLastRowNo, pwsPayModeColNo, recValues[0])
-                    #pharmacyWS.update_cell(pwsLastRowNo, pwsDateColNo, recValues[0])
-                    self.warningLabel.configure(text = "")
+                    saleId = currInvoiceNo+str(f"{itemCount:02}")
+                    currentMedName = recValues[1]
+                    currentMedId = str(medicineDf.loc[medicineDf["MName"] == currentMedName]["MId"].iloc[0])
+                    MTotal = recValues[5]
+                    BTotal = BTotal+MTotal
+                    insertIntoTable('MedicineInvoices', f"'{saleId}','{currentMedId}','{currInvoiceNo}' , '{recValues[4]}','{MTotal}','{BTotal}'", 
+                                column_names= "SaleId,	MId,	InvoiceId,	Mstock,	MTotal,	BTotal" )
+                    
 
-                printBill(billData, currInvoiceNo)
+                #printBill(billData, currInvoiceNo)
 
                 for record in self.billTable.get_children():
                     self.billTable.delete(record)

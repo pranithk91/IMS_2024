@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from tkinter import *
 from PIL import Image, ImageTk
-#from database import loadDatabase, getClientid
+from database import selectTable, getClientID, insertIntoTable
 #from CTkScrollableDropdown import *
 import pandas as pd
 #from CTkTable import CTkTable
@@ -13,7 +13,7 @@ import sqlite3
 import ttkbootstrap as tkb
 #from treeactions import *
 from datetime import datetime
-from gspreaddb import getOPData,getClientid, opWS
+#from gspreaddb import getOPData,getClientid, opWS
 
 
 
@@ -64,20 +64,13 @@ class ClientMainViewFrame(ttk.Frame):
                 self.warningLabel.configure(text = "Warning: Phone number needs 10 digits")
                 messagebox.showwarning("Warning", " Phone number needs 10 digits.")
             else:
-                client_id = getClientid(currentClientName)
+                client_id = getClientID(currentClientName)
                 self.opTable.insert("",END, values=[client_id, strftime("%d-%m-%Y, %H:%M:%S"),  currentClientName, currentClientPhone, currentClientGender, currentClientAge, currentOPProc, currentPaymentMode, currentAmount])
 
-                oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
-                opWS.update_cell(opLastRow, oPUIDColNo, client_id)
-                opWS.update_cell(opLastRow, oPDateColNo, strftime("%d-%b"))
-                opWS.update_cell(opLastRow, oPPhoneColNo, currentClientPhone)
-                opWS.update_cell(opLastRow, oPNameColNo, currentClientName)
-                opWS.update_cell(opLastRow, oPGenderColNo, currentClientGender)
-                opWS.update_cell(opLastRow, oPAgeColNo, currentClientAge)                
-                opWS.update_cell(opLastRow, oPPayModeColNo, currentPaymentMode)
-                opWS.update_cell(opLastRow, oPAmountColNo, currentAmount)
+                insertIntoTable('Patients', values= f"'{client_id}','{strftime("%Y-%m-%d")}','{currentClientName}','{currentClientPhone}', '{currentClientAge}', '{currentClientGender}' , '{currentAmount}','{currentPaymentMode}'",
+                    column_names= "'UHId', 'Date', 'PName','PhoneNo','Age','Gender', 'AmountPaid','PaymentMode' "
+                )
                 
-     
                 self.clientUIDEntry.configure(state=NORMAL)
                 self.clientUIDEntry.delete(0,END)
                 self.clientUIDEntry.configure(state=DISABLED)
@@ -112,6 +105,7 @@ class ClientMainViewFrame(ttk.Frame):
             selected_date = self.dateFetchEntry.entry.get()
             
             selected_date = datetime.strptime(selected_date, "%d-%m-%Y").strftime("%d-%b")
+            #selectTable
             oPUIDColNo, oPDateColNo, oPNameColNo, oPPhoneColNo, oPPayModeColNo, oPAmountColNo, opLastRow, oPGenderColNo, oPAgeColNo = getOPData()
             rowsWithDate = [opWS.row_values(x.row) for x in opWS.findall(selected_date, in_column=oPDateColNo)]
             
@@ -233,7 +227,7 @@ class ClientMainViewFrame(ttk.Frame):
             clientUID = self.clientUIDEntry.get()
             if len(clientName) == 3: 
                 if len(clientUID) == 0:
-                    client_id = getClientid(clientName)
+                    client_id = getClientID(clientName)
                     self.clientUIDEntry.configure(state=NORMAL)
                     self.clientUIDEntry.insert(0,client_id)
                     self.clientUIDEntry.configure(state=DISABLED)
