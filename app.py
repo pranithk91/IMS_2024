@@ -1,10 +1,14 @@
 from flask import Flask, request, redirect, render_template, url_for, jsonify
 from libsql_client import create_client_sync
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # loads .env locally; harmless on Render
+except Exception:
+    pass
 from datetime import datetime, date
 import os, sqlite3
 
-load_dotenv()
+
 
 import os, sqlite3
 
