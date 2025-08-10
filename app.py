@@ -134,5 +134,9 @@ def add_patient():
     except Exception as e:
         return redirect(url_for("patient_form", error=str(e)))
 
-if __name__ == "__main__":
+if __name__ == "__main__" and USE_SQLITE==1:
     app.run(debug=True, use_reloader=False)
+elif __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
