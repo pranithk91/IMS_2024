@@ -1,0 +1,3 @@
+.env
+MedicalStore.db
+sqlite_test.py

@@ -1,0 +1,108 @@
+:root {
+  --bg: #d6e2d6d7;
+  --card: #ffffff;
+  --text: #38bb45;
+  --muted: #666;
+  --primary: #007bff;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+}
+
+.container {
+  max-width: 1200px;       /* whitespace left & right */
+  margin: 48px auto;       /* centers in the page */
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px 32px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+}
+
+h2 {
+  text-align: center;
+  margin: 0 0 25px 0;
+}
+
+.message {
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 8px 0 16px;
+  font-size: 14px;
+}
+.message.success { background: #e9f9ef; color: #147a2e; }
+.message.error   { background: #fdecec; color: #9d1c1c; }
+
+.patient-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 items per row */
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+.main {
+    flex-grow: 1;
+    padding: 30px;
+}
+
+label {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+input, select {
+  padding: 10px 12px;
+  border: 1px solid #cfd4dc;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+button {
+  min-width: 140px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+button[type="reset"] {
+  background: #6c757d;
+}
+button:hover { opacity: 0.95; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .form-row { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .form-row { grid-template-columns: 1fr; }
+}
