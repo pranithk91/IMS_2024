@@ -45,6 +45,23 @@ else:
 
 app = Flask(__name__)
 
+def today_iso() -> str:
+    return date.today().strftime("%Y-%m-%d")
+
+def fetch_today_entries():
+    """Combine today's OP and Procedure rows into one list of dicts."""
+    today = today_iso()
+    res = client.execute(
+        """
+        SELECT * from vw_getOPdetails
+        WHERE substr(Date, 1, 10) = ?1
+        ORDER BY Date DESC
+        """,
+        [today]
+    )
+    cols = ["UHId","PName","PhoneNo","Age","Gender","VisitType","Date","PaymentMode","AmountPaid","ProcedureName"]
+    return [dict(zip(cols, row)) for row in res.rows]
+
 # --- UHId generation helper ---
 def generate_client_id(current_name: str) -> str:
     """UHId = YYMM + Initial + 3-digit sequence (e.g., 2508S001)."""
@@ -78,6 +95,8 @@ def patient_form():
         "patient_form.html",
         message=request.args.get("message"),
         error=request.args.get("error"),
+        today=today_iso(),                   # <-- this is what {{ today }} uses
+        today_rows=fetch_today_entries() 
     )
 
 @app.post("/add_patient")
@@ -140,3 +159,16 @@ elif __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+
+"""    SELECT
+  --date(InvoiceDate, 'weekday 6') AS Sat_Date,   -- the Saturday of that week
+  SUM(CASE WHEN paymentMode = 'UPI'  THEN TotalAmount ELSE 0 END) AS UPI_Amount,
+  SUM(CASE WHEN paymentMode = 'Cash' THEN TotalAmount ELSE 0 END) AS Cash_Amount_actual,
+  SUM(CASE WHEN paymentMode = 'Both' THEN TotalAmount ELSE 0 END) AS Both_Amount,
+  round(SUM(CASE WHEN paymentMode = 'Cash' THEN TotalAmount ELSE 0 END)*.67, 0) AS Cash_Amount
+FROM MedicineInvoices
+WHERE date(InvoiceDate) BETWEEN '2024-04-01' AND '2025-04-30'
+GROUP BY Sat_Date
+ORDER BY Sat_Date;
+
+SELECT * FROM MedicineInvoices where paymentMode = 'Both'"""

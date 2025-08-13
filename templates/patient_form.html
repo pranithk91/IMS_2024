@@ -94,6 +94,47 @@
         </form>
     </div>
 
+    <div class="container table-container">
+    <h3>Today's Entries ({{ today }})</h3>
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>UHId</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Visit Type</th>
+            <th>Date/Time</th>
+            <th>Payment Mode</th>
+            <th>Amount</th>
+            <th>Procedure Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for r in today_rows %}
+        <tr>
+            <td>{{ r.UHId }}</td>
+            <td>{{ r.PName }}</td>
+            <td>{{ r.PhoneNo }}</td>
+            <td>{{ r.Age }}</td>
+            <td>{{ r.Gender }}</td>
+            <td>{{ r.VisitType }}</td>
+            <td>{{ r.Date }}</td>
+            <td>{{ r.PaymentMode }}</td>
+            <td>{{ r.AmountPaid }}</td>
+            <td>{{ r.ProcedureName }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="10" class="muted">No entries yet today.</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    
     <script>
         // Show/hide Procedure Name field depending on OPProc selection
         const opProcSelect = document.querySelector('select[name="OPProc"]');
