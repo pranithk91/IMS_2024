@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}App{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar (shared) -->
+    <aside class="sidebar">
+      <a href="{{ url_for('patient_form') }}" class="nav-btn {{ 'active' if active_page == 'op' else '' }}">OP</a>
+      <a href="{{ url_for('pharmacy') }}" class="nav-btn {{ 'active' if active_page == 'pharmacy' else '' }}">Pharmacy</a>
+      <a href="{{ url_for('view_sales') }}" class="nav-btn {{ 'active' if active_page == 'view_sales' else '' }}">View Sales</a>
+      <a href="{{ url_for('returns') }}" class="nav-btn {{ 'active' if active_page == 'returns' else '' }}">Returns</a>
+      <a href="{{ url_for('price_update') }}" class="nav-btn {{ 'active' if active_page == 'price_update' else '' }}">Price Update</a>
+      <a href="{{ url_for('inventory') }}" class="nav-btn {{ 'active' if active_page == 'inventory' else '' }}">Inventory</a>
+    </aside>
+
+    <!-- Main content -->
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

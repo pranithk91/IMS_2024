@@ -25,7 +25,7 @@ body {
   margin: 48px auto;       /* centers in the page */
   background: var(--card);
   border-radius: var(--radius);
-  padding: 24px 32px;
+  padding: 16px 24px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.08);
   
 }
@@ -133,6 +133,21 @@ button:hover { opacity: 0.95; }
 
 .muted { color: #6b7280; text-align: center; }
 
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.btn-clear {
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border: 1px solid #cfd4dc;
+  border-radius: 6px;
+  color: #333;
+}
+.btn-clear:hover { background: #f3f6fa; }
 
 /* Responsive */
 @media (max-width: 900px) {
@@ -140,4 +155,91 @@ button:hover { opacity: 0.95; }
 }
 @media (max-width: 520px) {
   .form-row { grid-template-columns: 1fr; }
+}
+
+
+
+.search-container { margin-top: 20px; }
+
+.search-form .form-row {
+  display: grid;
+  grid-template-columns: 1.5fr 2fr 2fr auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.results-wrap { margin-top: 12px; }
+.results-wrap h4 { margin: 0 0 8px 0; }
+
+/* Layout with sidebar */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Left sidebar */
+.sidebar {
+  width: 220px;
+  background: #e5e7eb;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100vh;       /* full-height bar */
+  position: sticky;
+  top: 0;
+
+  /* Center the button stack vertically */
+  justify-content: center;
+}
+
+/* Sidebar buttons */
+.nav-btn {
+  display: flex;
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #147a2e;
+  color: #e5e7eb;
+  font-weight: 600;
+  text-align: left;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-btn:hover { background: #147a2e; }
+.nav-btn.active { background: #2563eb; color: #fff; }
+
+/* Main content column */
+.content {
+  flex: 1;
+  padding: 24px;
+}
+
+/* Keep your existing container styling */
+.container {
+  max-width: 1000px;
+  width: 100%;
+  margin: 24px auto;
+}
+
+/* Optional: table header + clear button (if not present yet) */
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.btn-clear {
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border: 1px solid #cfd4dc;
+  border-radius: 6px;
+  color: #333;
+}
+.btn-clear:hover { background: #f3f6fa; }
+
+@media (max-width: 700px) {
+  .sidebar { justify-content: flex-start; }
 }

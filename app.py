@@ -77,6 +77,70 @@ def generate_client_id(current_name: str) -> str:
     last_seq = int(rows[0][0]) if rows and rows[0][0] is not None else 0
     return f"{yymm}{initial}{(last_seq + 1):03d}"
 
+def fetch_search_entries(field: str, term: str):
+    """
+    Search across Outpatients + Procedures joined with Patients.
+    field: name | phoneno | uhid | date
+    term:  for name/phoneno: free text; uhid: exact; date: YYYY-MM-DD
+    """
+    field = (field or "").lower().strip()
+    term = (term or "").upper().strip()
+    if not field or not term:
+        return []
+
+    where_op = ""
+    where_pr = ""
+    params_op = []
+    params_pr = []
+
+    #selectTable('vw_OP_split',  condition=f"strftime('%Y-%m-%d', OPDate) = '{selected_value}' order by 2")
+    #'vw_getOPdetails', condition=f"UHId = '{search_value}'
+    #'vw_getOPdetails', condition=f"PhoneNo = '{search_value}'
+    #'vw_getOPdetails', condition=f"PName = '{search_value}'
+    #'vw_getOPdetails', condition=f"Date = '{selected_date}'
+
+    if field == "name":
+        like = f"%{term}%"
+        where_op = "WHERE PName LIKE ?1 AND substr(OPDate,1,10) = substr(OPDate,1,10)"  # tautology to keep ?1 index
+        #where_pr = "WHERE p.PName = ?1 AND substr(pr.ProcDate,1,10) = substr(pr.ProcDate,1,10)"
+        params_op = [like]
+        #params_pr = [like]
+
+    elif field == "phoneno":
+        like = f"%{term}%"
+        where_op = "WHERE PhoneNo LIKE ?1"
+        #where_pr = "WHERE p.PhoneNo = ?1"
+        params_op = [like]
+        #params_pr = [like]
+
+    elif field == "uhid":
+        where_op = "WHERE UHId = ?1"
+        #where_pr = "WHERE p.UHId = ?1"
+        params_op = [term]
+        #params_pr = [term]
+
+    elif field == "date":
+        # Expect YYYY-MM-DD from <input type="date">
+        where_op = "WHERE substr(Date, 1, 10) = ?1"
+        #where_pr = "WHERE substr(pr.ProcDate, 1, 10) = ?1"
+        params_op = [term]
+        #params_pr = [term]
+
+    else:
+        return []
+
+    sql = f"""
+        SELECT * from vw_getOPdetails {where_op}
+    """
+
+    # Our client takes one param set; for union we can just run twice and merge if you prefer,
+    # but libsql/sqlite will bind ?1 in both parts. We'll execute once with either param set.
+    # To be safe for both stacks, we execute once with params_op (same values).
+    res = client.execute(sql, params_op)
+    cols = ["UHId","PName","PhoneNo","Age","Gender","VisitType","Date","PaymentMode","AmountPaid","ProcedureName"]
+    return [dict(zip(cols, row)) for row in res.rows]
+
+
 # --- API endpoint for UHId generation (AJAX from HTML) ---
 @app.get("/api/generate_id")
 def api_generate_id():
@@ -91,12 +155,57 @@ def api_generate_id():
 # --- Pages & submissions ---
 @app.route("/")
 def patient_form():
+    rows = fetch_today_entries()
     return render_template(
         "patient_form.html",
         message=request.args.get("message"),
         error=request.args.get("error"),
-        today=today_iso(),                   # <-- this is what {{ today }} uses
-        today_rows=fetch_today_entries() 
+        today=today_iso(),                   # <-- this is what {{ today }} uses 
+        rows=rows,                                 # <- unified rows for the table
+        table_title=f"Today's Entries ({today_iso()})",
+        search_field=None,
+        search_term=None,
+        search_active=False
+    )
+
+@app.get("/pharmacy")
+def pharmacy():
+    return render_template("pharmacy.html", active_page="pharmacy")
+
+@app.get("/view-sales")
+def view_sales():
+    return render_template("view_sales.html", active_page="view_sales")
+
+@app.get("/returns")
+def returns():
+    return render_template("returns.html", active_page="returns")
+
+@app.get("/price-update")
+def price_update():
+    return render_template("price_update.html", active_page="price_update")
+
+@app.get("/inventory")
+def inventory():
+    return render_template("inventory.html", active_page="inventory")
+
+@app.get("/search")
+def search():
+    field = request.args.get("field", "").strip().lower()
+    term = (request.args.get("term") or "").strip()
+    if field == "date":
+        term = (request.args.get("date") or "").strip()
+
+    rows = fetch_search_entries(field, term)  # <- search results replace table
+    return render_template(
+        "patient_form.html",
+        message=None,
+        error=None,
+        today=today_iso(),
+        rows=rows,                               # <- unified rows for the table
+        table_title=f"Search Results ({len(rows)})",
+        search_field=field,
+        search_term=term,
+        search_active=True                       # <- show a 'Clear' action
     )
 
 @app.post("/add_patient")

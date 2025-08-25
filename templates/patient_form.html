@@ -1,13 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Patient Registration</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name = "viewport" content="width=device-width, initial-scale = 1" />
-</head>
+{% extends "base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
 
-<body>
     <div class="container">
         <h2>Patient Registration</h2>
 
@@ -94,44 +88,120 @@
         </form>
     </div>
 
-    <div class="container table-container">
-    <h3>Today's Entries ({{ today }})</h3>
+    <!-- Search Frame -->
+<div class="container search-container">
+  <h3>Search</h3>
+
+  <form method="GET" action="{{ url_for('search') }}" class="search-form">
+    <div class="form-row">
+      <div class="field">
+        <label for="searchField">Field</label>
+        <select id="searchField" name="field" required>
+          <option value="">--Select--</option>
+          <option value="name"   {{ 'selected' if search_field=='name'   else '' }}>Name</option>
+          <option value="phoneno"{{ 'selected' if search_field=='phoneno'else '' }}>Phone No</option>
+          <option value="uhid"   {{ 'selected' if search_field=='uhid'   else '' }}>UHId</option>
+          <option value="date"   {{ 'selected' if search_field=='date'   else '' }}>Date</option>
+        </select>
+      </div>
+
+      <!-- Text inputs (shown for name/phoneno/uhid) -->
+      <div class="field" id="searchTextWrap">
+        <label for="searchTerm">Value</label>
+        <input type="text" id="searchTerm" name="term" value="{{ search_term or '' }}" placeholder="Type here…" />
+      </div>
+
+      <!-- Date input (shown for date) -->
+      <div class="field" id="searchDateWrap" style="display:none;">
+        <label for="searchDate">Date</label>
+        <input type="date" id="searchDate" name="date" value="{{ search_term if search_field=='date' else '' }}">
+      </div>
+
+      <div class="field" style="align-self:end;">
+        <button type="submit">Search</button>
+      </div>
+    </div>
+  </form>
+
+  {% if search_rows is defined %}
+  <div class="results-wrap">
+    <h4>Search Results ({{ search_rows|length }})</h4>
     <table class="data-table">
-        <thead>
+      <thead>
         <tr>
-            <th>UHId</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Visit Type</th>
-            <th>Date/Time</th>
-            <th>Payment Mode</th>
-            <th>Amount</th>
-            <th>Procedure Name</th>
+          <th>UHId</th><th>Name</th><th>Phone</th><th>Age</th><th>Gender</th>
+          <th>Visit Type</th><th>Date/Time</th><th>Payment Mode</th><th>Amount</th><th>Procedure Name</th>
         </tr>
-        </thead>
-        <tbody>
-        {% for r in today_rows %}
+      </thead>
+      <tbody>
+        {% for r in search_rows %}
         <tr>
-            <td>{{ r.UHId }}</td>
-            <td>{{ r.PName }}</td>
-            <td>{{ r.PhoneNo }}</td>
-            <td>{{ r.Age }}</td>
-            <td>{{ r.Gender }}</td>
-            <td>{{ r.VisitType }}</td>
-            <td>{{ r.Date }}</td>
-            <td>{{ r.PaymentMode }}</td>
-            <td>{{ r.AmountPaid }}</td>
-            <td>{{ r.ProcedureName }}</td>
+          <td>{{ r.UHId }}</td>
+          <td>{{ r.PName }}</td>
+          <td>{{ r.PhoneNo }}</td>
+          <td>{{ r.Age }}</td>
+          <td>{{ r.Gender }}</td>
+          <td>{{ r.VisitType }}</td>
+          <td>{{ r.Date }}</td>
+          <td>{{ r.PaymentMode }}</td>
+          <td>{{ r.AmountPaid }}</td>
+          <td>{{ r.ProcedureName }}</td>
         </tr>
         {% else %}
-        <tr>
-            <td colspan="10" class="muted">No entries yet today.</td>
-        </tr>
+        <tr><td colspan="10" class="muted">No matches.</td></tr>
         {% endfor %}
-        </tbody>
+      </tbody>
     </table>
+  </div>
+  {% endif %}
+</div>
+
+    <div class="container table-container">
+        <div class="table-header">
+            <h3>{{ table_title }}</h3>
+            {% if search_active %}
+                <a class="btn-clear" href="{{ url_for('patient_form') }}">Clear search</a>
+            {% endif %}
+        </div>
+
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>UHId</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Visit Type</th>
+                <th>Date/Time</th>
+                <th>Payment Mode</th>
+                <th>Amount</th>
+                <th>Procedure Name</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in rows %}
+            <tr>
+                <td>{{ r.UHId }}</td>
+                <td>{{ r.PName }}</td>
+                <td>{{ r.PhoneNo }}</td>
+                <td>{{ r.Age }}</td>
+                <td>{{ r.Gender }}</td>
+                <td>{{ r.VisitType }}</td>
+                <td>{{ r.Date }}</td>
+                <td>{{ r.PaymentMode }}</td>
+                <td>{{ r.AmountPaid }}</td>
+                <td>{{ r.ProcedureName }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" class="muted">
+                {% if search_active %}No matches.{% else %}No entries yet today.{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 
     
@@ -174,5 +244,27 @@
             }, 250);
         });
     </script>
-</body>
-</html>
+
+    <script>
+  // Toggle text vs date input based on dropdown
+        (function() {
+            const fieldSel = document.getElementById('searchField');
+            const textWrap = document.getElementById('searchTextWrap');
+            const dateWrap = document.getElementById('searchDateWrap');
+
+            function syncInputs() {
+            if (fieldSel.value === 'date') {
+                textWrap.style.display = 'none';
+                dateWrap.style.display = 'flex';
+            } else {
+                textWrap.style.display = 'flex';
+                dateWrap.style.display = 'none';
+            }
+            }
+            fieldSel.addEventListener('change', syncInputs);
+            // Initialize on load using server-selected value
+            syncInputs();
+        })();
+    </script>
+
+{% endblock %}
