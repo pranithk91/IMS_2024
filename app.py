@@ -7,13 +7,15 @@ except Exception:
     pass
 from datetime import datetime, date
 import os, sqlite3
+from flask import session
+from werkzeug.security import check_password_hash
 
 
 
 import os, sqlite3
 
 USE_SQLITE = os.getenv("USE_SQLITE", "0") == "1"
-SQLITE_PATH = os.getenv("SQLITE_PATH", "patients.db")
+SQLITE_PATH = os.getenv("SQLITE_PATH", "database/medicalstore.db")
 
 class SQLiteClient:
     """Minimal shim to mimic libsql_client's .execute(...).rows API."""
@@ -130,7 +132,7 @@ def fetch_search_entries(field: str, term: str):
         return []
 
     sql = f"""
-        SELECT * from vw_getOPdetails {where_op}
+        SELECT UHId,PName,PhoneNo,Age,Gender,OPProc,Date,PaymentMode,AmountPaid,ProcName from vw_getOPdetails {where_op}
     """
 
     # Our client takes one param set; for union we can just run twice and merge if you prefer,
@@ -139,6 +141,35 @@ def fetch_search_entries(field: str, term: str):
     res = client.execute(sql, params_op)
     cols = ["UHId","PName","PhoneNo","Age","Gender","VisitType","Date","PaymentMode","AmountPaid","ProcedureName"]
     return [dict(zip(cols, row)) for row in res.rows]
+
+
+app.secret_key = os.getenv("SECRET_KEY", "supersecretkey")  # Needed for sessions
+
+# --- Simple user credentials (for demo) ---
+USERS = {"admin": "password123"}  # Replace with DB integration as needed
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        res = client.execute("SELECT password_hash FROM Users WHERE username = ?1", [username])
+        if not res.rows:
+            error = "Invalid username or password."
+        else:
+            stored_hash = res.rows[0][0]
+            if check_password_hash(stored_hash, password):
+                session["username"] = username
+                return redirect(url_for("patient_form"))
+            else:
+                error = "Invalid username or password."
+    return render_template("login.html", error=error)
+
+@app.route("/logout")
+def logout():
+    session.pop("username", None)
+    return redirect(url_for("login"))
 
 
 # --- API endpoint for UHId generation (AJAX from HTML) ---
@@ -153,8 +184,10 @@ def api_generate_id():
         return jsonify(error=str(e)), 500
 
 # --- Pages & submissions ---
-@app.route("/")
+@app.route("/op_form")
 def patient_form():
+    if "username" not in session:
+        return redirect(url_for("login"))
     rows = fetch_today_entries()
     return render_template(
         "patient_form.html",

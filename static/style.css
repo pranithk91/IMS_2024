@@ -174,9 +174,9 @@ button:hover { opacity: 0.95; }
 /* Layout with sidebar */
 .layout {
   display: flex;
-  min-height: 100vh;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden;
 }
-
 /* Left sidebar */
 .sidebar {
   width: 220px;
@@ -188,9 +188,55 @@ button:hover { opacity: 0.95; }
   height: 100vh;       /* full-height bar */
   position: sticky;
   top: 0;
+  overflow-y: auto;
 
   /* Center the button stack vertically */
   justify-content: center;
+}
+
+.main-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+
+
+/* Header at the top inside main area */
+.main-header {
+  height: 50px;
+  background: #e5e7eb; /* Facebook blue */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  color: #D7A028;
+  font-weight: bold;
+  gap: 20px;
+}
+
+/* Date/time */
+#date-time {
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+/* Logout button */
+.logout-btn {
+  color: white;
+  border: 1px solid white;
+  border-radius: 6px;
+  padding: 6px 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: white;
+  color: #1877f2;
 }
 
 /* Sidebar buttons */
@@ -214,6 +260,7 @@ button:hover { opacity: 0.95; }
 .content {
   flex: 1;
   padding: 24px;
+  overflow-y: auto;
 }
 
 /* Keep your existing container styling */
@@ -243,3 +290,63 @@ button:hover { opacity: 0.95; }
 @media (max-width: 700px) {
   .sidebar { justify-content: flex-start; }
 }
+
+* Header bar for logout and date/time */
+.sticky-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #1877f2; /* Facebook blue */
+  height: 50px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* Container inside header for content alignment */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Logout button styling */
+a.logout-btn {
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  border: 1px solid white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+
+
+a.logout-btn:hover {
+  background-color: white;
+  color: #147a2e;
+}
+
+/* Date and time text */
+#date-time {
+  color: #147a2e;
+  font-weight: bold;
+  align-items: center;
+  margin-right: 20px;
+  padding: 4px 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+}
+
+/* Logout button styling */
+
