@@ -1,8 +1,127 @@
 {% extends "base.html" %}
 {% block title %}Inventory{% endblock %}
 {% block content %}
-  <div class="container">
-    <h2 class="page-title">Inventory</h2>
-    <p>Coming soon.</p>
-  </div>
+
+<div class="container">
+  <h2 class="page-title">Inventory Purchase Entry</h2>
+
+  {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+
+  <form method="POST" action="{{ url_for('inventory.inventory') }}" class="patient-form">
+    
+      <legend>Bill Details</legend>
+      <div class="form-row">
+        <div class="field">
+          <label for="BillDate">Bill Date</label>
+          <input type="date" id="BillDate" name="BillDate" readonly>
+        </div>
+        <div class="field">
+          <label for="BillNo">Bill No</label>
+          <input type="text" id="BillNo" name="BillNo" required>
+        </div>
+        <div class="field">
+          <label for="DeliveryDate">Delivery Date</label>
+          <input type="date" id="DeliveryDate" name="DeliveryDate" required>
+        </div>
+        <div class="field">
+          <label for="Agency">Agency</label>
+          <input type="text" id="Agency" name="Agency" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="BillAmount">Bill Amount</label>
+          <input type="number" step="0.01" id="BillAmount" name="BillAmount" required>
+        </div>
+        <div class="field">
+          <label for="TaxAmount">Tax Amount</label>
+          <input type="number" step="0.01" id="TaxAmount" name="TaxAmount" required>
+        </div>
+        <div class="field">
+          <label for="DiscountInBill">Discount in the bill</label>
+          <select id="DiscountInBill" name="DiscountInBill" required>
+            <option value="yes">Yes</option>
+            <option value="no" selected>No</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="DiscountAmount">Discount Amount</label>
+          <input type="number" step="0.01" id="DiscountAmount" name="DiscountAmount">
+        </div>
+        <div class="field">
+          <label for="AfterDiscountBillAmount">After Discount Bill Amount</label>
+          <input type="number" step="0.01" id="AfterDiscountBillAmount" name="AfterDiscountBillAmount" required>
+        </div>        
+      </div>
+  </form>  
+</div>
+
+<div class="container items-container">
+  <form method="GET" action="{{ url_for('addToTable') }}" class="search-form">
+    
+      <legend>Items in Bill</legend>
+      <div class="form-row">
+        <div class="field">
+          <label for="ItemName">Item Name</label>
+          <select id="ItemName" name="item_name" required>
+            <option value="">--Select Item--</option>
+            <option value="Item1">Item1</option>
+            <option value="Item2">Item2</option>
+            <option value="Item3">Item3</option>
+            <!-- Add more items as needed -->
+          </select>
+        </div>
+        <div class="field">
+          <label for="Quantity">Quantity</label>
+          <input type="number" id="Quantity" name="quantity" min="1" required>
+        </div>
+        <div class="field">
+          <label for="BatchNo">Batch No</label>
+          <input type="text" id="BatchNo" name="batch_no" required>
+        </div>
+        <div class="field">
+          <label for="ExpiryDate">Expiry Date</label>
+          <input type="date" id="ExpiryDate" name="expiry_date" required>
+        </div>
+        <div class="field">
+          <label for="Price">Price</label>
+          <input type="number" step="0.01" id="Price" name="price" required>
+        </div>
+      </div>
+      <button type="button" onclick="addItem()">Add Another Item</button>
+    
+    <input type="submit" value="Save Purchase">
+  </form>
+</div>
+
+<script>
+  function addItem() {
+    const container = document.getElementById('items-container');
+    const itemDiv = document.createElement('div');
+    itemDiv.classList.add('item');
+    itemDiv.innerHTML = `
+      <label>Item Name:
+        <select name="item_name" required>
+          <option value="">--Select Item--</option>
+          <option value="Item1">Item1</option>
+          <option value="Item2">Item2</option>
+          <option value="Item3">Item3</option>
+        </select>
+      </label>
+      <label>Quantity: <input type="number" name="quantity" min="1" required></label>
+      <label>Batch No: <input type="text" name="batch_no" required></label>
+      <label>Expiry Date: <input type="date" name="expiry_date" required></label>
+      <label>Price: <input type="number" step="0.01" name="price" required></label>
+      <button type="button" onclick="this.parentElement.remove()">Remove</button>
+    `;
+    container.appendChild(itemDiv);
+  }
+</script>
 {% endblock %}

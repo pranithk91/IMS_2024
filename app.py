@@ -9,6 +9,7 @@ from datetime import datetime, date
 import os, sqlite3
 from flask import session
 from werkzeug.security import check_password_hash
+from inventory import inventory_bp
 
 
 
@@ -46,6 +47,7 @@ else:
     client = create_client_sync(url=db_url, auth_token=auth_token)
 
 app = Flask(__name__)
+
 
 def today_iso() -> str:
     return date.today().strftime("%Y-%m-%d")
@@ -201,6 +203,7 @@ def patient_form():
         search_active=False
     )
 
+app.register_blueprint(inventory_bp)
 @app.get("/pharmacy")
 def pharmacy():
     return render_template("pharmacy.html", active_page="pharmacy")
@@ -217,9 +220,9 @@ def returns():
 def price_update():
     return render_template("price_update.html", active_page="price_update")
 
-@app.get("/inventory")
-def inventory():
-    return render_template("inventory.html", active_page="inventory")
+@app.get("/add-to-table")
+def  addToTable():
+    pass
 
 @app.get("/search")
 def search():
