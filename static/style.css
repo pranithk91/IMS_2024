@@ -55,6 +55,7 @@ h2 {
   display: grid;
   grid-template-columns: repeat(5, 1fr); /* 5 items per row */
   gap: 16px;
+  
 }
 
 .field {
@@ -63,6 +64,9 @@ h2 {
   gap: 6px;
 }
 
+.field-wide {
+  grid-column: span 2; /* Adjust this number if you want it to take more/less space */
+}
 
 .main {
     flex-grow: 1;
@@ -106,6 +110,7 @@ button:hover { opacity: 0.95; }
 .table-container { margin-top: 20px; }
 
 .table-container h3 {
+  max-width: 1200px;
   margin: 0 0 10px 0;
   text-align: left;
   font-size: 1.1rem;
@@ -158,18 +163,35 @@ button:hover { opacity: 0.95; }
 }
 
 
-
 .search-container { margin-top: 20px; }
 
 .search-form .form-row {
   display: grid;
-  grid-template-columns: 1.5fr 2fr 2fr auto;
+  grid-template-columns: repeat(5, 1fr); /* 5 equal columns */
   gap: 16px;
   align-items: end;
 }
 
-.results-wrap { margin-top: 12px; }
-.results-wrap h4 { margin: 0 0 8px 0; }
+.items-form .form-row {
+  display: grid;
+  grid-template-columns: 250px minmax(0,0.5fr) 250 minmax(0,1fr) minmax(0,0.5fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.items-form .form-row input,
+.items-form .form-row select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+
+
+.items-form .form-row .field:first-child {
+  max-width: 1000px; 
+}
+
 
 /* Layout with sidebar */
 .layout {
@@ -263,13 +285,6 @@ button:hover { opacity: 0.95; }
   overflow-y: auto;
 }
 
-/* Keep your existing container styling */
-.container {
-  max-width: 1000px;
-  width: 100%;
-  margin: 24px auto;
-}
-
 /* Optional: table header + clear button (if not present yet) */
 .table-header {
   display: flex;
@@ -350,3 +365,74 @@ a.logout-btn:hover {
 
 /* Logout button styling */
 
+.item-details {
+  margin-top: 16px;
+  color: #147a2e;
+  font-weight: bold;
+  text-align: center;
+}
+.item-details-row {
+  margin-top: 16px;
+  margin-bottom: 2px;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+#items-table td, #items-table th {
+  height: 65px; /* or match your input/select height */
+  vertical-align: middle;
+}
+/* Make Item Name column wide and Action column narrow */
+#items-table th:nth-child(1),
+#items-table td:nth-child(1) {
+  min-width: 120px;
+  width: 200px;
+}
+
+#items-table th:nth-child(2),
+#items-table td:nth-child(2) {
+  min-width: 120px;
+  width: 200px;
+}
+
+/* Action column: center content vertically and horizontally, prevent stretching */
+#items-table td:nth-child(6) {
+  width: 50px;
+  text-align: center;
+  padding: 0;
+  vertical-align: middle;
+  /* Use flex to center the button */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  
+}
+
+#items-table th:nth-child(6) {
+  width: 50px;
+  text-align: center;
+  padding: 0;
+}
+
+/* Remove button: perfect 15x15 square, centered */
+.remove-item-btn {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  width: 15px;
+  
+  min-width: 0;
+  min-height: 0;
+  line-height: 15px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 3px;
+  transition: background 0.2s;
+  display: inline-block; /* or block, but inline-block is best with flex */
+}
+.remove-item-btn:hover {
+  background: #c0392b;
+}

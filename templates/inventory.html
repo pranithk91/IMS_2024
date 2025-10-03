@@ -1,127 +1,301 @@
 {% extends "base.html" %}
-{% block title %}Inventory{% endblock %}
+{% block title %}OP{% endblock %}
 {% block content %}
 
-<div class="container">
-  <h2 class="page-title">Inventory Purchase Entry</h2>
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-  {% if message %}
-            <p class="message">{{ message }}</p>
-        {% endif %}
+
+    <div class="container">
+        <h2 class="page-title">Inventory Purchase Entry</h2>
+        
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {% if error %}
             <p class="error">{{ error }}</p>
         {% endif %}
 
+        <form method="POST" action="{{ url_for('inventory.inventory') }}" class="patient-form">
+            <!-- Row 1 -->
+            <legend>Bill Details</legend>
+            <div class="form-row">
+                <div class="field">
+                    <label for="BillDate">Bill Date</label>
+                    <input type="date" id="BillDate" name="BillDate" required>
+                </div>
+                <div class="field">
+                    <label for = "BillNo">Bill No</label>
+                    <input type="text" id="BillNo" name="BillNo" required>
+                </div>
 
-  <form method="POST" action="{{ url_for('inventory.inventory') }}" class="patient-form">
-    
-      <legend>Bill Details</legend>
-      <div class="form-row">
-        <div class="field">
-          <label for="BillDate">Bill Date</label>
-          <input type="date" id="BillDate" name="BillDate" readonly>
-        </div>
-        <div class="field">
-          <label for="BillNo">Bill No</label>
-          <input type="text" id="BillNo" name="BillNo" required>
-        </div>
-        <div class="field">
-          <label for="DeliveryDate">Delivery Date</label>
-          <input type="date" id="DeliveryDate" name="DeliveryDate" required>
-        </div>
-        <div class="field">
-          <label for="Agency">Agency</label>
-          <input type="text" id="Agency" name="Agency" required>
-        </div>
-      </div>
+                <div class="field">
+                    <label for = DeliveryDate>Delivery Date</label>
+                    <input type="date" id="DeliveryDate" name="DeliveryDate" required>
+                </div>
 
-      <div class="form-row">
-        <div class="field">
-          <label for="BillAmount">Bill Amount</label>
-          <input type="number" step="0.01" id="BillAmount" name="BillAmount" required>
-        </div>
-        <div class="field">
-          <label for="TaxAmount">Tax Amount</label>
-          <input type="number" step="0.01" id="TaxAmount" name="TaxAmount" required>
-        </div>
-        <div class="field">
-          <label for="DiscountInBill">Discount in the bill</label>
-          <select id="DiscountInBill" name="DiscountInBill" required>
-            <option value="yes">Yes</option>
-            <option value="no" selected>No</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="DiscountAmount">Discount Amount</label>
-          <input type="number" step="0.01" id="DiscountAmount" name="DiscountAmount">
-        </div>
-        <div class="field">
-          <label for="AfterDiscountBillAmount">After Discount Bill Amount</label>
-          <input type="number" step="0.01" id="AfterDiscountBillAmount" name="AfterDiscountBillAmount" required>
-        </div>        
-      </div>
-  </form>  
-</div>
+                <div class="field field-wide">
+                    <label for = "Agency">Agency</label>
+                <select id="Agency" name="Agency" class="agency-select">
+                    <option value="">--Select--</option>
+                    {% for name in agency_list %}
+                      <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                </div>
 
-<div class="container items-container">
-  <form method="GET" action="{{ url_for('addToTable') }}" class="search-form">
-    
+                
+            </div>
+            
+            <!-- Row 2 -->
+            <div class="form-row">
+                <div class="field">
+                    <label for="BillAmount">Bill Amount</label>
+                    <input type="number" step="0.01" id="BillAmount" name="BillAmount" min="0" required>
+                </div>
+
+                <div class="field">
+                    <label for="TaxAmount">Tax Amount</label>
+                    <input type="number" step="0.01" id="TaxAmount" name="TaxAmount" min="0" required>
+                </div>
+
+                <div class="field">
+                    <label for = "DiscountInBill">Disc</label>
+                    <select id="DiscountInBill" name="DiscountInBill" required>
+                        <option value="">--Select--</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="Disc%">Disc %</label>
+                    <input type="number" step="1" id="Disc%" name="Disc%" min="0" required>
+                </div>
+
+                
+            </div>
+        
+            <!-- Items Table -->
+            <div class="table-container">
+                <table class="data-table" id="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Quantity</th>
+                            <th>Batch No</th>
+                            <th>Expiry Date</th>
+                            <th>Price</th>
+                            <th>Price Diff</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-list">
+                        <!-- Rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="actions">
+                <input type="submit" value="Save Purchase" onclick="debugFormSubmission(event)">
+            </div>
+        </form>
+    </div>
+
+    <!-- Items Frame -->
+
+<div class="container items-container"> 
+  <!--
+  <form method="GET" action="{{ url_for('addToTable') }}" class="items-form"> -->
       <legend>Items in Bill</legend>
       <div class="form-row">
-        <div class="field">
+        <div class="field" style="width: 300px;">
           <label for="ItemName">Item Name</label>
-          <select id="ItemName" name="item_name" required>
+          <select id="ItemName" name="item-select" class="item-select">
             <option value="">--Select Item--</option>
-            <option value="Item1">Item1</option>
-            <option value="Item2">Item2</option>
-            <option value="Item3">Item3</option>
-            <!-- Add more items as needed -->
+            {% for name in med_list %}
+              <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
           </select>
         </div>
         <div class="field">
           <label for="Quantity">Quantity</label>
-          <input type="number" id="Quantity" name="quantity" min="1" required>
+          <input type="number" id="Quantity" name="quantity" min="1" >
         </div>
         <div class="field">
           <label for="BatchNo">Batch No</label>
-          <input type="text" id="BatchNo" name="batch_no" required>
+          <input type="text" id="BatchNo" name="batch_no" >
         </div>
         <div class="field">
           <label for="ExpiryDate">Expiry Date</label>
-          <input type="date" id="ExpiryDate" name="expiry_date" required>
+          <input type="month" id="ExpiryDate" name="expiry_date" >
         </div>
         <div class="field">
           <label for="Price">Price</label>
-          <input type="number" step="0.01" id="Price" name="price" required>
+          <input type="number" step="0.01" id="Price" name="price" >
         </div>
       </div>
-      <button type="button" onclick="addItem()">Add Another Item</button>
-    
-    <input type="submit" value="Save Purchase">
-  </form>
-</div>
 
+      <div class="actions">
+        <button type="button" onclick="addItem()">Add Another Item</button>
+        
+      </div>
+
+      <div id="item-details" class="item-details"></div>
+
+      
+  </div>
+      
+
+
+
+<!-- jQuery & Select2 JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-  function addItem() {
-    const container = document.getElementById('items-container');
-    const itemDiv = document.createElement('div');
-    itemDiv.classList.add('item');
-    itemDiv.innerHTML = `
-      <label>Item Name:
-        <select name="item_name" required>
-          <option value="">--Select Item--</option>
-          <option value="Item1">Item1</option>
-          <option value="Item2">Item2</option>
-          <option value="Item3">Item3</option>
-        </select>
-      </label>
-      <label>Quantity: <input type="number" name="quantity" min="1" required></label>
-      <label>Batch No: <input type="text" name="batch_no" required></label>
-      <label>Expiry Date: <input type="date" name="expiry_date" required></label>
-      <label>Price: <input type="number" step="0.01" name="price" required></label>
-      <button type="button" onclick="this.parentElement.remove()">Remove</button>
-    `;
-    container.appendChild(itemDiv);
+var currentMRP = null;
+  // When item name changes, fetch Quantity and MRP
+$(document).ready(function() {
+  // Initialize Select2
+  $('.agency-select').select2({
+    placeholder: "--Select Item--",
+    allowClear: true,
+    width: 'resolve'
+  })
+});
+  
+$(document).ready(function() {
+  // Initialize Select2
+  $('.item-select').select2({
+    placeholder: "--Select Item--",
+    allowClear: true,
+    width: 'resolve'
+  });
+    
+    $('.item-select').on('change', function() {
+      var $select = $(this);
+      var itemName = $select.val();
+      var $row = $select.closest('tr');
+      var $detailsDiv = $('#item-details');
+      if (itemName) {
+        $.get('/api/medicine-details', {name: itemName}, function(data) {
+          // First row: Weight, MRP, GST, Offer1+Offer2
+          let offer = '';
+          if (data.Offer1 && data.Offer2) offer = data.Offer1 + '+' + data.Offer2;
+          else if (data.Offer1) offer = data.Offer1 + "-NoOffer";
+          else if (data.Offer2) offer = data.Offer2 + "-Check";
+
+          let row1 = '';
+          if (data.Weight) row1 += `Weight: ${data.Weight}&emsp;`;
+          if (data.MRP) {
+            row1 += `MRP: ${data.MRP}&emsp;`;
+            currentMRP = parseFloat(data.MRP);
+          } else {
+            currentMRP = null;
+          };
+          if (data.GST) row1 += `GST: ${data.GST}&emsp;`;
+          if (offer) row1 += `Offer: ${offer}&emsp;`;
+
+          // Second row: Company, Type, HSN, PTR
+          let row2 = '';
+          if (data.MCompany) row2 += `Company: ${data.MCompany}&emsp;`;
+          if (data.Mtype) row2 += `Type: ${data.Mtype}&emsp;`;
+          if (data.HSN) row2 += `HSN: ${data.HSN}&emsp; `;
+          if (data.PTR) row2 += `PTR: ${data.PTR}&emsp; `;
+
+          $detailsDiv.html(
+            `<div class="item-details-row">${row1.trim()}</div>
+            <div class="item-details-row">${row2.trim()}</div>`
+          );
+        });
+      } else {
+        $detailsDiv.html('');
+      }
+    });
+  });
+
+  
+function addItem() {
+  // Get values from the form
+  var itemName = document.getElementById('ItemName');
+  var itemNameText = itemName.options[itemName.selectedIndex].text;
+  var quantity = document.getElementById('Quantity').value;
+  var batchNo = document.getElementById('BatchNo').value;
+  var expiryDate = document.getElementById('ExpiryDate').value;
+  var price = document.getElementById('Price').value;
+
+  // Calculate difference
+  var difference = 0;
+  if (currentMRP !== null && price) {
+    difference = (parseFloat(price) - currentMRP).toFixed(2);
   }
+
+  if (!itemName.value || !quantity || !batchNo || !expiryDate || !price) {
+    alert('Please fill all item fields.');
+    return;
+  }
+
+  // Add row to table
+  var table = document.getElementById('items-list');
+  var row = table.insertRow();
+  row.innerHTML = `
+    <td><input type="hidden" name="item_name" value="${itemName.value}">${itemNameText}</td>
+    <td><input type="hidden" name="quantity" value="${quantity}">${quantity}</td>
+    <td><input type="hidden" name="batch_no" value="${batchNo}">${batchNo}</td>
+    <td><input type="hidden" name="expiry_date" value="${expiryDate}">${expiryDate}</td>
+    <td><input type="hidden" name="price" value="${price}">${price}</td>
+    <td><input type="hidden" name="difference" value="${difference}">${difference}</td>
+    <td><button type="button" class="remove-item-btn" onclick="removeRow(this)">×</button></td>
+  `;
+
+  // DEBUG: Check if hidden inputs were created
+  // console.log("Row added to table:");
+  // console.log("Hidden inputs in table:", document.querySelectorAll('#items-table input[type="hidden"]'));
+  // console.log("Total rows in table:", document.querySelectorAll('#items-list tr').length);
+
+  // Clear form fields
+  $('#ItemName').val('').trigger('change'); // This resets Select2 and triggers the change event
+  $('#item-details').html(''); // This clears the item details
+  document.getElementById('Quantity').value = '';
+  document.getElementById('BatchNo').value = '';
+  document.getElementById('ExpiryDate').value = '';
+  document.getElementById('Price').value = '';
+}
+
+function removeRow(btn) {
+  btn.closest('tr').remove();
+}
+
+
+//function debugFormSubmission(event) {
+//  // Check what data will be submitted
+//  const form = event.target.form;
+//  const formData = new FormData(form);
+//  
+//  console.log("=== FORM SUBMISSION DEBUG ===");
+//  console.log("Form element:", form);
+//  console.log("Hidden inputs in table:", document.querySelectorAll('#items-table input[type="hidden"]'));
+//  console.log("All form elements:", form.elements);
+//  
+//  console.log("FormData entries:");
+//  for (let [key, value] of formData.entries()) {
+//    console.log(`${key}: ${value}`);
+//  }
+//  
+//  console.log("Item names specifically:", formData.getAll('item_name'));
+//  console.log("Quantities specifically:", formData.getAll('quantity'));
+//  
+//  // Let the form submit normally
+//  return true;
+//} 
+
 </script>
+
+
+
 {% endblock %}
