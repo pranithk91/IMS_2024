@@ -45,18 +45,23 @@ def inventory():
                 flash("Please fill in all required fields", "error")
                 return redirect(url_for('inventory.inventory'))
             
-            if request.form.get('DiscountInBill') == 'Yes':
-                discount_in_bill = 1
-            else:
-                discount_in_bill = 0
-            
             try:
-                discount_pct = round(float(request.form.get('Disc%', 0) or 0), 2)
+                disc_amount = round(float(request.form.get('Disc_amount', 0) or 0), 2)
                 bill_amount_float = float(bill_amount)
                 tax_amount_float = float(tax_amount)
             except (ValueError, TypeError) as e:
                 flash(f"Invalid number format in amounts or discount: {str(e)}", "error")
                 return redirect(url_for('inventory.inventory'))
+            
+            if request.form.get('DiscountInBill') == 'Yes':
+                discount_in_bill = 1
+                bill_total = bill_amount_float - disc_amount + tax_amount_float
+            else:
+                discount_in_bill = 0
+                bill_total = bill_amount_float + tax_amount_float
+
+            
+            
             
             logging.info("=== BILL DETAILS ===")
             logging.info(f"""Bill No: {bill_no}
