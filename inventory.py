@@ -93,7 +93,7 @@ def inventory():
                     """,
                     [
                         bill_no, bill_date, agency, bill_amount_float,
-                        tax_amount_float, round(bill_amount_float + 2*tax_amount_float, 2), 
+                        tax_amount_float, round(bill_amount_float + tax_amount_float, 2), 
                         discount_in_bill, discount_pct, bill_id
                     ]
                 )
