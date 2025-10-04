@@ -1,5 +1,9 @@
 from flask import Blueprint, render_template, request, session, abort, jsonify, redirect, url_for, flash
 from db_connect import client
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
 
 inventory_bp = Blueprint('inventory', __name__, template_folder='templates')
 
@@ -22,116 +26,185 @@ def inventory():
     agency_list.sort()
 
     if request.method == 'POST':
-        # DEBUG: Print all form data to console
-        """print("=== FORM DATA RECEIVED ===")
-        print("request.form:", dict(request.form))
-        print("request.form.lists():", dict(request.form.lists()))"""
+        try:
+            # DEBUG: Print all form data to console
+            logging.info("=== FORM DATA RECEIVED ===")
+            logging.info(f"request.form: {dict(request.form)}")
+            logging.info(f"request.form.lists(): {dict(request.form.lists())}")
+            
+            # Extract form data for purchases and items
+            bill_date = request.form.get('BillDate')
+            bill_no = request.form.get('BillNo')
+            delivery_date = request.form.get('DeliveryDate')
+            agency = request.form.get('Agency')
+            bill_amount = request.form.get('BillAmount')
+            tax_amount = request.form.get('TaxAmount')
+            
+            # Validation checks
+            if not all([bill_date, bill_no, delivery_date, agency, bill_amount, tax_amount]):
+                flash("Please fill in all required fields", "error")
+                return redirect(url_for('inventory.inventory'))
+            
+            if request.form.get('DiscountInBill') == 'Yes':
+                discount_in_bill = 1
+            else:
+                discount_in_bill = 0
+            
+            try:
+                discount_pct = round(float(request.form.get('Disc%', 0) or 0), 2)
+                bill_amount_float = float(bill_amount)
+                tax_amount_float = float(tax_amount)
+            except (ValueError, TypeError) as e:
+                flash(f"Invalid number format in amounts or discount: {str(e)}", "error")
+                return redirect(url_for('inventory.inventory'))
+            
+            logging.info("=== BILL DETAILS ===")
+            logging.info(f"""Bill No: {bill_no}
+            /n "Bill Date: {bill_date}"
+            /n "Agency: {agency}"
+            /n "Bill Amount: {bill_amount}"
+            /n "Tax Amount: {tax_amount}""")
         
-        # Extract form data for purchases and items
-        bill_date = request.form.get('BillDate')
-        bill_no = request.form.get('BillNo')
-        delivery_date = request.form.get('DeliveryDate')
-        agency = request.form.get('Agency')
-        bill_amount = request.form.get('BillAmount')
-        tax_amount = request.form.get('TaxAmount')
-        if request.form.get('DiscountInBill') == 'Yes':
-            discount_in_bill = 1
-        else:
-            discount_in_bill = 0
-        discount_pct = round(float(request.form.get('Disc%', 0) or 0),2)
-        
-        """print("=== BILL DETAILS ===")
-        print(f"Bill No: {bill_no}")
-        print(f"Bill Date: {bill_date}")
-        print(f"Agency: {agency}")
-        print(f"Bill Amount: {bill_amount}")
-        print(f"Tax Amount: {tax_amount}")"""
-        
-        # Generate bill_id as concatenation of bill_no and bill_date in yymmdd format
-        from datetime import datetime
-        date_obj = datetime.strptime(bill_date, '%Y-%m-%d')
-        date_formatted = date_obj.strftime('%y%m%d')
-        bill_id = str(bill_no) +'-'+ date_formatted
-        
-        client.execute(
-            """
-            INSERT INTO DeliveryBills (
-             BillNo 
-            ,BillDate
-            ,MAgency
-            ,BillAmount
-            ,TaxAmount
-            ,BillTotal
-            ,DiscountInBill
-            ,DiscountPercent
-            ,BillId                              
-            ) VALUES (?,?,?,?,?,?,?,?,?)
-            """,
-            [
-                bill_no, bill_date, agency, bill_amount,
-                tax_amount, round(float(bill_amount)+float(tax_amount),2), 
-                discount_in_bill, discount_pct, bill_id
-            ]
-        )
-        # Items fields might be repeated (list), assuming sent as arrays in form
-        item_names = request.form.getlist('item_name')
-        quantities = request.form.getlist('quantity')
-        batch_nos = request.form.getlist('batch_no')
-        expiry_dates = request.form.getlist('expiry_date')
-        prices = request.form.getlist('price')
-        difference = request.form.getlist('difference')
-        
-        """print("=== ITEMS DATA ===")
-        print(f"Item Names: {item_names}")
-        print(f"Quantities: {quantities}")
-        print(f"Batch Nos: {batch_nos}")
-        print(f"Expiry Dates: {expiry_dates}")
-        print(f"Prices: {prices}")
-        print(f"Differences: {difference}")
-        print(f"Number of items: {len(item_names)}")"""
+            # Generate bill_id as concatenation of bill_no and bill_date in yymmdd format
+            from datetime import datetime
+            try:
+                date_obj = datetime.strptime(bill_date, '%Y-%m-%d')
+                date_formatted = date_obj.strftime('%y%m%d')
+                bill_id = str(bill_no) + '-' + date_formatted
+            except ValueError as e:
+                flash(f"Invalid date format: {str(e)}", "error")
+                return redirect(url_for('inventory.inventory'))
+            
+            # Insert into DeliveryBills table
+            try:
+                client.execute(
+                    """
+                    INSERT INTO DeliveryBills (
+                     BillNo 
+                    ,BillDate
+                    ,MAgency
+                    ,BillAmount
+                    ,TaxAmount
+                    ,BillTotal
+                    ,DiscountInBill
+                    ,DiscountPercent
+                    ,BillId                              
+                    ) VALUES (?,?,?,?,?,?,?,?,?)
+                    """,
+                    [
+                        bill_no, bill_date, agency, bill_amount_float,
+                        tax_amount_float, round(bill_amount_float + tax_amount_float, 2), 
+                        discount_in_bill, discount_pct, bill_id
+                    ]
+                )
+                logging.info("DeliveryBills insert successful")
+            except Exception as e:
+                flash(f"Error saving bill details: {str(e)}", "error")
+                return redirect(url_for('inventory.inventory'))
+            # Items fields might be repeated (list), assuming sent as arrays in form
+            item_names = request.form.getlist('item_name')
+            quantities = request.form.getlist('quantity')
+            batch_nos = request.form.getlist('batch_no')
+            expiry_dates = request.form.getlist('expiry_date')
+            prices = request.form.getlist('price')
+            difference = request.form.getlist('difference')
+            
+            logging.info("=== ITEMS DATA ===")
+            logging.info(f"Item Names: {item_names}")
+            logging.info(f"Quantities: {quantities}")
+            logging.info(f"Batch Nos: {batch_nos}")
+            logging.info(f"Expiry Dates: {expiry_dates}")
+            logging.info(f"Prices: {prices}")
+            logging.info(f"Differences: {difference}")
+            logging.info(f"Number of items: {len(item_names)}")
+            
+            # Validate items data
+            if not item_names or len(item_names) == 0:
+                flash("Please add at least one item before saving", "error")
+                return redirect(url_for('inventory.inventory'))
+            
+            # Check that all lists have the same length
+            """item_count = len(item_names)
+            if not all(len(lst) == item_count for lst in [quantities, batch_nos, expiry_dates, prices, difference]):
+                flash("Mismatch in item data - please refresh and try again", "error")
+                return redirect(url_for('inventory.inventory'))"""
 
-        for i in range(len(item_names)):
-            client.execute(
-                """
-                INSERT INTO stockdeliveries (
-                 Id
-                ,DeliveryDate
-                ,Mname
-                ,DeliveryStock
-                ,PriceChange
-                ,NewMRP
-                ,ExpiryDate
-                ,BatchNo
-                ,BillId
-                ,SaleableStock
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                [
-                    bill_id+'_0'+str(i+1), delivery_date, item_names[i], quantities[i],
-                    difference[i], prices[i], expiry_dates[i], batch_nos[i], bill_id, 0
-                ]  
-            )
-
-        # Use flash message and redirect to prevent resubmission on refresh
-        flash("Inventory purchase saved!", "success")
-        return redirect(url_for('inventory.inventory'))
+            # Insert items into stockdeliveries table
+            try:
+                for i in range(len(item_names)):
+                    # Validate individual item data
+                    if not all([item_names[i], quantities[i], batch_nos[i], expiry_dates[i], prices[i]]):
+                        logging.info(f"Item {i+1} has missing data", "error")
+                        return redirect(url_for('inventory.inventory'))
+                    
+                    try:
+                        quantity_int = int(quantities[i])
+                        price_float = float(prices[i])
+                        diff_float = float(difference[i]) if difference[i] else 0.0
+                    except (ValueError, TypeError) as e:
+                        logging.info(f"Invalid number format in item {i+1}: {str(e)}", "error")
+                        return redirect(url_for('inventory.inventory'))
+                    
+                    item_id = bill_id + '_0' + str(i+1).zfill(2)  # Use zfill for better formatting
+                    
+                    client.execute(
+                        """
+                        INSERT INTO stockdeliveries (
+                         id
+                        ,DeliveryDate
+                        ,MName
+                        ,DeliveryStock
+                        ,PriceChange
+                        ,NewMRP
+                        ,ExpiryDate
+                        ,BatchNo
+                        ,BillId
+                        ,SaleableStock
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        [
+                            item_id, delivery_date, item_names[i], quantity_int,
+                            diff_float, price_float, expiry_dates[i], batch_nos[i], bill_id, 0
+                        ]  
+                    )
+                    logging.info(f"Item {i+1} inserted successfully with ID: {item_id}")
+                
+                # Use flash message and redirect to prevent resubmission on refresh
+                flash("Inventory purchase saved successfully!", "success")
+                return redirect(url_for('inventory.inventory'))
+                
+            except Exception as e:
+                flash(f"Error saving items: {str(e)}", "error")
+                return redirect(url_for('inventory.inventory'))
+                
+        except Exception as e:
+            logging.error(f"Unexpected error in inventory processing: {str(e)}")
+            flash(f"An unexpected error occurred: {str(e)}", "error")
+            return redirect(url_for('inventory.inventory'))
     
     # For GET requests, render the template
-    return render_template('inventory.html', med_list=med_list, agency_list=agency_list)
+    return render_template('inventory.html', med_list=med_list, agency_list=agency_list, active_page='inventory')
     
 @inventory_bp.route('/api/medicine-details')
 def medicine_details():
-    name = request.args.get('name')
-    res = client.execute(
-        "SELECT MCompany, Mtype, MRP, GST, HSN, PTR, Offer1, Offer2, Weight FROM medicinelist WHERE MName = ?",
-        [name]
-    )
-    if res.rows:
-        keys = ["MCompany", "Mtype", "MRP", "GST", "HSN", "PTR", "Offer1", "Offer2", "Weight"]
-        details = dict(zip(keys, res.rows[0]))
-    else:
-        details = {}
-    return jsonify(details)  
+    try:
+        name = request.args.get('name')
+        if not name:
+            return jsonify({"error": "Medicine name is required"}), 400
+        
+        res = client.execute(
+            "SELECT MCompany, Mtype, MRP, GST, HSN, PTR, Offer1, Offer2, Weight FROM medicinelist WHERE MName = ?",
+            [name]
+        )
+        if res.rows:
+            keys = ["MCompany", "Mtype", "MRP", "GST", "HSN", "PTR", "Offer1", "Offer2", "Weight"]
+            details = dict(zip(keys, res.rows[0]))
+        else:
+            details = {}
+        return jsonify(details)
+    except Exception as e:
+        logging.error(f"Error in medicine_details API: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500  
 
     # For GET: render inventory form page
     

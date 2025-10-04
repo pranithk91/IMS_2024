@@ -1,9 +1,13 @@
 {% extends "base.html" %}
+
+{% block head_extra %}
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/inventory.css') }}">
+{% endblock %}
+
 {% block title %}OP{% endblock %}
 {% block content %}
-
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 
     <div class="container">
@@ -21,7 +25,7 @@
             <p class="error">{{ error }}</p>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('inventory.inventory') }}" class="patient-form">
+        <form method="POST" action="{{ url_for('inventory.inventory') }}" class="stock-deliveries-form">
             <!-- Row 1 -->
             <legend>Bill Details</legend>
             <div class="form-row">
@@ -80,6 +84,42 @@
 
                 
             </div>
+
+            <!-- Items Entry Section -->
+            <legend>Items in Bill</legend>
+            <div class="form-row">
+                <div class="field" style="width: 300px;">
+                    <label for="ItemName">Item Name</label>
+                    <select id="ItemName" name="item-select" class="item-select">
+                        <option value="">--Select Item--</option>
+                        {% for name in med_list %}
+                            <option value="{{ name }}">{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="Quantity">Quantity</label>
+                    <input type="number" id="Quantity" name="new-quantity" min="1">
+                </div>
+                <div class="field">
+                    <label for="BatchNo">Batch No</label>
+                    <input type="text" id="BatchNo" name="new-batch_no">
+                </div>
+                <div class="field">
+                    <label for="ExpiryDate">Expiry Date</label>
+                    <input type="month" id="ExpiryDate" name="new-expiry_date">
+                </div>
+                <div class="field">
+                    <label for="Price">Price</label>
+                    <input type="number" step="0.01" id="Price" name="new-price">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="button" onclick="addItem()">Add Another Item</button>
+            </div>
+
+            <div id="item-details" class="item-details"></div>
         
             <!-- Items Table -->
             <div class="table-container">
@@ -107,49 +147,7 @@
         </form>
     </div>
 
-    <!-- Items Frame -->
 
-<div class="container items-container"> 
-  <!--
-  <form method="GET" action="{{ url_for('addToTable') }}" class="items-form"> -->
-      <legend>Items in Bill</legend>
-      <div class="form-row">
-        <div class="field" style="width: 300px;">
-          <label for="ItemName">Item Name</label>
-          <select id="ItemName" name="item-select" class="item-select">
-            <option value="">--Select Item--</option>
-            {% for name in med_list %}
-              <option value="{{ name }}">{{ name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="field">
-          <label for="Quantity">Quantity</label>
-          <input type="number" id="Quantity" name="quantity" min="1" >
-        </div>
-        <div class="field">
-          <label for="BatchNo">Batch No</label>
-          <input type="text" id="BatchNo" name="batch_no" >
-        </div>
-        <div class="field">
-          <label for="ExpiryDate">Expiry Date</label>
-          <input type="month" id="ExpiryDate" name="expiry_date" >
-        </div>
-        <div class="field">
-          <label for="Price">Price</label>
-          <input type="number" step="0.01" id="Price" name="price" >
-        </div>
-      </div>
-
-      <div class="actions">
-        <button type="button" onclick="addItem()">Add Another Item</button>
-        
-      </div>
-
-      <div id="item-details" class="item-details"></div>
-
-      
-  </div>
       
 
 

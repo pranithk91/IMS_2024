@@ -2,3 +2,7 @@
 MedicalStore.db
 sqlite_test.py
 add_user.py
+templates/test.html
+templates/inventory_3.html
+ERROR_HANDLING_STRATEGIES.md
+db_test.py

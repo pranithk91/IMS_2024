@@ -1,4 +1,9 @@
 {% extends "base.html" %}
+
+{% block head_extra %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/patient-form.css') }}">
+{% endblock %}
+
 {% block title %}OP{% endblock %}
 {% block content %}
 
@@ -13,7 +18,7 @@
             <p class="error">{{ error }}</p>
         {% endif %}
 
-        <form method="POST" action="{{ url_for('add_patient') }}" class="patient-form">
+        <form method="POST" action="{{ url_for('patient.add_patient') }}" class="patient-form">
             <!-- Row 1 -->
             <legend>Patient Details</legend>
             <div class="form-row">
@@ -92,9 +97,9 @@
 
     <!-- Search Frame -->
 <div class="container search-container">
-  <h3>Search</h3>
+  <legend>Search Patients</legend>
 
-    <form method="GET" action="{{ url_for('search') }}" class="search-form">
+    <form method="GET" action="{{ url_for('patient.search') }}" class="search-form">
         <div class="form-row">
             <div class="field">
                 <label for="searchField">Field</label>
@@ -127,7 +132,7 @@
 
   {% if search_rows is defined %}
   <div class="results-wrap">
-    <h4>Search Results ({{ search_rows|length }})</h4>
+    <legend>Search Results ({{ search_rows|length }})</legend>
     <table class="data-table">
       <thead>
         <tr>
@@ -159,10 +164,10 @@
 </div>
 
     <div class="container table-container">
+        <legend>{{ table_title }}</legend>
         <div class="table-header">
-            <h3>{{ table_title }}</h3>
             {% if search_active %}
-                <a class="btn-clear" href="{{ url_for('patient_form') }}">Clear search</a>
+                <a class="btn-clear" href="{{ url_for('patient.patient_form') }}">Clear search</a>
             {% endif %}
         </div>
 
