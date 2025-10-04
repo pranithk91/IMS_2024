@@ -185,6 +185,22 @@ def inventory():
     # For GET requests, render the template
     return render_template('inventory.html', med_list=med_list, agency_list=agency_list, active_page='inventory')
     
+@inventory_bp.route('/api/medicine-types')
+def get_medicine_types():
+    """Get available medicine types from vw_MId_generator view"""
+    try:
+        res = client.execute("SELECT MType, NextId FROM vw_MId_generator ORDER BY MType")
+        types = []
+        for row in res.rows:
+            types.append({
+                'type': row[0],
+                'next_id': row[1]
+            })
+        return jsonify({"success": True, "types": types})
+    except Exception as e:
+        logging.error(f"Error getting medicine types: {str(e)}")
+        return jsonify({"error": "Failed to get medicine types"}), 500
+
 @inventory_bp.route('/api/medicine-details')
 def medicine_details():
     try:
@@ -204,7 +220,92 @@ def medicine_details():
         return jsonify(details)
     except Exception as e:
         logging.error(f"Error in medicine_details API: {str(e)}")
-        return jsonify({"error": "Internal server error"}), 500  
+        return jsonify({"error": "Internal server error"}), 500
+
+@inventory_bp.route('/api/add-medicine', methods=['POST'])
+def add_medicine():
+    try:
+        # Check user permissions
+        allowed_users = {'pranith', 'preethi'}
+        username = session.get('username')
+        
+        if username not in allowed_users:
+            return jsonify({"error": "Unauthorized access"}), 403
+        
+        # Get JSON data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        # Validate required fields
+        medicine_name = data.get('MName', '').strip()
+        medicine_type = data.get('Mtype', '').strip()
+        
+        if not medicine_name:
+            return jsonify({"error": "Medicine name is required"}), 400
+        
+        if not medicine_type:
+            return jsonify({"error": "Medicine type is required"}), 400
+        
+        # Check if medicine already exists
+        existing = client.execute("SELECT MName FROM medicinelist WHERE MName = ?", [medicine_name])
+        if existing.rows:
+            return jsonify({"error": "Medicine already exists"}), 409
+        
+        # Get the next MId for the selected medicine type
+        mid_res = client.execute(
+            "SELECT NextId FROM vw_MId_generator WHERE MType = ?", [medicine_type]
+        )
+        
+        if not mid_res.rows:
+            return jsonify({"error": f"Invalid medicine type: {medicine_type}"}), 400
+        
+        next_mid = mid_res.rows[0][0]
+        
+        # Prepare data for insertion
+        insert_data = {
+            'MId': next_mid,
+            'MName': medicine_name,
+            'MCompany': data.get('MCompany', '').strip(),
+            'Mtype': medicine_type,
+            'MRP': float(data.get('MRP', 0)) if data.get('MRP') else 0,
+            'GST': float(data.get('GST', 0)) if data.get('GST') else 0,
+            'HSN': data.get('HSN', '').strip(),
+            'PTR': float(data.get('PTR', 0)) if data.get('PTR') else 0,
+            'Offer1': data.get('Offer1', '').strip(),
+            'Offer2': data.get('Offer2', '').strip(),
+            'Weight': data.get('Weight', '').strip()
+        }
+        
+        # Insert into database with MId
+        client.execute("""
+            INSERT INTO medicinelist (
+                MId, MName, MCompany, Mtype, MRP, GST, HSN, PTR, Offer1, Offer2, Weight
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, [
+            insert_data['MId'],
+            insert_data['MName'],
+            insert_data['MCompany'],
+            insert_data['Mtype'],
+            insert_data['MRP'],
+            insert_data['GST'],
+            insert_data['HSN'],
+            insert_data['PTR'],
+            insert_data['Offer1'],
+            insert_data['Offer2'],
+            insert_data['Weight']
+        ])
+        
+        logging.info(f"New medicine added: {medicine_name} (MId: {next_mid}) by user: {username}")
+        return jsonify({
+            "success": True, 
+            "message": "Medicine added successfully",
+            "mid": next_mid
+        })
+        
+    except Exception as e:
+        logging.error(f"Error adding medicine: {str(e)}")
+        return jsonify({"error": "Failed to add medicine"}), 500  
 
     # For GET: render inventory form page
     

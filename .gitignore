@@ -6,3 +6,4 @@ templates/test.html
 templates/inventory_3.html
 ERROR_HANDLING_STRATEGIES.md
 db_test.py
+LOGGING_IMPLEMENTATION_GUIDE.md

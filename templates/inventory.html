@@ -117,6 +117,7 @@
 
             <div class="actions">
                 <button type="button" onclick="addItem()">Add Another Item</button>
+                <button type="button" onclick="openNewMedicineModal()" class="btn-add-medicine">Add New Medicine</button>
             </div>
 
             <div id="item-details" class="item-details"></div>
@@ -145,6 +146,77 @@
                 <input type="submit" value="Save Purchase" onclick="debugFormSubmission(event)">
             </div>
         </form>
+    </div>
+
+    <!-- Add New Medicine Modal -->
+    <div id="newMedicineModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Medicine</h3>
+                <span class="close" onclick="closeNewMedicineModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="newMedicineForm">
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="newMedicineName">Medicine Name *</label>
+                            <input type="text" id="newMedicineName" name="MName" required>
+                        </div>
+                        <div class="modal-field">
+                            <label for="newMedicineCompany">Company</label>
+                            <input type="text" id="newMedicineCompany" name="MCompany">
+                        </div>
+                    </div>
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="newMedicineType">Type *</label>
+                            <select id="newMedicineType" name="Mtype" required>
+                                <option value="">--Select Type--</option>
+                                <!-- Options will be populated dynamically from database -->
+                            </select>
+                        </div>
+                        <div class="modal-field">
+                            <label for="newMedicineMRP">MRP</label>
+                            <input type="number" step="0.01" id="newMedicineMRP" name="MRP" min="0">
+                        </div>
+                    </div>
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="newMedicineGST">GST %</label>
+                            <input type="number" step="0.01" id="newMedicineGST" name="GST" min="0" max="100">
+                        </div>
+                        <div class="modal-field">
+                            <label for="newMedicineHSN">HSN Code</label>
+                            <input type="text" id="newMedicineHSN" name="HSN">
+                        </div>
+                    </div>
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="newMedicinePTR">PTR</label>
+                            <input type="number" step="0.01" id="newMedicinePTR" name="PTR" min="0">
+                        </div>
+                        <div class="modal-field">
+                            <label for="newMedicineWeight">Weight/Pack Size</label>
+                            <input type="text" id="newMedicineWeight" name="Weight" placeholder="e.g., 10mg, 100ml">
+                        </div>
+                    </div>
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="newMedicineOffer1">Offer 1</label>
+                            <input type="text" id="newMedicineOffer1" name="Offer1" placeholder="e.g., Buy 2 Get 1">
+                        </div>
+                        <div class="modal-field">
+                            <label for="newMedicineOffer2">Offer 2</label>
+                            <input type="text" id="newMedicineOffer2" name="Offer2" placeholder="e.g., 10% Off">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeNewMedicineModal()" class="btn-cancel">Cancel</button>
+                <button type="button" onclick="saveNewMedicine()" class="btn-save">Save Medicine</button>
+            </div>
+        </div>
     </div>
 
 
@@ -291,6 +363,128 @@ function removeRow(btn) {
 //  // Let the form submit normally
 //  return true;
 //} 
+
+// Modal Functions
+function openNewMedicineModal() {
+  document.getElementById('newMedicineModal').style.display = 'block';
+  // Clear form when opening
+  document.getElementById('newMedicineForm').reset();
+  // Load medicine types from database
+  loadMedicineTypes();
+}
+
+// Load medicine types from database
+function loadMedicineTypes() {
+  fetch('/api/medicine-types')
+  .then(response => response.json())
+  .then(data => {
+    const typeSelect = document.getElementById('newMedicineType');
+    // Clear existing options except the first one
+    typeSelect.innerHTML = '<option value="">--Select Type--</option>';
+    
+    if (data.success && data.types) {
+      data.types.forEach(typeInfo => {
+        const option = document.createElement('option');
+        option.value = typeInfo.type;
+        option.textContent = `${typeInfo.type} (Next ID: ${typeInfo.next_id})`;
+        typeSelect.appendChild(option);
+      });
+    } else {
+      console.error('Failed to load medicine types:', data.error);
+      // Fallback options if database fails
+      const fallbackTypes = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Cream', 'Drops', 'Other'];
+      fallbackTypes.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        typeSelect.appendChild(option);
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error loading medicine types:', error);
+    // Add fallback types if request fails
+    const typeSelect = document.getElementById('newMedicineType');
+    const fallbackTypes = ['Tablet', 'Capsule', 'Syrup', 'Injection', 'Cream', 'Drops', 'Other'];
+    fallbackTypes.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type;
+      option.textContent = type;
+      typeSelect.appendChild(option);
+    });
+  });
+}
+
+function closeNewMedicineModal() {
+  document.getElementById('newMedicineModal').style.display = 'none';
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+  const modal = document.getElementById('newMedicineModal');
+  if (event.target === modal) {
+    closeNewMedicineModal();
+  }
+}
+
+// Save new medicine
+function saveNewMedicine() {
+  const form = document.getElementById('newMedicineForm');
+  const formData = new FormData(form);
+  
+  // Validate required fields
+  const medicineName = formData.get('MName').trim();
+  const medicineType = formData.get('Mtype').trim();
+  
+  if (!medicineName) {
+    alert('Please enter medicine name');
+    return;
+  }
+  
+  if (!medicineType) {
+    alert('Please select medicine type');
+    return;
+  }
+  
+  // Convert FormData to JSON
+  const medicineData = {};
+  formData.forEach((value, key) => {
+    medicineData[key] = value;
+  });
+  
+  // Send AJAX request to add medicine
+  fetch('/api/add-medicine', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(medicineData)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Add new medicine to dropdown
+      const select = document.getElementById('ItemName');
+      const option = new Option(medicineData.MName, medicineData.MName);
+      select.add(option);
+      
+      // Select the newly added medicine
+      $(select).val(medicineData.MName).trigger('change');
+      
+      // Close modal
+      closeNewMedicineModal();
+      
+      // Show success message
+      alert('Medicine added successfully!');
+    } else {
+      alert('Error adding medicine: ' + (data.error || 'Unknown error'));
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error adding medicine. Please try again.');
+  });
+}
 
 </script>
 
