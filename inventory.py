@@ -55,10 +55,12 @@ def inventory():
             
             if request.form.get('DiscountInBill') == 'Yes':
                 discount_in_bill = 1
-                bill_total = bill_amount_float - disc_amount + tax_amount_float
+                bill_total = round(bill_amount_float - disc_amount + tax_amount_float,2)
+                disc_pct = int(disc_amount/bill_amount_float*100)
             else:
                 discount_in_bill = 0
-                bill_total = bill_amount_float + tax_amount_float
+                bill_total = round(bill_amount_float + tax_amount_float,2)
+                disc_pct = 4
 
             
             
@@ -92,14 +94,15 @@ def inventory():
                     ,TaxAmount
                     ,BillTotal
                     ,DiscountInBill
+                    ,DiscountAmount
                     ,DiscountPercent
                     ,BillId                              
                     ) VALUES (?,?,?,?,?,?,?,?,?)
                     """,
                     [
                         bill_no, bill_date, agency, bill_amount_float,
-                        tax_amount_float, round(bill_amount_float + tax_amount_float, 2), 
-                        discount_in_bill, discount_pct, bill_id
+                        tax_amount_float, bill_total, 
+                        discount_in_bill, disc_amount, disc_pct, bill_id
                     ]
                 )
                 logging.info("DeliveryBills insert successful")
