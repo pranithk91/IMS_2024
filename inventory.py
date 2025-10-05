@@ -56,11 +56,11 @@ def inventory():
             if request.form.get('DiscountInBill') == 'Yes':
                 discount_in_bill = 1
                 bill_total = round(bill_amount_float - disc_amount + tax_amount_float,2)
-                disc_pct = int(disc_amount/bill_amount_float*100)
+                disc_pct = round(disc_amount/bill_amount_float*100, 2)
             else:
                 discount_in_bill = 0
                 bill_total = round(bill_amount_float + tax_amount_float,2)
-                disc_pct = 4
+                disc_pct = 0.0
 
             
             
@@ -70,7 +70,12 @@ def inventory():
             /n "Bill Date: {bill_date}"
             /n "Agency: {agency}"
             /n "Bill Amount: {bill_amount}"
-            /n "Tax Amount: {tax_amount}""")
+            /n "Tax Amount: {tax_amount}"   
+            /n "Discount in Bill: {discount_in_bill}"
+            /n "Discount Amount: {disc_amount}"
+            /n "Discount Percent: {disc_pct}"
+            /n "Bill Total: {bill_total}
+""")
         
             # Generate bill_id as concatenation of bill_no and bill_date in yymmdd format
             from datetime import datetime
@@ -78,12 +83,15 @@ def inventory():
                 date_obj = datetime.strptime(bill_date, '%Y-%m-%d')
                 date_formatted = date_obj.strftime('%y%m%d')
                 bill_id = str(bill_no) + '-' + date_formatted
+                logging.info(f"Generated Bill ID: {bill_id}")
             except ValueError as e:
                 flash(f"Invalid date format: {str(e)}", "error")
                 return redirect(url_for('inventory.inventory'))
             
             # Insert into DeliveryBills table
             try:
+                logging.info(f"Inserting bill with values: {[bill_no, bill_date, agency, bill_amount_float, tax_amount_float, bill_total, discount_in_bill, disc_amount, disc_pct, bill_id]}")
+                
                 client.execute(
                     """
                     INSERT INTO DeliveryBills (
@@ -97,7 +105,7 @@ def inventory():
                     ,DiscountAmount
                     ,DiscountPercent
                     ,BillId                              
-                    ) VALUES (?,?,?,?,?,?,?,?,?)
+                    ) VALUES (?,?,?,?,?,?,?,?,?,?)
                     """,
                     [
                         bill_no, bill_date, agency, bill_amount_float,
@@ -107,6 +115,7 @@ def inventory():
                 )
                 logging.info("DeliveryBills insert successful")
             except Exception as e:
+                logging.error(f"Error inserting into DeliveryBills: {str(e)}")
                 flash(f"Error saving bill details: {str(e)}", "error")
                 return redirect(url_for('inventory.inventory'))
             # Items fields might be repeated (list), assuming sent as arrays in form
