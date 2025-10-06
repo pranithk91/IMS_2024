@@ -1,9 +1,49 @@
+# Environment files
 .env
+.env.*
+.env.local
+.env.render
+.env.production
+.env.development
+
+# Database files
 MedicalStore.db
+*.db
+*.sqlite
+*.sqlite3
+
+# Development/test files
 sqlite_test.py
 add_user.py
+db_test.py
+
+# Documentation files (if needed to exclude)
+ERROR_HANDLING_STRATEGIES.md
+LOGGING_IMPLEMENTATION_GUIDE.md
+
+# Template files (development versions)
 templates/test.html
 templates/inventory_3.html
-ERROR_HANDLING_STRATEGIES.md
-db_test.py
-LOGGING_IMPLEMENTATION_GUIDE.md
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+keep_alive_external.py
