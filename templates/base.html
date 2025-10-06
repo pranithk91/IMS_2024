@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{% block title %}App{% endblock %}</title>
+  <title>{% block title %}IMS - Medical Inventory{% endblock %}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Favicon - Logo in browser tab -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='Logo.png') }}">
+  <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='Logo.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='Logo.png') }}">
+  
   <!-- Main CSS Files -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">

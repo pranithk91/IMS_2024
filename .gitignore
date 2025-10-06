@@ -47,3 +47,4 @@ logs/
 .DS_Store
 Thumbs.db
 keep_alive_external.py
+__pycache__/inventory.cpython-310.pyc

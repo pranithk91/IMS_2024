@@ -297,12 +297,13 @@ def add_medicine():
         # Insert into database with MId
         client.execute("""
             INSERT INTO medicinelist (
-                MId, MName, MCompany, Mtype, MRP, GST, HSN, PTR, Offer1, Offer2, Weight
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                MId, MName, MCompany, CurrentStock, Mtype, MRP, GST, HSN, PTR, Offer1, Offer2, Weight
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, [
             insert_data['MId'],
             insert_data['MName'],
             insert_data['MCompany'],
+            0,
             insert_data['Mtype'],
             insert_data['MRP'],
             insert_data['GST'],
