@@ -79,7 +79,7 @@
 
                 <div class="field">
                     <label for="Disc_amount">Disc Amount</label>
-                    <input type="number" step="1" id="Disc_amount" name="Disc_amount" min="0" required>
+                    <input type="number" step="0.01" id="Disc_amount" name="Disc_amount" min="0" required>
                 </div>
 
                 
@@ -87,8 +87,8 @@
 
             <!-- Items Entry Section -->
             <legend>Items in Bill</legend>
-            <div class="form-row">
-                <div class="field" style="width: 300px;">
+            <div class="form-row items-entry-row">
+                <div class="field">
                     <label for="ItemName">Item Name</label>
                     <select id="ItemName" name="item-select" class="item-select">
                         <option value="">--Select Item--</option>
