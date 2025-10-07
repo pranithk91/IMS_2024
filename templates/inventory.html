@@ -82,6 +82,11 @@
                     <input type="number" step="0.01" id="Disc_amount" name="Disc_amount" min="0" required>
                 </div>
 
+                <div class="field">
+                    <label for="BillTotal">Bill Total <span style="font-size: 12px; color: #6c757d;">(Auto-calculated)</span></label>
+                    <input type="number" step="0.01" id="BillTotal" name="BillTotal" min="0" readonly>
+                </div>
+
                 
             </div>
 
@@ -485,6 +490,50 @@ function saveNewMedicine() {
     alert('Error adding medicine. Please try again.');
   });
 }
+
+// Bill Total Calculation Function
+function calculateBillTotal() {
+  const billAmount = parseFloat(document.getElementById('BillAmount').value) || 0;
+  const taxAmount = parseFloat(document.getElementById('TaxAmount').value) || 0;
+  const discountInBill = document.getElementById('DiscountInBill').value;
+  const discAmount = parseFloat(document.getElementById('Disc_amount').value) || 0;
+  
+  let billTotal = 0;
+  
+  if (discountInBill === 'No') {
+    // Bill Total = Tax Amount + Bill Amount
+    billTotal = taxAmount + billAmount;
+  } else if (discountInBill === 'Yes') {
+    // Bill Total = Tax + Bill - Discount Amount
+    billTotal = taxAmount + billAmount - discAmount;
+  } else {
+    // If discount option not selected, just add tax and bill
+    billTotal = taxAmount + billAmount;
+  }
+  
+  // Ensure bill total is not negative
+  billTotal = Math.max(0, billTotal);
+  
+  // Update the bill total field
+  document.getElementById('BillTotal').value = billTotal.toFixed(2);
+}
+
+// Add event listeners for automatic calculation
+document.addEventListener('DOMContentLoaded', function() {
+  // Add event listeners to all fields that affect bill total
+  const fieldsToWatch = ['BillAmount', 'TaxAmount', 'DiscountInBill', 'Disc_amount'];
+  
+  fieldsToWatch.forEach(fieldId => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.addEventListener('input', calculateBillTotal);
+      element.addEventListener('change', calculateBillTotal);
+    }
+  });
+  
+  // Initial calculation
+  calculateBillTotal();
+});
 
 </script>
 

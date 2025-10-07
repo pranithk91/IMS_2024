@@ -70,6 +70,23 @@
   background-color: white;
 }
 
+/* Bill Total Field - Calculated/Read-only styling */
+#BillTotal {
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef) !important;
+  border: 2px solid #28a745 !important;
+  font-weight: bold !important;
+  color: #155724 !important;
+  font-size: 15px !important;
+  text-align: center !important;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.1) !important;
+  cursor: not-allowed !important;
+}
+
+#BillTotal:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25) !important;
+}
+
 /* Ensure Select2 containers are responsive */
 .field .select2-container {
   width: 100% !important;

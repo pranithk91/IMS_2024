@@ -39,9 +39,10 @@ def inventory():
             agency = request.form.get('Agency')
             bill_amount = request.form.get('BillAmount')
             tax_amount = request.form.get('TaxAmount')
+            bill_total_form = request.form.get('BillTotal')
             
             # Validation checks
-            if not all([bill_date, bill_no, delivery_date, agency, bill_amount, tax_amount]):
+            if not all([bill_date, bill_no, delivery_date, agency, bill_amount, tax_amount, bill_total_form]):
                 flash("Please fill in all required fields", "error")
                 return redirect(url_for('inventory.inventory'))
             
@@ -49,17 +50,16 @@ def inventory():
                 disc_amount = round(float(request.form.get('Disc_amount', 0) or 0), 2)
                 bill_amount_float = float(bill_amount)
                 tax_amount_float = float(tax_amount)
+                bill_total = round(float(bill_total_form), 2)
             except (ValueError, TypeError) as e:
                 flash(f"Invalid number format in amounts or discount: {str(e)}", "error")
                 return redirect(url_for('inventory.inventory'))
             
             if request.form.get('DiscountInBill') == 'Yes':
                 discount_in_bill = 1
-                bill_total = round(bill_amount_float - disc_amount + tax_amount_float,2)
-                disc_pct = round(disc_amount/bill_amount_float*100, 2)
+                disc_pct = round(disc_amount/bill_amount_float*100, 2) if bill_amount_float > 0 else 0.0
             else:
                 discount_in_bill = 0
-                bill_total = round(bill_amount_float + tax_amount_float,2)
                 disc_pct = 0.0
 
             

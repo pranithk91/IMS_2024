@@ -17,6 +17,7 @@ from datetime import datetime
 from werkzeug.security import check_password_hash
 from inventory import inventory_bp
 from patient_form import patient_bp
+from payments import payments_bp
 
 USE_SQLITE = os.getenv("USE_SQLITE", "0") == "1"
 
@@ -31,6 +32,7 @@ APP_URL = os.getenv("APP_URL", "")  # Set this to your Render app URL
 # Register Blueprints
 app.register_blueprint(inventory_bp)
 app.register_blueprint(patient_bp)
+app.register_blueprint(payments_bp)
 
 # --- Authentication Routes ---
 

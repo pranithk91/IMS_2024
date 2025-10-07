@@ -16,6 +16,8 @@ MedicalStore.db
 sqlite_test.py
 add_user.py
 db_test.py
+update_payment_schema.py
+test_payments.py
 
 # Documentation files (if needed to exclude)
 ERROR_HANDLING_STRATEGIES.md
