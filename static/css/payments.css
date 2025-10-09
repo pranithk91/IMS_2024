@@ -93,8 +93,9 @@
 
 /* Summary Container */
 .summary-container {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -120,6 +121,14 @@
   font-weight: bold;
   color: #28a745;
   font-size: 18px;
+}
+
+.summary-value.unpaid {
+  color: #dc3545;
+}
+
+.summary-value.paid {
+  color: #28a745;
 }
 
 /* Table Container */

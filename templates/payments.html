@@ -45,7 +45,6 @@
                     <select id="payment_status" name="payment_status">
                         <option value="unpaid" {% if current_filters.payment_status == 'unpaid' %}selected{% endif %}>Unpaid</option>
                         <option value="paid" {% if current_filters.payment_status == 'paid' %}selected{% endif %}>Paid</option>
-                        <option value="partial" {% if current_filters.payment_status == 'partial' %}selected{% endif %}>Partial</option>
                         <option value="all" {% if current_filters.payment_status == 'all' %}selected{% endif %}>All Status</option>
                     </select>
                 </div>
@@ -65,6 +64,14 @@
             <span class="summary-value">{{ total_bills }}</span>
         </div>
         <div class="summary-card">
+            <span class="summary-label">Unpaid Amount:</span>
+            <span class="summary-value unpaid">₹{{ "%.2f"|format(unpaid_amount) }}</span>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Paid Amount:</span>
+            <span class="summary-value paid">₹{{ "%.2f"|format(paid_amount) }}</span>
+        </div>
+        <div class="summary-card">
             <span class="summary-label">Total Amount:</span>
             <span class="summary-value">₹{{ "%.2f"|format(total_amount) }}</span>
         </div>
@@ -81,7 +88,6 @@
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
                                 <label for="selectAll">All</label>
                             </th>
-                            <th>Bill ID</th>
                             <th>Bill No</th>
                             <th>Date</th>
                             <th>Agency</th>
@@ -89,7 +95,6 @@
                             <th>Tax</th>
                             <th>Discount</th>
                             <th>Total</th>
-                            <th>Status</th>
                             <th>Payment Date</th>
                             <th>Payment Mode</th>
                         </tr>
@@ -104,7 +109,6 @@
                                        class="bill-checkbox"
                                        onchange="updateSelectedTotal()">
                             </td>
-                            <td class="bill-id">{{ bill.BillId }}</td>
                             <td>{{ bill.BillNo }}</td>
                             <td>{{ bill.BillDate }}</td>
                             <td>{{ bill.MAgency }}</td>
@@ -121,11 +125,6 @@
                                 {% endif %}
                             </td>
                             <td class="amount total">₹{{ "%.2f"|format(bill.BillTotal) }}</td>
-                            <td>
-                                <span class="status-badge status-{{ bill.BillPaymentStatus or 'unpaid' }}">
-                                    {{ (bill.BillPaymentStatus or 'unpaid').title() }}
-                                </span>
-                            </td>
                             <td>{{ bill.PaymentDate or '-' }}</td>
                             <td>{{ bill.PaymentMode or '-' }}</td>
                         </tr>
@@ -141,7 +140,15 @@
                             <span id="selectedCount" class="summary-value">0</span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Selected Total:</span>
+                            <span class="summary-label">Original Total:</span>
+                            <span id="originalTotal" class="summary-value">₹0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Discount Applied:</span>
+                            <span id="discountAmount" class="summary-value">₹0.00</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Final Total:</span>
                             <span id="selectedTotal" class="summary-value">₹0.00</span>
                         </div>
                     </div>
@@ -168,12 +175,22 @@
                         
                         <div class="input-row">
                             <div class="input-field">
+                                <label for="paymentDiscount">Additional Discount (%)</label>
+                                <input type="number" step="0.01" id="paymentDiscount" name="payment_discount" min="0" max="100" value="4" onchange="updateSelectedTotal()">
+                            </div>
+                            <div class="input-field">
                                 <label for="amountPaid">Amount Paid</label>
                                 <input type="number" step="0.01" id="amountPaid" name="amount_paid" min="0" placeholder="Enter amount paid">
                             </div>
+                        </div>
+                        
+                        <div class="input-row">
                             <div class="input-field">
                                 <label for="transactionDetails">Transaction Details</label>
                                 <input type="text" id="transactionDetails" name="transaction_details" placeholder="Reference number, notes, etc.">
+                            </div>
+                            <div class="input-field">
+                                <!-- Empty field for layout balance -->
                             </div>
                         </div>
                         
@@ -196,7 +213,10 @@
 <script>
 // Checkbox functionality for bulk payment processing
 let selectedBills = [];
+let selectedBillsData = [];
+let originalTotal = 0;
 let selectedTotal = 0;
+let discountAmount = 0;
 
 // Toggle all checkboxes
 function toggleSelectAll() {
@@ -210,24 +230,57 @@ function toggleSelectAll() {
     updateSelectedTotal();
 }
 
-// Update selected total and count
+// Update selected total and count with discount calculation
 function updateSelectedTotal() {
     selectedBills = [];
-    selectedTotal = 0;
+    selectedBillsData = [];
+    originalTotal = 0;
     
     const checkedBoxes = document.querySelectorAll('.bill-checkbox:checked');
+    const paymentDiscountPercent = parseFloat(document.getElementById('paymentDiscount').value) || 0;
     
     checkedBoxes.forEach(checkbox => {
         const row = checkbox.closest('tr');
         const billId = checkbox.value;
         const billTotal = parseFloat(row.dataset.billTotal) || 0;
         
+        // Get bill data from the row (we need to check if bill already has discount)
+        const billCells = row.querySelectorAll('td');
+        const discountCell = billCells[6]; // Discount column (index 6: checkbox, billno, date, agency, amount, tax, discount)
+        const hasExistingDiscount = discountCell && discountCell.textContent.trim() !== '-';
+        
         selectedBills.push(billId);
-        selectedTotal += billTotal;
+        selectedBillsData.push({
+            billId: billId,
+            originalAmount: billTotal,
+            hasExistingDiscount: hasExistingDiscount
+        });
+        originalTotal += billTotal;
     });
+    
+    // Calculate discount amount
+    let totalDiscountAmount = 0;
+    let finalTotal = 0;
+    
+    selectedBillsData.forEach(bill => {
+        if (!bill.hasExistingDiscount && paymentDiscountPercent > 0) {
+            // Apply additional discount only if bill doesn't already have discount
+            const billDiscountAmount = (bill.originalAmount * paymentDiscountPercent) / 100;
+            totalDiscountAmount += billDiscountAmount;
+            finalTotal += (bill.originalAmount - billDiscountAmount);
+        } else {
+            // No additional discount applied
+            finalTotal += bill.originalAmount;
+        }
+    });
+    
+    discountAmount = totalDiscountAmount;
+    selectedTotal = finalTotal;
     
     // Update display
     document.getElementById('selectedCount').textContent = selectedBills.length;
+    document.getElementById('originalTotal').textContent = `₹${originalTotal.toFixed(2)}`;
+    document.getElementById('discountAmount').textContent = `₹${discountAmount.toFixed(2)}`;
     document.getElementById('selectedTotal').textContent = `₹${selectedTotal.toFixed(2)}`;
     
     // Enable/disable process button
@@ -243,7 +296,7 @@ function updateSelectedTotal() {
     selectAllCheckbox.checked = checkedCheckboxes === totalCheckboxes && totalCheckboxes > 0;
 }
 
-// Auto-fill amount with selected total
+// Auto-fill amount with final discounted total
 function autoFillAmount() {
     if (selectedTotal > 0) {
         document.getElementById('amountPaid').value = selectedTotal.toFixed(2);
@@ -264,6 +317,7 @@ document.getElementById('bulkPaymentForm').addEventListener('submit', function(e
     const paymentMode = formData.get('payment_mode');
     const amountPaid = formData.get('amount_paid');
     const transactionDetails = formData.get('transaction_details');
+    const paymentDiscount = formData.get('payment_discount');
     
     if (!paymentDate || !paymentMode) {
         alert('Please fill in all required fields (Payment Date and Payment Mode).');
@@ -272,16 +326,22 @@ document.getElementById('bulkPaymentForm').addEventListener('submit', function(e
     
     const data = {
         bill_ids: selectedBills,
+        bills_data: selectedBillsData,
         payment_date: paymentDate,
         payment_mode: paymentMode,
         amount_paid: parseFloat(amountPaid) || 0,
         transaction_details: transactionDetails || '',
+        payment_discount: parseFloat(paymentDiscount) || 0,
+        original_total: originalTotal,
+        discount_amount: discountAmount,
         selected_total: selectedTotal
     };
     
     // Show confirmation
     const confirmMessage = `Process payment for ${selectedBills.length} bills?\n` +
-                          `Total Amount: ₹${selectedTotal.toFixed(2)}\n` +
+                          `Original Total: ₹${originalTotal.toFixed(2)}\n` +
+                          `Discount Applied: ₹${discountAmount.toFixed(2)} (${paymentDiscount}%)\n` +
+                          `Final Total: ₹${selectedTotal.toFixed(2)}\n` +
                           `Amount Paid: ₹${(parseFloat(amountPaid) || 0).toFixed(2)}\n` +
                           `Payment Mode: ${paymentMode}`;
     

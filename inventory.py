@@ -325,5 +325,68 @@ def add_medicine():
         logging.error(f"Error adding medicine: {str(e)}")
         return jsonify({"error": "Failed to add medicine"}), 500  
 
+@inventory_bp.route('/update-price', methods=['POST'])
+def update_price():
+    try:
+        medicine_name = request.form.get('medicine_name')
+        old_mrp = request.form.get('old_mrp')
+        old_ptr = request.form.get('old_ptr')
+        new_mrp = request.form.get('new_mrp')
+        new_ptr = request.form.get('new_ptr')
+        new_hsn = request.form.get('new_hsn')
+        new_gst = request.form.get('new_gst')
+        
+        if not medicine_name or not new_mrp:
+            flash('Medicine name and new MRP are required', 'error')
+            return redirect(url_for('inventory.inventory'))
+        
+        # Update medicine in mMedicines table
+        client.execute("""
+            UPDATE mMedicines 
+            SET MRP = ?, PTR = ?, HSN = ?, GST = ?
+            WHERE MedicineName = ?
+        """, [new_mrp, new_ptr or None, new_hsn or None, new_gst or None, medicine_name])
+        
+        # Log the price change in PriceChangeLog table
+        from datetime import datetime
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        
+        # Check if PriceChangeLog table exists, create if not
+        try:
+            client.execute("""
+                CREATE TABLE IF NOT EXISTS PriceChangeLog (
+                    LogId INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ChangeDate DATE NOT NULL,
+                    MedicineName TEXT NOT NULL,
+                    OldMRP REAL,
+                    NewMRP REAL NOT NULL,
+                    OldPTR REAL,
+                    NewPTR REAL,
+                    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+        except Exception as e:
+            print(f"Table creation error (may already exist): {e}")
+        
+        # Insert price change log
+        client.execute("""
+            INSERT INTO PriceChangeLog (
+                ChangeDate, MedicineName, OldMRP, NewMRP, OldPTR, NewPTR
+            ) VALUES (?, ?, ?, ?, ?, ?)
+        """, [
+            current_date, medicine_name, 
+            float(old_mrp) if old_mrp else None,
+            float(new_mrp),
+            float(old_ptr) if old_ptr else None,
+            float(new_ptr) if new_ptr else None
+        ])
+        
+        flash(f'Price updated successfully for {medicine_name}! Old MRP: ₹{old_mrp or "Not set"} → New MRP: ₹{new_mrp}', 'success')
+        return redirect(url_for('inventory.inventory'))
+        
+    except Exception as e:
+        flash(f'Error updating price: {str(e)}', 'error')
+        return redirect(url_for('inventory.inventory'))
+
     # For GET: render inventory form page
     

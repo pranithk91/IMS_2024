@@ -230,11 +230,18 @@
         const nameInput = document.getElementById('PName');
         const idInput = document.getElementById('UHId');
         let pending = null;
+        let lastGeneratedName = '';  // Track the name that generated the current UHId
 
         nameInput.addEventListener('input', () => {
             const name = nameInput.value.trim();
-            if (name.length < 3) return;          // wait until at least 3 chars
-            if (idInput.value) return;            // don't overwrite if user already typed UHId
+            if (name.length < 3) {
+                // clear UHId if less than 3 chars
+                if (idInput.value && lastGeneratedName) {
+                    idInput.value = '';
+                    lastGeneratedName = '';
+                }
+                return;
+            }
 
             // debounce requests a bit
             if (pending) clearTimeout(pending);
@@ -242,7 +249,7 @@
             try {
                 const resp = await fetch(`/api/generate_id?name=${encodeURIComponent(name)}`);
                 const data = await resp.json();
-                if (resp.ok && data.client_id && !idInput.value) {
+                if (resp.ok && data.client_id) {
                 idInput.value = data.client_id;
                 }
             } catch (e) {

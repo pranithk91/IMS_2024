@@ -52,9 +52,6 @@ def payments():
         # Handle case sensitivity - convert both to lowercase for comparison
         base_query += " AND (lower(BillPaymentStatus) = ? OR BillPaymentStatus IS NULL)"
         params.append(payment_status.lower())
-        print(f"Adding payment status filter: '{payment_status}' -> '{payment_status.lower()}'")
-    else:
-        print("No payment status filter applied (showing all statuses)")
     
     # Add date filters
     if date_from:
@@ -70,66 +67,16 @@ def payments():
         base_query += " AND MAgency = ?"
         params.append(agency_filter)
     
-    # Order by date (newest first)
+    # Order by date (newest first), then by BillId
     base_query += " ORDER BY BillDate DESC, BillId DESC"
     
-    # Console logging for debugging
-    print("=== PAYMENTS QUERY DEBUG ===")
-    print(f"Filter parameters received:")
-    print(f"  date_from: '{date_from}'")
-    print(f"  date_to: '{date_to}'")
-    print(f"  agency_filter: '{agency_filter}'")
-    print(f"  payment_status: '{payment_status}'")
-    
-    # First, let's check what payment statuses actually exist in the database
-    try:
-        status_check = client.execute("SELECT DISTINCT BillPaymentStatus FROM DeliveryBills")
-        print(f"\nActual payment statuses in database:")
-        for row in status_check.rows:
-            print(f"  '{row[0]}' (type: {type(row[0])})")
-    except Exception as e:
-        print(f"Error checking payment statuses: {e}")
-    
-    print(f"\nFinal SQL Query:")
-    print(repr(base_query))  # Using repr to show exact string including whitespace
-    print(f"\nQuery Parameters: {params}")
-    print(f"Parameter types: {[type(p) for p in params]}")
-    
-    # Let's also try a simpler test query
-    try:
-        test_query = "SELECT COUNT(*) FROM DeliveryBills"
-        test_result = client.execute(test_query)
-        print(f"\nTotal bills in database: {test_result.rows[0][0] if test_result.rows else 'No result'}")
-    except Exception as e:
-        print(f"Error in test query: {e}")
-    
-    print("=" * 70)
+
     
     try:
         # Execute query
         result = client.execute(base_query, params)
         
-        # Log query results
-        print(f"\nQUERY RESULTS:")
-        print(f"Number of rows returned: {len(result.rows)}")
-        
-        if len(result.rows) == 0:
-            print("No results found! Let's try some diagnostic queries...")
-            
-            # Check if there are any bills at all
-            try:
-                all_bills = client.execute("SELECT BillId, BillPaymentStatus FROM DeliveryBills LIMIT 5")
-                print(f"Sample bills in database ({len(all_bills.rows)} found):")
-                for i, row in enumerate(all_bills.rows):
-                    print(f"  Bill {i+1}: ID='{row[0]}', Status='{row[1]}' (type: {type(row[1])})")
-            except Exception as e:
-                print(f"Error checking sample bills: {e}")
-        else:
-            print(f"First 3 rows:")
-            for i, row in enumerate(result.rows[:3]):
-                print(f"  Row {i+1}: BillId='{row[0]}', Status='{row[10]}', Agency='{row[3]}'")
-        
-        print("=" * 70)
+
         
         bills = []
         
@@ -152,29 +99,22 @@ def payments():
                 'TransactionDetails': row[14] or ''
             })
         
-        # Log processed bills
-        print(f"\nPROCESSED BILLS:")
-        print(f"Total bills processed: {len(bills)}")
-        for i, bill in enumerate(bills[:3]):
-            print(f"  Bill {i+1}: {bill['BillId']} - {bill['MAgency']} - Status: {bill['BillPaymentStatus']} - Total: ₹{bill['BillTotal']}")
-        if len(bills) > 3:
-            print(f"  ... and {len(bills) - 3} more bills")
-        print("=" * 50)
+
         
         # Get list of agencies for filter dropdown from mAgencies table
-        print(f"\nAGENCIES QUERY:")
         agencies_query = "SELECT AgencyName FROM mAgencies ORDER BY AgencyName"
-        print(f"Query: {agencies_query}")
         agency_result = client.execute(agencies_query)
         agencies = [row[0] for row in agency_result.rows if row[0]]
-        print(f"Agencies found: {len(agencies)}")
-        print("=" * 50)
         
         # Calculate summary statistics
         total_bills = len(bills)
         total_amount = sum(bill['BillTotal'] for bill in bills)
         
-        logging.info(f"Payments page accessed by {username}. Found {total_bills} bills matching filters.")
+        # Calculate paid and unpaid totals
+        paid_amount = sum(bill['BillTotal'] for bill in bills if (bill['BillPaymentStatus'] or '').lower() in ['paid', 'Paid'])
+        unpaid_amount = sum(bill['BillTotal'] for bill in bills if (bill['BillPaymentStatus'] or '').lower() in ['unpaid', 'Unpaid', ''] or bill['BillPaymentStatus'] is None)
+        
+        logging.info(f"Payments page accessed by {username}. Processed {total_bills} bills from {len(agencies)} agencies.")
         
         return render_template(
             'payments.html', 
@@ -182,6 +122,8 @@ def payments():
             agencies=agencies,
             total_bills=total_bills,
             total_amount=total_amount,
+            paid_amount=paid_amount,
+            unpaid_amount=unpaid_amount,
             active_page='payments',
             # Pass current filters back to template
             current_filters={
@@ -200,6 +142,8 @@ def payments():
             agencies=[],
             total_bills=0,
             total_amount=0,
+            paid_amount=0,
+            unpaid_amount=0,
             active_page='payments',
             error=f"Error loading bills: {str(e)}",
             current_filters={
@@ -222,20 +166,17 @@ def bulk_payment_update():
     try:
         data = request.get_json()
         bill_ids = data.get('bill_ids', [])
+        bill_data = data.get('bill_data', [])  # Enhanced bill data with discount info
         payment_date = data.get('payment_date')
         payment_mode = data.get('payment_mode')
         amount_paid = data.get('amount_paid', 0)
         transaction_details = data.get('transaction_details', '')
         selected_total = data.get('selected_total', 0)
+        original_total = data.get('original_total', 0)
+        discount_amount = data.get('discount_amount', 0)
+        discount_percentage = data.get('discount_percentage', 0)
         
-        print(f"\n=== BULK PAYMENT UPDATE ===")
-        print(f"User: {username}")
-        print(f"Bill IDs: {bill_ids}")
-        print(f"Payment Date: '{payment_date}' (type: {type(payment_date)})")
-        print(f"Payment Mode: {payment_mode}")
-        print(f"Amount Paid: {amount_paid}")
-        print(f"Selected Total: {selected_total}")
-        print(f"Transaction Details: {transaction_details}")
+
         
         if not bill_ids or not payment_date or not payment_mode:
             return jsonify({"error": "Bill IDs, payment date, and payment mode are required"}), 400
@@ -247,22 +188,44 @@ def bulk_payment_update():
             parsed_date = datetime.strptime(payment_date, '%Y-%m-%d')
             # Convert back to string to ensure consistent format
             formatted_payment_date = parsed_date.strftime('%Y-%m-%d')
-            print(f"Date validation: '{payment_date}' -> '{formatted_payment_date}'")
         except ValueError as e:
-            print(f"Invalid date format: {payment_date}. Expected YYYY-MM-DD")
             return jsonify({"error": f"Invalid date format: {payment_date}. Expected YYYY-MM-DD"}), 400
         
         
         payment_status = 'Paid'  # Default to paid if no amount specified
-            
-        print(f"Determined Payment Status: {payment_status}")
         
         updated_count = 0
+        
+        # Create a dictionary for quick bill data lookup
+        bill_data_dict = {bill['billId']: bill for bill in bill_data} if bill_data else {}
+        
+        # Calculate individual amount paid for each bill (proportional to their final amounts)
+        total_final_amount = sum(bill['finalAmount'] for bill in bill_data) if bill_data else selected_total
         
         # Update each selected bill
         for bill_id in bill_ids:
             try:
-                print(f"Updating bill: {bill_id} with date: {formatted_payment_date}")
+                # Get bill-specific data if available
+                bill_info = bill_data_dict.get(bill_id)
+                
+                if bill_info:
+                    # Calculate proportional amount paid for this specific bill
+                    bill_proportion = bill_info['finalAmount'] / total_final_amount if total_final_amount > 0 else 0
+                    bill_amount_paid = amount_paid * bill_proportion
+                    
+                    # Create detailed transaction details including discount info
+                    bill_transaction_details = transaction_details
+                    if bill_info['appliedDiscount'] > 0:
+                        discount_info = f" | Payment Discount: ₹{bill_info['appliedDiscount']:.2f} ({discount_percentage}%)"
+                        if bill_info['hadDiscount']:
+                            discount_info += " (Additional to existing bill discount)"
+                        bill_transaction_details += discount_info
+                    
+                else:
+                    # Fallback for bills without detailed data
+                    bill_amount_paid = amount_paid / len(bill_ids) if bill_ids else amount_paid
+                    bill_transaction_details = transaction_details
+                
                 client.execute("""
                     UPDATE DeliveryBills 
                     SET BillPaymentStatus = ?, 
@@ -271,24 +234,28 @@ def bulk_payment_update():
                         AmountPaid = ?,
                         TransactionDetails = ?
                     WHERE BillId = ?
-                """, [payment_status, formatted_payment_date, payment_mode, amount_paid, transaction_details, bill_id])
+                """, [payment_status, formatted_payment_date, payment_mode, bill_amount_paid, bill_transaction_details, bill_id])
                 updated_count += 1
-                print(f"Successfully updated bill: {bill_id} with formatted date: {formatted_payment_date}")
             except Exception as e:
-                print(f"Error updating bill {bill_id}: {e}")
                 continue
         
-        logging.info(f"Bulk payment update: {updated_count} bills updated by {username}")
+        logging.info(f"Bulk payment update: {updated_count} bills updated by {username} with ₹{discount_amount:.2f} total discount")
+        
+        success_message = f"Payment processed for {updated_count} bills"
+        if discount_amount > 0:
+            success_message += f" with ₹{discount_amount:.2f} total discount ({discount_percentage}%)"
         
         return jsonify({
             "success": True, 
-            "message": f"Payment processed for {updated_count} bills",
+            "message": success_message,
             "updated_count": updated_count,
-            "payment_status": payment_status
+            "payment_status": payment_status,
+            "total_discount_applied": discount_amount,
+            "original_total": original_total,
+            "final_total": selected_total
         })
         
     except Exception as e:
-        print(f"Error in bulk payment update: {e}")
         logging.error(f"Error in bulk payment update: {str(e)}")
         return jsonify({"error": "Failed to process payment"}), 500
 

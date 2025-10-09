@@ -438,24 +438,47 @@
 }
 
 /* Add New Medicine Button */
-.btn-add-medicine {
-  background: linear-gradient(135deg, #28a745, #1e7e34);
+.btn-add-medicine, .btn-update-price {
+  background: linear-gradient(135deg, #17a2b8, #138496);
   color: white;
-  border: 2px solid #1e7e34;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: bold;
+  border: 2px solid #138496;
+  padding: 12px 24px;
   border-radius: 25px;
+  font-weight: bold;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-left: 10px;
+  text-decoration: none;
+  display: inline-block;
 }
 
-.btn-add-medicine:hover {
-  background: linear-gradient(135deg, #1e7e34, #155724);
+.btn-add-medicine:hover, .btn-update-price:hover {
+  background: linear-gradient(135deg, #138496, #117a8b);
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(30,126,52,0.4);
+  box-shadow: 0 4px 12px rgba(19,132,150,0.4);
+}
+
+.current-values-section, .new-values-section {
+  margin: 20px 0;
+  padding: 15px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.current-values-section h4, .new-values-section h4 {
+  margin: 0 0 15px 0;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.current-values-section input[readonly] {
+  background: #e9ecef;
+  color: #6c757d;
+  border: 1px solid #ced4da;
 }
 
 /* Modal Styles */

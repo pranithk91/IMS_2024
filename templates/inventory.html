@@ -123,6 +123,7 @@
             <div class="actions">
                 <button type="button" onclick="addItem()">Add Another Item</button>
                 <button type="button" onclick="openNewMedicineModal()" class="btn-add-medicine">Add New Medicine</button>
+                <button type="button" onclick="openUpdatePriceModal()" class="btn-update-price">Update Price</button>
             </div>
 
             <div id="item-details" class="item-details"></div>
@@ -223,6 +224,92 @@
             </div>
         </div>
     </div>
+
+    <!-- Update Price Modal -->
+    <div id="updatePriceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Medicine Price</h3>
+                <span class="close" onclick="closeUpdatePriceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('inventory.update_price') }}" id="updatePriceForm">
+                    <div class="modal-form-row">
+                        <div class="modal-field">
+                            <label for="updateMedicineName">Medicine Name *</label>
+                            <select id="updateMedicineName" name="medicine_name" required onchange="loadMedicineDetails(this.value)">
+                                <option value="">--Select Medicine--</option>
+                                {% for name in med_list %}
+                                    <option value="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Values Display -->
+                    <div class="current-values-section" id="currentValuesSection" style="display: none;">
+                        <h4>Current Values</h4>
+                        <div class="modal-form-row">
+                            <div class="modal-field">
+                                <label>Current MRP</label>
+                                <input type="text" id="currentMRP" readonly>
+                            </div>
+                            <div class="modal-field">
+                                <label>Current PTR</label>
+                                <input type="text" id="currentPTR" readonly>
+                            </div>
+                        </div>
+                        <div class="modal-form-row">
+                            <div class="modal-field">
+                                <label>Current HSN</label>
+                                <input type="text" id="currentHSN" readonly>
+                            </div>
+                            <div class="modal-field">
+                                <label>Current GST %</label>
+                                <input type="text" id="currentGST" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- New Values Input -->
+                    <div class="new-values-section" id="newValuesSection" style="display: none;">
+                        <h4>New Values</h4>
+                        <div class="modal-form-row">
+                            <div class="modal-field">
+                                <label for="newMRP">New MRP *</label>
+                                <input type="number" step="0.01" id="newMRP" name="new_mrp" min="0" required>
+                            </div>
+                            <div class="modal-field">
+                                <label for="newPTR">New PTR</label>
+                                <input type="number" step="0.01" id="newPTR" name="new_ptr" min="0">
+                            </div>
+                        </div>
+                        <div class="modal-form-row">
+                            <div class="modal-field">
+                                <label for="newHSN">New HSN Code</label>
+                                <input type="text" id="newHSN" name="new_hsn">
+                            </div>
+                            <div class="modal-field">
+                                <label for="newGST">New GST %</label>
+                                <input type="number" step="0.01" id="newGST" name="new_gst" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hidden fields to store old values for logging -->
+                    <input type="hidden" id="oldMRP" name="old_mrp">
+                    <input type="hidden" id="oldPTR" name="old_ptr">
+                    <input type="hidden" id="oldHSN" name="old_hsn">
+                    <input type="hidden" id="oldGST" name="old_gst">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeUpdatePriceModal()" class="btn-cancel">Cancel</button>
+                <button type="button" onclick="submitPriceUpdate()" class="btn-save" id="updatePriceBtn" style="display: none;">Update Price</button>
+            </div>
+        </div>
+    </div>
+
 
 
       
@@ -535,6 +622,94 @@ document.addEventListener('DOMContentLoaded', function() {
   calculateBillTotal();
 });
 
+// Update Price Modal Functions
+function openUpdatePriceModal() {
+    document.getElementById('updatePriceModal').style.display = 'block';
+    // Clear form when opening
+    document.getElementById('updatePriceForm').reset();
+    document.getElementById('currentValuesSection').style.display = 'none';
+    document.getElementById('newValuesSection').style.display = 'none';
+    document.getElementById('updatePriceBtn').style.display = 'none';
+}
+
+function closeUpdatePriceModal() {
+    document.getElementById('updatePriceModal').style.display = 'none';
+}
+
+function loadMedicineDetails(medicineName) {
+    if (medicineName) {
+        // Simple approach - make a synchronous request or use the existing medicine details
+        fetch(`/api/medicine-details?name=${encodeURIComponent(medicineName)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                // Display current values
+                document.getElementById('currentMRP').value = data.MRP || 'Not set';
+                document.getElementById('currentPTR').value = data.PTR || 'Not set';
+                document.getElementById('currentHSN').value = data.HSN || 'Not set';
+                document.getElementById('currentGST').value = data.GST || 'Not set';
+                
+                // Store old values in hidden fields
+                document.getElementById('oldMRP').value = data.MRP || '';
+                document.getElementById('oldPTR').value = data.PTR || '';
+                document.getElementById('oldHSN').value = data.HSN || '';
+                document.getElementById('oldGST').value = data.GST || '';
+                
+                // Pre-fill new values with current values
+                document.getElementById('newMRP').value = data.MRP || '';
+                document.getElementById('newPTR').value = data.PTR || '';
+                document.getElementById('newHSN').value = data.HSN || '';
+                document.getElementById('newGST').value = data.GST || '';
+                
+                // Show sections and update button
+                document.getElementById('currentValuesSection').style.display = 'block';
+                document.getElementById('newValuesSection').style.display = 'block';
+                document.getElementById('updatePriceBtn').style.display = 'inline-block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading medicine details:', error);
+            alert('Error loading medicine details. Please try again.');
+        });
+    } else {
+        document.getElementById('currentValuesSection').style.display = 'none';
+        document.getElementById('newValuesSection').style.display = 'none';
+        document.getElementById('updatePriceBtn').style.display = 'none';
+    }
+}
+
+function submitPriceUpdate() {
+    const form = document.getElementById('updatePriceForm');
+    const medicineName = document.getElementById('updateMedicineName').value;
+    const newMRP = document.getElementById('newMRP').value;
+    
+    if (!medicineName) {
+        alert('Please select a medicine');
+        return;
+    }
+    
+    if (!newMRP || parseFloat(newMRP) <= 0) {
+        alert('Please enter a valid new MRP');
+        return;
+    }
+    
+    // Confirm the update
+    if (confirm(`Are you sure you want to update the price for ${medicineName}?`)) {
+        form.submit();
+    }
+}
+
+// Update the window click handler to include the new modal
+window.onclick = function(event) {
+    const newMedicineModal = document.getElementById('newMedicineModal');
+    const updatePriceModal = document.getElementById('updatePriceModal');
+    
+    if (event.target === newMedicineModal) {
+        closeNewMedicineModal();
+    } else if (event.target === updatePriceModal) {
+        closeUpdatePriceModal();
+    }
+}
 </script>
 
 

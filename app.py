@@ -18,6 +18,8 @@ from werkzeug.security import check_password_hash
 from inventory import inventory_bp
 from patient_form import patient_bp
 from payments import payments_bp
+from pharmacy import pharmacy_bp
+from reports import reports_bp
 
 USE_SQLITE = os.getenv("USE_SQLITE", "0") == "1"
 
@@ -33,6 +35,8 @@ APP_URL = os.getenv("APP_URL", "")  # Set this to your Render app URL
 app.register_blueprint(inventory_bp)
 app.register_blueprint(patient_bp)
 app.register_blueprint(payments_bp)
+app.register_blueprint(pharmacy_bp, url_prefix='/pharmacy')
+app.register_blueprint(reports_bp, url_prefix='/reports')
 
 # --- Authentication Routes ---
 
