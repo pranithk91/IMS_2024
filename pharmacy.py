@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
 from datetime import datetime
 from db_connect import client
+import logging
 
 pharmacy_bp = Blueprint('pharmacy', __name__)
 
